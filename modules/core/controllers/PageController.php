@@ -10,7 +10,7 @@
  * @package		core
  * @subpackage	controllers
  * @since		1.0
- * @version		2012-06-18
+ * @version		2012-06-22
  */
 
 defined('APP_VALID_REQUEST') || die('You cannot access the script directly.');
@@ -372,6 +372,8 @@ class Core_PageController extends Zend_Controller_Action
 		$q		 = $request->getParam('q');
 		$default = array(
 			'template' => null,
+			'page'	   => 1,
+			'per_page' => 100,
 		);
 		
 		$criteria = $q ? Zend_Json::decode(base64_decode(rawurldecode($q))) : array();
