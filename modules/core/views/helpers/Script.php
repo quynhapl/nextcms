@@ -10,7 +10,7 @@
  * @package		core
  * @subpackage	views
  * @since		1.0
- * @version		2012-05-12
+ * @version		2012-06-21
  */
 
 defined('APP_VALID_REQUEST') || die('You cannot access the script directly.');
@@ -43,6 +43,20 @@ defined('APP_VALID_REQUEST') || die('You cannot access the script directly.');
  */
 class Core_View_Helper_Script extends Zend_View_Helper_HeadScript
 {
+	/**
+	 * The lifetime of cache if Javascript caching is enabled
+	 * 
+	 * @var const
+	 */
+	const CACHE_LIFETIME = 604800;		// Cache in 7 days
+	
+	/**
+	 * The cache tag. It will be used when I want to clean cache
+	 * 
+	 * @var const
+	 */
+	const CACHE_TAG = 'Core_View_Helper_Script';
+	
 	/**
 	 * Array of inline scripts that are captured only once in a page
 	 * 
@@ -200,7 +214,7 @@ class Core_View_Helper_Script extends Zend_View_Helper_HeadScript
 			}
 			
 			// Save to cache
-			$cache->save($cacheData, $cacheKey);
+			$cache->save($cacheData, $cacheKey, array(self::CACHE_TAG), self::CACHE_LIFETIME);
 		}
 		
 		// Reset all scripts
@@ -217,8 +231,17 @@ class Core_View_Helper_Script extends Zend_View_Helper_HeadScript
 	 */
 	public function cleanCaching()
 	{
-		$cache = $this->_getCacheInstance();
-		$cache->clean();
+		$cache   = $this->_getCacheInstance();
+		$backend = $cache->getBackend();
+		switch (true) {
+			case ($backend instanceof Zend_Cache_Backend_Memcached):
+				// Memcached does not support removing data by tag
+				$cache->clean();
+				break;
+			default:
+				$cache->clean(Zend_Cache::CLEANING_MODE_MATCHING_TAG, array(self::CACHE_TAG));
+				break;
+		}
 	}
 	
 	/**
@@ -242,13 +265,17 @@ class Core_View_Helper_Script extends Zend_View_Helper_HeadScript
 	 */
 	private function _getCacheInstance()
 	{
-		return Zend_Cache::factory('Core', 'File', array(
-										'lifetime'				  => 604800,	// Cache in 7 days
-										'automatic_serialization' => true,
-										'cache_id_prefix'		  => 'app_js_',
-									), array(
-										'cache_dir' => APP_TEMP_DIR . DS . 'js',
-									));
+		if ($cache = Core_Services_Cache::getInstance()) {
+			return $cache;
+		} else {
+			return Zend_Cache::factory('Core', 'File', array(
+											'lifetime'				  => self::CACHE_LIFETIME,
+											'automatic_serialization' => true,
+											'cache_id_prefix'		  => 'app_js_',
+										), array(
+											'cache_dir' => APP_TEMP_DIR . DS . 'js',
+										));
+		}
 	}
 	
 	/**
