@@ -10,7 +10,7 @@
  * @package		core
  * @subpackage	views
  * @since		1.0
- * @version		2012-06-21
+ * @version		2012-06-22
  */
 
 defined('APP_VALID_REQUEST') || die('You cannot access the script directly.');
@@ -231,16 +231,19 @@ class Core_View_Helper_Script extends Zend_View_Helper_HeadScript
 	 */
 	public function cleanCaching()
 	{
-		$cache   = $this->_getCacheInstance();
-		$backend = $cache->getBackend();
-		switch (true) {
-			case ($backend instanceof Zend_Cache_Backend_Memcached):
-				// Memcached does not support removing data by tag
-				$cache->clean();
-				break;
-			default:
-				$cache->clean(Zend_Cache::CLEANING_MODE_MATCHING_TAG, array(self::CACHE_TAG));
-				break;
+		$cache		= $this->_getCacheInstance();
+		$backend	= $cache->getBackend();
+		$supportTag = false;
+		if ($backend instanceof Zend_Cache_Backend_ExtendedInterface) {
+			$capabilities = $backend->getCapabilities();
+			$supportTag   = isset($capabilities['tags']) ? $capabilities['tags'] : false;
+		}
+		
+		if ($supportTag) {
+			$cache->clean(Zend_Cache::CLEANING_MODE_MATCHING_TAG, array(self::CACHE_TAG));
+		} else {
+			// The back-end cache does not support tag
+			$cache->clean();
 		}
 	}
 	
