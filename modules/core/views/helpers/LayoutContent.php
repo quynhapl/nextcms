@@ -10,7 +10,7 @@
  * @package		core
  * @subpackage	views
  * @since		1.0
- * @version		2012-05-30
+ * @version		2012-06-22
  */
 
 defined('APP_VALID_REQUEST') || die('You cannot access the script directly.');
@@ -66,6 +66,9 @@ class Core_View_Helper_LayoutContent extends Zend_View_Helper_Abstract
 		
 		// Save to cache if caching is enabled
 		if ($cache && $caching && $cacheKey) {
+			if (!Zend_Controller_Front::getInstance()->getRequest()->isXmlHttpRequest()) {
+				$output = '<!-- main content cached at ' .date('Y-m-d H:i:s') . '-->' . $output;
+			}
 			$cache->save($output, $cacheKey, array('LayoutContent'), $data['cache']['lifetime']);
 		}
 		

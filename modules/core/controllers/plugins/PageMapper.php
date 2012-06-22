@@ -10,7 +10,7 @@
  * @package		core
  * @subpackage	controllers
  * @since		1.0
- * @version		2012-05-12
+ * @version		2012-06-22
  */
 
 defined('APP_VALID_REQUEST') || die('You cannot access the script directly.');
@@ -131,7 +131,7 @@ class Core_Controllers_Plugins_PageMapper extends Zend_Controller_Plugin_Abstrac
 			
 			// Get response content
 			$content = $this->getResponse()->getBody()
-					. '<!-- cached at ' . date('Y-m-d H:i:s') . ' -->';
+					. '<!-- page cached at ' . date('Y-m-d H:i:s') . ' -->';
 			
 			// Save to cache
 			$lifeTime = $request->getParam('appPageCacheLifetime');

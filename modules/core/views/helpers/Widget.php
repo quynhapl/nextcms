@@ -10,7 +10,7 @@
  * @package		core
  * @subpackage	views
  * @since		1.0
- * @version		2012-05-30
+ * @version		2012-06-22
  */
 
 defined('APP_VALID_REQUEST') || die('You cannot access the script directly.');
@@ -112,6 +112,9 @@ class Core_View_Helper_Widget
 		
 		// Save to cache
 		if ($cache && $caching && $cacheKey) {
+			if (!Zend_Controller_Front::getInstance()->getRequest()->isXmlHttpRequest()) {
+				$output = '<!-- widget cached at ' .date('Y-m-d H:i:s') . '-->' . $output;
+			}
 			$cache->save($output, $cacheKey, array($module . '_Widgets', Core_Services_Cache::TAG_SITE_CONTENT), $data['cache']['lifetime']);
 		}
 		
