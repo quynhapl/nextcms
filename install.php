@@ -19,6 +19,9 @@ if (version_compare(phpversion(), '5.2.4', '<') === true) {
 
 error_reporting(E_ALL);
 
+// Set max execution time
+@ini_set('max_execution_time', 0);
+
 define('DS',				DIRECTORY_SEPARATOR);
 define('PS', 				PATH_SEPARATOR);
 
@@ -51,8 +54,8 @@ $application = new Zend_Application(
 	APP_ENV,
 	array(
 		'phpsettings' => array(
-			'display_startup_errors' => 1,
-			'display_errors' 		 => 1,
+			'display_startup_errors' => 0,
+			'display_errors' 		 => 0,
 		),
 		'bootstrap' => array(
 			'path' 	=> APP_ROOT_DIR . DS . 'Installer.php',
