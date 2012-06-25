@@ -10,7 +10,7 @@
  * @package		core
  * @subpackage	views
  * @since		1.0
- * @version		2012-05-21
+ * @version		2012-06-25
  */
 
 defined('APP_VALID_REQUEST') || die('You cannot access the script directly.');
@@ -412,12 +412,10 @@ $this->headTitle()->set($this->translator()->_('config.config.title'));
 						<script type="dojo/connect">
 						dojo.style("coreConfigConfigMemcacheContainer", "display", this.attr("value") == "memcache" ? "block" : "none");
 						dojo.style("coreConfigConfigCacheContainer", "display", this.attr("value") == "" ? "none" : "block");
-						dojo.style("coreConfigConfigCleanDataCache", "display", this.attr("value") == "" ? "none" : "block");
 						</script>
 						<script type="dojo/connect" data-dojo-event="onChange" data-dojo-args="value">
 						dojo.style("coreConfigConfigMemcacheContainer", "display", value == "memcache" ? "block" : "none");
 						dojo.style("coreConfigConfigCacheContainer", "display", value == "" ? "none" : "block");
-						dojo.style("coreConfigConfigCleanDataCache", "display", value == "" ? "none" : "block");
 						</script>
 					</select>
 					

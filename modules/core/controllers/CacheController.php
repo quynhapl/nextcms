@@ -10,7 +10,7 @@
  * @package		core
  * @subpackage	controllers
  * @since		1.0
- * @version		2012-03-23
+ * @version		2012-06-25
  */
 
 defined('APP_VALID_REQUEST') || die('You cannot access the script directly.');
@@ -63,6 +63,8 @@ class Core_CacheController extends Zend_Controller_Action
 				if ($cache) {
 					$cache->clean(Zend_Cache::CLEANING_MODE_MATCHING_ANY_TAG, array(Core_Services_Cache::TAG_SITE_CONTENT));
 				}
+				// Remove routes cache
+				Core_Services_Route::cleanCache();
 				break;
 		}
 		
