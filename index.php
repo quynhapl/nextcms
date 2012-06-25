@@ -8,7 +8,7 @@
  * @link		http://nextcms.org
  * @category	bootstrap
  * @since		1.0
- * @version		2012-05-22
+ * @version		2012-06-25
  */
 
 // Exit if the PHP version does not meet the requirement.
@@ -67,8 +67,12 @@ $default  = APP_ROOT_DIR . DS . 'configs' . DS . 'application.' . strtolower(APP
 $host     = APP_ROOT_DIR . DS . 'configs' . DS . $hostName . '.' . strtolower(APP_ENV) . '.php';
 define('APP_HOST_CONFIG', file_exists($host) ? $hostName : 'application');
 
+// Use Zend autoloader
+require_once 'Zend/Loader.php';
+require_once 'Zend/Loader/Autoloader.php';
+Zend_Loader_Autoloader::getInstance();
+
 // Create new app instance
-require_once 'Zend/Application.php';
 $application = new Zend_Application(
 	APP_ENV,
 	file_exists($host) ? $host : $default

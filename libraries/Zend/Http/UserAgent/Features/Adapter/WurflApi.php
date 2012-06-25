@@ -22,7 +22,7 @@
 /**
  * Zend_Http_UserAgent_Features_Adapter_Interface
  */
-require_once 'Zend/Http/UserAgent/Features/Adapter.php';
+// require_once 'Zend/Http/UserAgent/Features/Adapter.php';
 
 /**
  * Features adapter build with the official WURFL PHP API
@@ -48,18 +48,18 @@ class Zend_Http_UserAgent_Features_Adapter_WurflApi
     public static function getFromRequest($request, array $config)
     {
         if (!isset($config['wurflapi'])) {
-            require_once 'Zend/Http/UserAgent/Features/Exception.php';
+            // require_once 'Zend/Http/UserAgent/Features/Exception.php';
             throw new Zend_Http_UserAgent_Features_Exception('"wurflapi" configuration is not defined');
         }
 
         $config = $config['wurflapi'];
 
         if (empty($config['wurfl_lib_dir'])) {
-            require_once 'Zend/Http/UserAgent/Features/Exception.php';
+            // require_once 'Zend/Http/UserAgent/Features/Exception.php';
             throw new Zend_Http_UserAgent_Features_Exception('The "wurfl_lib_dir" parameter is not defined');
         }
         if (empty($config['wurfl_config_file']) && empty($config['wurfl_config_array'])) {
-            require_once 'Zend/Http/UserAgent/Features/Exception.php';
+            // require_once 'Zend/Http/UserAgent/Features/Exception.php';
             throw new Zend_Http_UserAgent_Features_Exception('The "wurfl_config_file" parameter is not defined');
         }
 
@@ -89,7 +89,7 @@ class Zend_Http_UserAgent_Features_Adapter_WurflApi
                 $wurflManager = $wurflManagerFactory->create();
                 break;
             default:
-                require_once 'Zend/Http/UserAgent/Features/Exception.php';
+                // require_once 'Zend/Http/UserAgent/Features/Exception.php';
                 throw new Zend_Http_UserAgent_Features_Exception(sprintf(
                     'Unknown API version "%s"',
                     $config['wurfl_api_version']

@@ -98,7 +98,7 @@ class Zend_Soap_Wsdl
                     xmlns:wsdl='http://schemas.xmlsoap.org/wsdl/'></definitions>";
         $this->_dom = new DOMDocument();
         if (!$this->_dom->loadXML($wsdl)) {
-            require_once 'Zend/Server/Exception.php';
+            // require_once 'Zend/Server/Exception.php';
             throw new Zend_Server_Exception('Unable to create DomDocument');
         } else {
             $this->_wsdl = $this->_dom->documentElement;

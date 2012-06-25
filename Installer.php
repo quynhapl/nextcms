@@ -8,7 +8,7 @@
  * @link		http://nextcms.org
  * @category	install
  * @since		1.0
- * @version		2012-04-27
+ * @version		2012-06-25
  */
 
 defined('APP_VALID_REQUEST') || die('You cannot access the script directly.');
@@ -29,16 +29,13 @@ class Installer extends Zend_Application_Bootstrap_Bootstrap
 		require_once APP_ROOT_DIR . DS . 'modules/core/base/Autoloader.php';
 		require_once APP_ROOT_DIR . DS . 'modules/core/base/File.php';
 
-		$autoloader = Zend_Loader_Autoloader::getInstance();
-		$modules    = Core_Base_File::getSubDirectories(APP_ROOT_DIR . DS . 'modules');
+		$modules = Core_Base_File::getSubDirectories(APP_ROOT_DIR . DS . 'modules');
 		foreach ($modules as $module) {
 			new Core_Base_Autoloader(array(
     			'basePath'  => APP_ROOT_DIR . DS . 'modules' . DS . $module,
     			'namespace' => ucfirst($module) . '_',
 			));
 		}
-
-		return $autoloader;
 	}
 	
 	/**

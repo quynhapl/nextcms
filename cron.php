@@ -8,7 +8,7 @@
  * @link		http://nextcms.org
  * @category	cron
  * @since		1.0
- * @version		2012-04-27
+ * @version		2012-06-25
  */
 
 if (version_compare(phpversion(), '5.2.4', '<') === true) {
