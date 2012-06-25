@@ -10,7 +10,7 @@
  * @package		core
  * @subpackage	controllers
  * @since		1.0
- * @version		2012-05-21
+ * @version		2012-06-25
  */
 
 defined('APP_VALID_REQUEST') || die('You cannot access the script directly.');
@@ -123,10 +123,9 @@ class Core_ConfigController extends Zend_Controller_Action
 				if ($newAdminPrefix && $newAdminPrefix != $currentAdminPrefix) {
 					Core_Services_Config::set('core', 'admin_prefix', $newAdminPrefix);
 					
-					$dashboardRoutes = APP_ROOT_DIR . DS . 'modules' . DS . 'core' . DS . 'configs' . DS . 'routes' . DS . 'dashboard.php';
-					$configRoutes	 = APP_ROOT_DIR . DS . 'modules' . DS . 'core' . DS . 'configs' . DS . 'routes' . DS . 'config.php';
-					Core_Services_Route::loadRoutesFromFile($dashboardRoutes, $newAdminPrefix);
-					Core_Services_Route::loadRoutesFromFile($configRoutes, $newAdminPrefix);
+					// Recache the routes
+					Core_Services_Route::setAdminPrefix($newAdminPrefix);
+					Core_Services_Route::cacheRoutes();
 					
 					$redirectTo = $this->view->serverUrl() . $this->view->url(array(), 'core_dashboard_index') . '#u=' . $this->view->url(array(), 'core_config_config');
 				}

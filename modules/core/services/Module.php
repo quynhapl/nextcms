@@ -10,7 +10,7 @@
  * @package		core
  * @subpackage	services
  * @since		1.0
- * @version		2012-03-02
+ * @version		2012-06-25
  */
 
 defined('APP_VALID_REQUEST') || die('You cannot access the script directly.');
@@ -70,17 +70,6 @@ class Core_Services_Module
 										 ->setDbConnection($conn)
 										 ->install($module);
 		
-		// Execute install callbacks
-		$file = APP_ROOT_DIR . DS . 'modules' . DS . $module . DS . 'configs' . DS . 'about.php';
-		if (file_exists($file)) {
-			$info = include $file;
-			if (isset($info['install']['callbacks'])) {
-				foreach ($info['install']['callbacks'] as $callback) {
-					call_user_func($callback);
-				}
-			}
-		}
-		
 		// Update the list of bootstrap modules
 		$bootstrapModules = self::getBootstrapModules();
 		
@@ -91,6 +80,20 @@ class Core_Services_Module
 			$config = Core_Services_Config::getAppConfigs();
 			$config['resources']['Core_Application_Resource_Modules']['modules'] = implode(',', $bootstrapModules);
 			Core_Services_Config::writeAppConfigs($config);
+		}
+		
+		// Cache module routes
+		Core_Services_Route::addRoutesToCache($module);
+		
+		// Execute install callbacks
+		$file = APP_ROOT_DIR . DS . 'modules' . DS . $module . DS . 'configs' . DS . 'about.php';
+		if (file_exists($file)) {
+			$info = include $file;
+			if (isset($info['install']['callbacks'])) {
+				foreach ($info['install']['callbacks'] as $callback) {
+					call_user_func($callback);
+				}
+			}
 		}
 		
 		return $moduleObject;
@@ -138,6 +141,9 @@ class Core_Services_Module
 			$config['resources']['Core_Application_Resource_Modules']['modules'] = implode(',', $bootstrapModules);
 			Core_Services_Config::writeAppConfigs($config);
 		}
+		
+		// Remove the module routes
+		Core_Services_Route::removeRoutesFromCache($module);
 		
 		return true;
 	}

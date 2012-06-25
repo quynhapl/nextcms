@@ -10,7 +10,7 @@
  * @package		core
  * @subpackage	controllers
  * @since		1.0
- * @version		2012-06-18
+ * @version		2012-06-25
  */
 
 defined('APP_VALID_REQUEST') || die('You cannot access the script directly.');
@@ -147,6 +147,17 @@ class Core_InstallController extends Zend_Controller_Action
 					$config['install']['date']    = date('Y-m-d H:i:s');
 					$config['install']['version'] = Core_Services_Version::getVersion();
 					Core_Services_Config::writeAppConfigs($config);
+					
+					// First, remove the installation routes
+					$router = Zend_Controller_Front::getInstance()->getRouter();
+					foreach (array('core_install_index', 'core_install_check', 'core_install_config', 'core_install_complete', 'core_install_testdb', 'core_password_generate') as $route) {
+						if ($router->hasRoute($route)) {
+							$router->removeRoute($route);
+						}
+					}
+					// then update the routes cache
+					Core_Services_Route::setAdminPrefix($prefix);
+					Core_Services_Route::cacheRoutes();
 				}
 				
 				// Defines the admin URL
@@ -168,7 +179,7 @@ class Core_InstallController extends Zend_Controller_Action
 				$this->view->assign('password', Core_Services_User::generatePassword());
 				break;
 		}
-	}	
+	}
 	
 	/**
 	 * Configs the app
@@ -229,8 +240,6 @@ class Core_InstallController extends Zend_Controller_Action
 				// Install the Core module first
 				Core_Services_Module::install('core');
 				
-				// Load the module routes, so I can get the route URL in the installing callbacks
-				Core_Services_Route::loadRoutes();
 				$request->setBaseUrl($baseUrl);
 				
 				// Install

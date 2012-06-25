@@ -43,6 +43,18 @@ switch (APP_ENV) {
 define('APP_LIB_DIR', APP_ROOT_DIR . DS . 'libraries');
 set_include_path(PS . APP_LIB_DIR . PS . get_include_path());
 
+// Define the configuration file
+if (PHP_SAPI === 'cli' || !isset($_SERVER['SERVER_NAME'])) {
+	// Run in CLI mode
+	define('APP_HOST_CONFIG', 'application');
+} else {
+	$hostName = $_SERVER['SERVER_NAME'];
+	$hostName = (substr($hostName, 0, 3) == 'www') ? substr($hostName, 4) : $hostName;
+	$default  = APP_ROOT_DIR . DS . 'configs' . DS . 'application.' . strtolower(APP_ENV) . '.php';
+	$host     = APP_ROOT_DIR . DS . 'configs' . DS . $hostName . '.' . strtolower(APP_ENV) . '.php';
+	define('APP_HOST_CONFIG', file_exists($host) ? $hostName : 'application');
+}
+
 // Allow to run a given task by its module and name
 $module = isset($_GET['module']) ? $_GET['module'] : null;
 $name   = isset($_GET['name']) ? $_GET['name'] : null;
