@@ -10,7 +10,7 @@
  * @package		core
  * @subpackage	views
  * @since		1.0
- * @version		2012-04-06
+ * @version		2012-06-25
  */
 
 defined('APP_VALID_REQUEST') || die('You cannot access the script directly.');
@@ -83,8 +83,8 @@ defined('APP_VALID_REQUEST') || die('You cannot access the script directly.');
 
 	<div class="appFormRow">
 		<label for="password"><?php echo $this->translator()->_('install.config.dbPassword'); ?>:</label>
-		<input data-dojo-type="dijit.form.ValidationTextBox"
-			data-dojo-props="type: 'password', name: 'password', width: '200px', required: true, missingMessage: '<?php echo $this->translator(true)->_('install.config.dbPasswordRequired'); ?>'" />
+		<input data-dojo-type="dijit.form.TextBox"
+			data-dojo-props="type: 'password', name: 'password', width: '200px'" />
 	</div>
 
 	<div class="appFormRow">
