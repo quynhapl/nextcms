@@ -10,7 +10,7 @@
  * @package		media
  * @subpackage	views
  * @since		1.0
- * @version		2011-10-26
+ * @version		2012-06-26
  */
 
 defined('APP_VALID_REQUEST') || die('You cannot access the script directly.');
@@ -28,7 +28,7 @@ defined('APP_VALID_REQUEST') || die('You cannot access the script directly.');
 																'view_type'	  => $this->criteria['view_type'],
 															)); ?>">
 	<div class="mediaAlbumCoverContainer">
-		<img class="mediaAlbumCover" src="<?php if ($this->album->image_square) : ?><?php echo $this->APP_ROOT_URL . $this->album->image_square; ?><?php else : ?><?php echo $this->APP_ROOT_URL; ?>/modules/media/images/defaultAlbumCover.png<?php endif; ?>" />
+		<img class="mediaAlbumCover" src="<?php if ($this->album->image_square) : ?><?php echo $this->album->getCover('square'); ?><?php else : ?><?php echo $this->APP_ROOT_URL; ?>/modules/media/images/defaultAlbumCover.png<?php endif; ?>" />
 	</div>
 	
 	<a class="mediaAlbumTitle" href="javascript: void(0);"><?php echo $this->album->title; ?></a>
