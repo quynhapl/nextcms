@@ -84,15 +84,13 @@ echo base64_decode('R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==
 flush();
 
 // Register autoload
+require_once 'Zend/Loader.php';
 require_once 'Zend/Loader/Autoloader.php';
-require_once 'Zend/Loader/Autoloader/Resource.php';
+$autoloader = Zend_Loader_Autoloader::getInstance();
 
 require_once APP_ROOT_DIR . DS . 'modules/core/base/Autoloader.php';
 require_once APP_ROOT_DIR . DS . 'modules/core/base/File.php';
-require_once APP_ROOT_DIR . DS . 'modules/core/base/Autoloader.php';
-
-$autoloader = Zend_Loader_Autoloader::getInstance();
-$modules    = Core_Base_File::getSubDirectories(APP_ROOT_DIR . DS . 'modules');
+$modules = Core_Base_File::getSubDirectories(APP_ROOT_DIR . DS . 'modules');
 foreach ($modules as $module) {
 	new Core_Base_Autoloader(array(
 		'basePath'  => APP_ROOT_DIR . DS . 'modules' . DS . $module,
@@ -102,11 +100,11 @@ foreach ($modules as $module) {
 
 // Init view because I need to access the $view->url() in some cases
 $view = new Core_Base_View();
+$view->addHelperPath(APP_ROOT_DIR . DS . 'modules/core/views/helpers', 'Core_View_Helper');
 $viewRenderer = Zend_Controller_Action_HelperBroker::getStaticHelper('viewRenderer');
 $viewRenderer->setView($view);
 
 // Get the list of installed tasks
-require_once 'Zend/Registry.php';
 Core_Services_Db::connect('master');
 
 $criteria = ($module && $name) ? array('module' => $module, 'name' => $name) : array();

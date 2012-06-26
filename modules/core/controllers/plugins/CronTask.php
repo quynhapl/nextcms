@@ -10,7 +10,7 @@
  * @package		core
  * @subpackage	controllers
  * @since		1.0
- * @version		2011-12-17
+ * @version		2012-06-26
  */
 
 defined('APP_VALID_REQUEST') || die('You cannot access the script directly.');
@@ -22,30 +22,41 @@ class Core_Controllers_Plugins_CronTask extends Zend_Controller_Plugin_Abstract
 	 */
 	public function dispatchLoopShutdown()
 	{
+		// Return if request is POST or I am in the back-end section
+		if (!empty($_POST) || (Zend_Layout::getMvcInstance() && 'admin' == Zend_Layout::getMvcInstance()->getLayout())) {
+			return;
+		}
+		
+		register_shutdown_function(array($this, 'requestCronTasks'));
+	}
+	
+	/**
+	 * Requests to the cron scripts
+	 * 
+	 * @return void
+	 */
+	public function requestCronTasks()
+	{
 		$view	 = Zend_Controller_Action_HelperBroker::getStaticHelper('viewRenderer')->view;
 		// Get the root URL which is defined in the Core_Controllers_Plugins_Init plugin
 		$rootUrl = $view->APP_ROOT_URL;
 		
 		// Request to the cron script
-		$cronScript = rtrim($rootUrl, '/') . '/cron.php';
+		$script = rtrim($rootUrl, '/') . '/cron.php';
+		$uri	= Zend_Uri::factory($script);
+		$host	= $uri->getHost();
+		$port	= $uri->getPort();
+		$port	= !is_numeric($port) ? 80 : $port;
 		
-		if (!empty($_POST)) {
-			return;
-		}
-		
-		try {
-			// See http://framework.zend.com/manual/en/zend.http.client.html#zend.http.client.configuration
-			$config  = array(
-				'adapter'	 => 'Zend_Http_Client_Adapter_Socket',
-				'timeout'	 => 10,
-				'persistent' => true,
-			);
-			$request = new Zend_Http_Client($cronScript, $config);
-			$request->setMethod(Zend_Http_Client::GET)
-					->setParameterGet('image', 'false')
-					->request();
-		} catch (Exception $ex) {
-			// FIXME: Log the error
+		$fp = @fsockopen('tcp://' . $host, $port, $errno, $errstr, 0.05);
+		if ($fp !== false) {
+			@stream_set_blocking($fp, 0);
+			$path = $uri->getPath() . "?image=true";
+			$out  = "GET {$path} HTTP/1.1\r\n";
+    		$out .= "Host: " . $host . "\r\n";
+    		$out .= "Connection: Close\r\n\r\n";
+		    @fwrite($fp, $out);
+			@fclose($fp);
 		}
 	}
 }
