@@ -48,14 +48,14 @@ class Core_Controllers_Plugins_CronTask extends Zend_Controller_Plugin_Abstract
 		$port	= $uri->getPort();
 		$port	= !is_numeric($port) ? 80 : $port;
 		
-		$fp = @fsockopen('tcp://' . $host, $port, $errno, $errstr, 0.05);
+		$fp = @fsockopen('tcp://' . $host, $port, $errno, $errstr, 5);
 		if ($fp !== false) {
 			@stream_set_blocking($fp, 0);
-			$path = $uri->getPath() . "?image=true";
+			$path = $uri->getPath();
 			$out  = "GET {$path} HTTP/1.1\r\n";
-    		$out .= "Host: " . $host . "\r\n";
-    		$out .= "Connection: Close\r\n\r\n";
-		    @fwrite($fp, $out);
+			$out .= "Host: " . $host . "\r\n";
+			$out .= "Connection: Close\r\n\r\n";
+			@fwrite($fp, $out);
 			@fclose($fp);
 		}
 	}

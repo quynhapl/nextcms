@@ -62,19 +62,13 @@ $name   = isset($_GET['name']) ? $_GET['name'] : null;
 // Continue to run if the last execution time is more than one minute ago
 $startTime = time();
 $lock	   = ($module && $name)
-			 ? APP_TEMP_DIR . DS . '.cronlock_' . $module . '_' . $name
-			 : APP_TEMP_DIR . DS . '.cronlock';
+			 ? APP_TEMP_DIR . DS . APP_HOST_CONFIG . '_cron_' . $module . '_' . $name . '.lock'
+			 : APP_TEMP_DIR . DS . APP_HOST_CONFIG . '_cron.lock';
 if (file_exists($lock) && $startTime - filemtime($lock) < 60) {
-//	die('The cron tasks were already executed less than one minute ago');
+	die('The cron tasks were already executed less than one minute ago');
 }
 @unlink($lock);
 touch($lock);
-
-$image = isset($_GET['image']) ? $_GET['image'] : 'false';
-if ($image == 'false') {
-	header('Location: ' . $_SERVER['SCRIPT_NAME'] . '?image=true');
-	exit();
-}
 
 // Display a transparent gif
 header('Cache-Control: no-cache');
