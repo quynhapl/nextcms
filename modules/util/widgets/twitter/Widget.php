@@ -10,7 +10,7 @@
  * @package		util
  * @subpackage	widgets
  * @since		1.0
- * @version		2012-03-10
+ * @version		2012-06-26
  */
 
 defined('APP_VALID_REQUEST') || die('You cannot access the script directly.');
@@ -49,6 +49,7 @@ class Util_Widgets_Twitter_Widget extends Core_Base_Extension_Widget
 								: $twitterSearch->search($tag);
 				if ($messages && isset($messages['results'])) {
 					$messages = $messages['results'];
+					$messages = array_slice($messages, 0, $limit);
 				}
 				break;
 			case 'username':
@@ -62,7 +63,7 @@ class Util_Widgets_Twitter_Widget extends Core_Base_Extension_Widget
 				// So I have to request to
 				// http://twitter.com/statuses/user_timeline/{$account}.json to
 				// get the pubic message
-				$url   = 'http://twitter.com/statuses/user_timeline/' . $username . '.json';
+				$url   = 'http://twitter.com/statuses/user_timeline/' . $username . '.json?count=' . $limit;
 				$items = file_get_contents($url);
 				if ($items) {
 					$items = Zend_Json::decode($items);
@@ -75,9 +76,7 @@ class Util_Widgets_Twitter_Widget extends Core_Base_Extension_Widget
 			default:
 				break;
 		}
-		if ($messages) {
-			$messages = array_slice($messages, 0, $limit);
-		}
+		
 		$this->view->assign(array(
 			'title'	   => $request->getParam('title', ''),
 			'username' => $username,

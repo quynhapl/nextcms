@@ -10,7 +10,7 @@
  * @package		util
  * @subpackage	widgets
  * @since		1.0
- * @version		2011-11-02
+ * @version		2012-06-26
  */
 
 defined('APP_VALID_REQUEST') || die('You cannot access the script directly.');
@@ -36,16 +36,16 @@ class Util_Widgets_Twitter_Helper extends Zend_View_Helper_Abstract
 	public function formatText($content)
 	{
 		$searchFor = array(
-			'`((?:https?|ftp)://\S+[[:alnum:]]/?)`si',
-			'`((?<!//)(www\.\S+[[:alnum:]]/?))`si',
-			'`([\@{1}])([a-zA-Z0-9]+)`si',
-			'`([\#{1}])([a-zA-Z0-9]+)`si',
+			'/(([[:alnum:]]+:\/\/)|www\.)([^[:space:]]*)([[:alnum:]#?\/&=])/i',	// link
+			'/(([a-z0-9_]|\-|\.)+@([^[:space:]]*)([[:alnum:]-]))/i',			// mailto
+			'/@([a-z0-9_]*)?/i',		// Twitter user
+			'/#([a-z0-9_]*)?/i',		// tag
 		);
 		$replaceWith = array(
-			'<a href="$1">$1</a> ',
-			'<a href="http://$1">$1</a>',
-			'<a href="http://twitter.com/$2">$1$2</a>',
-			'<a href="http://twitter.com/search?q=$1$2">$1$2</a>',
+			'<a href="$1$3$4" target="_blank">$1$3$4</a>',
+			'<a href="mailto:$1">$1</a>',
+			'<a href="http://twitter.com/$1" target="_blank">@$1</a>',
+			'<a href="http://twitter.com/search?q=#$1" target="_blank">#$1</a>',
 		);
 		
 		return preg_replace($searchFor, $replaceWith, $content);
