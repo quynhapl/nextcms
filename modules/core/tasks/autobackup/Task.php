@@ -10,7 +10,7 @@
  * @package		core
  * @subpackage	tasks
  * @since		1.0
- * @version		2012-03-10
+ * @version		2012-06-26
  */
 
 defined('APP_VALID_REQUEST') || die('You cannot access the script directly.');
@@ -45,7 +45,7 @@ class Core_Tasks_Autobackup_Task extends Core_Base_Extension_Task
 		}
 		
 		// Dump the data in each table to SQL file
-		$sqlFile = APP_ROOT_DIR . DS . 'data' . DS . 'backup' . DS . date('Y_m_d-H_i') . '-' . md5(uniqid()) . '.sql';
+		$sqlFile = APP_TEMP_DIR . DS . 'backup' . DS . date('Y_m_d-H_i') . '-' . md5(uniqid()) . '.sql';
 		foreach ($queries as $query) {
 			file_put_contents($sqlFile, $query . "\n", FILE_APPEND);
 		}
@@ -67,7 +67,7 @@ class Core_Tasks_Autobackup_Task extends Core_Base_Extension_Task
 	public function deleteAction()
 	{
 		$name = $this->getRequest()->getParam('name');
-		$file = APP_ROOT_DIR . DS . 'data' . DS . 'backup' . DS . $name;
+		$file = APP_TEMP_DIR . DS . 'backup' . DS . $name;
 		if (file_exists($file)) {
 			@unlink($file);
 		}
@@ -84,7 +84,7 @@ class Core_Tasks_Autobackup_Task extends Core_Base_Extension_Task
 	public function downloadAction()
 	{
 		$name = $this->getRequest()->getParam('name');
-		$file = APP_ROOT_DIR . DS . 'data' . DS . 'backup' . DS . $name;
+		$file = APP_TEMP_DIR . DS . 'backup' . DS . $name;
 		if (file_exists($file)) {
 			header('Content-Description: File Transfer');
 			header('Content-Type: application/octet-stream');
@@ -109,7 +109,7 @@ class Core_Tasks_Autobackup_Task extends Core_Base_Extension_Task
 	public function viewAction()
 	{
 		$files	   = array();
-		$backupDir = APP_ROOT_DIR . DS . 'data' . DS . 'backup';
+		$backupDir = APP_TEMP_DIR . DS . 'backup';
 		if (file_exists($backupDir)) {
 			$dirIterator = new DirectoryIterator($backupDir);
 			foreach ($dirIterator as $dir) {
@@ -150,9 +150,13 @@ class Core_Tasks_Autobackup_Task extends Core_Base_Extension_Task
 	 */
 	private function _createDir()
 	{
-		$backupDir = APP_ROOT_DIR . DS . 'data' . DS . 'backup';
+		$backupDir = APP_TEMP_DIR . DS . 'backup';
 		if (!file_exists($backupDir)) {
 			@mkdir($backupDir);
+		}
+		$file = $backupDir . DS . '.htaccess';
+		if (!file_exists($file)) {
+			@file_put_contents($file, 'Deny from all');
 		}
 	}
 }
