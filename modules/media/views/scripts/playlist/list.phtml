@@ -10,7 +10,7 @@
  * @package		media
  * @subpackage	views
  * @since		1.0
- * @version		2012-06-01
+ * @version		2012-06-26
  */
 
 defined('APP_VALID_REQUEST') || die('You cannot access the script directly.');
@@ -52,7 +52,7 @@ $this->headTitle()->set($this->translator()->_('playlist.list.title'));
 																		'view_type'   => $this->criteria['view_type'],
 																	)); ?>">
 				<div class="mediaPlaylistPosterContainer">
-					<img class="mediaPlaylistPoster" src="<?php if ($playlist->image_square) : ?><?php echo $this->APP_ROOT_URL . $playlist->image_square; ?><?php else : ?><?php echo $this->APP_ROOT_URL; ?>/modules/media/images/defaultPlaylistPoster.png<?php endif; ?>" />
+					<img class="mediaPlaylistPoster" src="<?php if ($playlist->image_square) : ?><?php echo $playlist->getPoster('square'); ?><?php else : ?><?php echo $this->APP_ROOT_URL; ?>/modules/media/images/defaultPlaylistPoster.png<?php endif; ?>" />
 				</div>
 				
 				<a class="mediaPlaylistTitle" href="javascript: void(0);"><?php echo $playlist->title; ?></a>
