@@ -26,7 +26,7 @@ define('APP_TEMP_DIR', APP_ROOT_DIR . DS . 'temp');
 
 // Version of Dojo and jQuery libraries
 define('APP_DOJO_VER',   '1.6.1');
-define('APP_JQUERY_VER', '1.7.1');
+define('APP_JQUERY_VER', '1.7.2');
 
 // This variable is used to prevent user from accessing the script directly.
 // At the top of every PHP files (but this file, ofcourse), you have to add the

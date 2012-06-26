@@ -23,7 +23,7 @@ define('APP_TEMP_DIR', APP_ROOT_DIR . DS . 'temp');
 
 // Version of Dojo and jQuery libraries
 define('APP_DOJO_VER',   '1.6.1');
-define('APP_JQUERY_VER', '1.7.1');
+define('APP_JQUERY_VER', '1.7.2');
 
 define('APP_VALID_REQUEST', true);
 define('APP_ENV', getenv('APP_ENV') ? getenv('APP_ENV') : 'pro');
