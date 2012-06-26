@@ -10,7 +10,7 @@
  * @package		admin
  * @subpackage	layouts
  * @since		1.0
- * @version		2012-03-27
+ * @version		2012-06-26
  */
 
 defined('APP_VALID_REQUEST') || die('You cannot access the script directly.');
@@ -54,7 +54,7 @@ defined('APP_VALID_REQUEST') || die('You cannot access the script directly.');
 		<h1><?php echo $this->translator()->setLanguageDir('modules/core/languages')->_('install._share.wizard'); ?></h1>
 		
 		<div id="appInstallWizardContainer">
-			<div id="appInstallTabContainer" data-dojo-type="dijit.layout.TabContainer" data-dojo-props="closable: true, nested: true, doLayout: false">
+			<div id="appInstallTabContainer" data-dojo-type="dijit.layout.TabContainer" data-dojo-props="closable: true, nested: true, doLayout: false, style: 'height: 500px'">
 			</div>
 			
 			<!-- NextStepButton -->
