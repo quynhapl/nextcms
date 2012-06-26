@@ -10,7 +10,7 @@
  * @package		core
  * @subpackage	services
  * @since		1.0
- * @version		2012-05-14
+ * @version		2012-06-26
  */
 
 defined('APP_VALID_REQUEST') || die('You cannot access the script directly.');
@@ -107,9 +107,10 @@ class Core_Services_Counter
 		if ($data === false) {
 			$cache->save(true, $cacheKey, array(self::CACHE_TAG), $lifetime);
 			
-			// Execute the callback
+			// Execute the callback at the end of script
 			if ($callback && $arguments) {
-				call_user_func_array($callback, $arguments);
+				$f = create_function('$callback, $arguments', 'call_user_func_array($callback, $arguments);');
+				register_shutdown_function($f, $callback, $arguments);
 			}
 		}
 	}
