@@ -10,7 +10,7 @@
  * @package		core
  * @subpackage	controllers
  * @since		1.0
- * @version		2012-01-01
+ * @version		2012-06-26
  */
 
 defined('APP_VALID_REQUEST') || die('You cannot access the script directly.');
@@ -159,7 +159,7 @@ class Core_AuthController extends Zend_Controller_Action
 		
 		$auth = Zend_Auth::getInstance();
 		if (!$auth->hasIdentity()) {
-			$this->_redirect($this->view->baseUrl());
+			$this->_redirect($this->view->APP_URL);
 			exit();
 		}
 		$user = $auth->getIdentity();
@@ -172,7 +172,7 @@ class Core_AuthController extends Zend_Controller_Action
 		if (isset($session->url) && isset($session->isXhrRequest) && $session->isXhrRequest == false) {
 			$gotoUrl = $this->view->serverUrl() . $session->url;
 		} else {
-			$gotoUrl = $this->view->baseUrl();
+			$gotoUrl = $this->view->APP_URL;
 		}
 		
 		// Clear session
