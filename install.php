@@ -8,7 +8,7 @@
  * @link		http://nextcms.org
  * @category	install
  * @since		1.0
- * @version		2012-06-25
+ * @version		2012-06-26
  */
 
 // NextCMS uses ZF that requires PHP 5.2.4 or later.
@@ -29,7 +29,7 @@ define('APP_ROOT_DIR', 		dirname(__FILE__));
 define('APP_TEMP_DIR',		APP_ROOT_DIR . DS . 'temp');
 
 // Version of Dojo and jQuery libraries
-define('APP_DOJO_VER',      '1.6.0');
+define('APP_DOJO_VER',      '1.6.1');
 define('APP_JQUERY_VER',    '1.7.1');
 
 define('APP_VALID_REQUEST', true);
