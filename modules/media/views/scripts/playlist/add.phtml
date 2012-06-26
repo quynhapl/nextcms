@@ -10,7 +10,7 @@
  * @package		media
  * @subpackage	views
  * @since		1.0
- * @version		2012-06-05
+ * @version		2012-06-26
  */
 
 defined('APP_VALID_REQUEST') || die('You cannot access the script directly.');
@@ -30,7 +30,6 @@ $this->headTitle()->set($this->translator()->_('playlist.add.title'));
 			content: dojo.formToObject("mediaPlaylistAddForm"),
 			handleAs: "json",
 			load: function(data) {
-				_this.reset();
 				dojo.publish("/app/media/playlist/add/onComplete", [ data ]);
 			}
 		});
