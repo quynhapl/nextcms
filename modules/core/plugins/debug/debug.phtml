@@ -10,7 +10,7 @@
  * @package		core
  * @subpackage	plugins
  * @since		1.0
- * @version		2012-06-12
+ * @version		2012-06-26
  */
 
 defined('APP_VALID_REQUEST') || die('You cannot access the script directly.');
@@ -72,7 +72,6 @@ dojo.addOnLoad(function() {
 
 	// Remove the debug tab from the toolbox after uninstalling the plugin 
 	dojo.subscribe("/app/core/plugin/uninstall/core_debug", function(data) {
-		dojo.publish("/app/global/onRemoveToolbox", [ "corePluginsDebugContainer" ]);
 		dojo.unsubscribe(codePluginsDebugIoHanlder);
 	});	
 });
