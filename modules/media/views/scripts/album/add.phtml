@@ -10,7 +10,7 @@
  * @package		media
  * @subpackage	views
  * @since		1.0
- * @version		2012-06-05
+ * @version		2012-06-26
  */
 
 defined('APP_VALID_REQUEST') || die('You cannot access the script directly.');
@@ -30,9 +30,6 @@ $this->headTitle()->set($this->translator()->_('album.add.title'));
 			content: dojo.formToObject("mediaAlbumAddForm"),
 			handleAs: "json",
 			load: function(data) {
-				// Reset form
-				_this.reset();
-
 				// Publish the channel
 				if (data.result == "APP_RESULT_OK") {
 					dojo.publish("/app/media/album/add/onSuccess");
