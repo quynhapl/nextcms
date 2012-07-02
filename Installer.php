@@ -8,7 +8,7 @@
  * @link		http://nextcms.org
  * @category	install
  * @since		1.0
- * @version		2012-06-25
+ * @version		2012-07-02
  */
 
 defined('APP_VALID_REQUEST') || die('You cannot access the script directly.');
@@ -162,6 +162,12 @@ class Installer extends Zend_Application_Bootstrap_Bootstrap
 	{
 		$this->bootstrap('FrontController');
 		$front = $this->getResource('FrontController');
-		$front->registerPlugin(new Core_Base_Controllers_Plugins_MagicQuote());
+		$front->registerPlugin(new Core_Base_Controllers_Plugins_MagicQuote())
+			  // Error handler
+			  ->registerPlugin(new Zend_Controller_Plugin_ErrorHandler(array(
+				  'module'	   => 'core',
+				  'controller' => 'notification',
+				  'action'	   => 'log',
+			  )));
 	}
 }

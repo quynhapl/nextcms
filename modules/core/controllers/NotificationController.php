@@ -10,7 +10,7 @@
  * @package		core
  * @subpackage	controllers
  * @since		1.0
- * @version		2012-06-13
+ * @version		2012-07-02
  */
 
 defined('APP_VALID_REQUEST') || die('You cannot access the script directly.');
@@ -48,6 +48,11 @@ class Core_NotificationController extends Zend_Controller_Action
 				'message'	   => $message,
 				'trace'		   => $error->exception->getTraceAsString(),
         	)));
+        }
+        
+        // Log the errors to file
+        if (isset($config['log']['enabled']) && 'true' == $config['log']['enabled']) {
+        	Core_Services_Logger::log($error->exception);
         }
         
         if ($request->isXmlHttpRequest()) {
