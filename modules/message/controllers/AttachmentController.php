@@ -10,7 +10,7 @@
  * @package		message
  * @subpackage	controllers
  * @since		1.0
- * @version		2012-02-28
+ * @version		2012-07-02
  */
 
 defined('APP_VALID_REQUEST') || die('You cannot access the script directly.');
@@ -76,8 +76,9 @@ class Message_AttachmentController extends Zend_Controller_Action
 		$request   = $this->getRequest();
 		$fileName  = $request->getParam('name');
 		
-		// FIXME: How to set it in the client side when using Dojo Uploader?
-		$fileName  = 'uploadedfiles';
+		// I use Dojo Uploader in the client side
+		// and it automatically appends the "s" at the end of name
+		$fileName  = $request->getParam('name', 'uploadedfile') . 's';
 		$user	   = Zend_Auth::getInstance()->getIdentity();
 		$files     = Message_Services_Attachment::upload($fileName, $user);
 		$this->_helper->json($files);

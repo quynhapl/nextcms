@@ -10,7 +10,7 @@
  * @package		message
  * @subpackage	views
  * @since		1.0
- * @version		2012-04-06
+ * @version		2012-07-02
  */
 
 defined('APP_VALID_REQUEST') || die('You cannot access the script directly.');
@@ -112,7 +112,7 @@ $this->headTitle()->set($this->translator()->_('message.send.title'));
 			</div>
 			
 			<div class="appFormRow">
-				<div id="messageMessageSendAttachmentUploader" data-dojo-type="dojox.form.Uploader" data-dojo-props="name: 'files', multiple: true, type: 'file', uploadOnSelect: true, label: '<?php echo $this->translator(true)->_('global._share.browseFilesUploadAction'); ?>', url: '<?php echo $this->url(array(), 'message_attachment_upload'); ?>?PHPSESSID=<?php echo Zend_Session::getId(); ?>', style: 'width: 150px'">
+				<div id="messageMessageSendAttachmentUploader" data-dojo-type="dojox.form.Uploader" data-dojo-props="name: 'file', multiple: true, type: 'file', uploadOnSelect: true, label: '<?php echo $this->translator(true)->_('global._share.browseFilesUploadAction'); ?>', url: '<?php echo $this->url(array(), 'message_attachment_upload'); ?>?PHPSESSID=<?php echo Zend_Session::getId(); ?>&name=file', style: 'width: 150px'">
 					<script type="dojo/method" data-dojo-event="onBegin">
 					this.set("disabled", true);
 					dijit.byId("messageMessageSendStandby").set("imageText", "<?php echo $this->translator()->_('global._share.uploadingAction'); ?>");
