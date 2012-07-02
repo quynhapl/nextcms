@@ -10,7 +10,7 @@
  * @package		poll
  * @subpackage	widgets
  * @since		1.0
- * @version		2012-03-24
+ * @version		2012-07-02
  */
 
 defined('APP_VALID_REQUEST') || die('You cannot access the script directly.');
@@ -76,6 +76,7 @@ class Poll_Widgets_Poll_Widget extends Core_Base_Extension_Widget
 		if ($answers) {
 			// User just vote the poll
 			$answers = explode(',', $answers);
+			
 			// Increase number of choices
 			Core_Services_Counter::register($poll, 'votes', 'Poll_Services_Poll::increaseNumChoices', array($poll, $answers));
 		}
@@ -107,8 +108,7 @@ class Poll_Widgets_Poll_Widget extends Core_Base_Extension_Widget
 		
 		$request = $this->getRequest();
 		$pollId  = $request->getParam('poll_id');
-		if ($pollId) {
-			$poll	 = Poll_Services_Poll::getById($pollId);
+		if ($pollId && ($poll = Poll_Services_Poll::getById($pollId))) {
 			$voted	 = Core_Services_Counter::isRegistered($poll, 'votes');
 			$options = Poll_Services_Poll::getOptions($poll);
 			$total	 = 0;
