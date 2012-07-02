@@ -10,7 +10,7 @@
  * @package		media
  * @subpackage	views
  * @since		1.0
- * @version		2012-06-05
+ * @version		2012-07-02
  */
 
 defined('APP_VALID_REQUEST') || die('You cannot access the script directly.');
@@ -135,7 +135,7 @@ $this->headTitle()->set($this->translator()->_('photo.upload.title'));
 				<!-- Uploader -->
 				<div class="appFormRow" id="mediaPhotoUploadUploaderContainer">
 					<label for="photos"><?php echo $this->translator()->_('photo.upload.selectPhotos'); ?>:</label>
-					<div id="mediaPhotoUploadUploader" data-dojo-type="dojox.form.Uploader" data-dojo-props="name: 'photos', multiple: true, type: 'file', uploadOnSelect: true, label: '<?php echo $this->translator(true)->_('global._share.browseFileAction'); ?>', url: '<?php echo $this->url(array(), 'file_file_upload'); ?>?PHPSESSID=<?php echo Zend_Session::getId(); ?>&mod=media&name=photoss&thumbnail=true', appUploadUrl: '<?php echo $this->url(array(), 'file_file_upload'); ?>?PHPSESSID=<?php echo Zend_Session::getId(); ?>&mod=media&name=photoss&thumbnail=true', style: 'width: 150px'">
+					<div id="mediaPhotoUploadUploader" data-dojo-type="dojox.form.Uploader" data-dojo-props="name: 'photos', multiple: true, type: 'file', uploadOnSelect: true, label: '<?php echo $this->translator(true)->_('global._share.browseFileAction'); ?>', url: '<?php echo $this->url(array(), 'file_file_upload'); ?>?PHPSESSID=<?php echo Zend_Session::getId(); ?>&mod=media&name=photos&thumbnail=true', appUploadUrl: '<?php echo $this->url(array(), 'file_file_upload'); ?>?PHPSESSID=<?php echo Zend_Session::getId(); ?>&mod=media&name=photos&thumbnail=true', style: 'width: 150px'">
 						<script type="dojo/method" data-dojo-event="onBegin">
 						this.set("disabled", true);
 						dijit.byId("mediaPhotoUploadStandby").set("imageText", "<?php echo $this->translator()->_('global._share.uploadingAction'); ?>");
