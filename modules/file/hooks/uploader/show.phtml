@@ -10,7 +10,7 @@
  * @package		file
  * @subpackage	hooks
  * @since		1.0
- * @version		2012-05-30
+ * @version		2012-07-02
  */
 
 defined('APP_VALID_REQUEST') || die('You cannot access the script directly.');
@@ -33,7 +33,7 @@ defined('APP_VALID_REQUEST') || die('You cannot access the script directly.');
 		</div>
 	
 		<form data-dojo-type="dijit.form.Form" data-dojo-props="action: '<?php echo $this->url(array(), 'file_file_upload'); ?>', method: 'POST', encType: 'multipart/form-data', class: 'appForm'">
-		<div id="fileHooksUploaderUploader" data-dojo-type="dojox.form.Uploader" data-dojo-props="name: 'uploadedfiles', multiple: true, type: 'file', uploadOnSelect: true, label: '<?php echo $this->translator(true)->_('show.browseFilesAction'); ?>', url: '<?php echo $this->url(array(), 'file_file_upload'); ?>?PHPSESSID=<?php echo Zend_Session::getId(); ?>&mod=<?php echo $this->module; ?>&thumbnail=false', _url: '<?php echo $this->url(array(), 'file_file_upload'); ?>?PHPSESSID=<?php echo Zend_Session::getId(); ?>&thumbnail=false', _module: '<?php echo $this->module; ?>', style: 'width: 200px'">
+		<div id="fileHooksUploaderUploader" data-dojo-type="dojox.form.Uploader" data-dojo-props="name: 'uploadedfile', multiple: true, type: 'file', uploadOnSelect: true, label: '<?php echo $this->translator(true)->_('show.browseFilesAction'); ?>', url: '<?php echo $this->url(array(), 'file_file_upload'); ?>?PHPSESSID=<?php echo Zend_Session::getId(); ?>&name=uploadedfile&mod=<?php echo $this->module; ?>&thumbnail=false', _url: '<?php echo $this->url(array(), 'file_file_upload'); ?>?PHPSESSID=<?php echo Zend_Session::getId(); ?>&thumbnail=false', _module: '<?php echo $this->module; ?>', style: 'width: 200px'">
 			<script type="dojo/method" data-dojo-event="onBegin" data-dojo-args="dataArray">
 			this.set("disabled", true);
 			</script>

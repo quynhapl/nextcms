@@ -10,7 +10,7 @@
  * @package		file
  * @subpackage	controllers
  * @since		1.0
- * @version		2011-12-29
+ * @version		2012-07-02
  */
 
 defined('APP_VALID_REQUEST') || die('You cannot access the script directly.');
@@ -32,9 +32,9 @@ class File_FileController extends Zend_Controller_Action
 		$thumbnail = $request->getParam('thumbnail', 'false');
 		$watermark = $request->getParam('watermark', 'false');
 		
-		// I use Dojo Uploader in the client side, and 'uploadedfiles' is the default name.
-		// FIXME: How to set it?
-		$fileName  = 'uploadedfiles';
+		// I use Dojo Uploader in the client side
+		// and it automatically appends the "s" at the end of name
+		$fileName  = $request->getParam('name', 'uploadedfile') . 's';
 		$files	   = File_Services_Uploader::upload($fileName, $module, array(
 			'thumbnail' => $thumbnail == 'true',
 			'watermark' => $watermark == 'true',
