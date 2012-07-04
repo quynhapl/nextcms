@@ -10,7 +10,7 @@
  * @package		content
  * @subpackage	hooks
  * @since		1.0
- * @version		2012-05-30
+ * @version		2012-07-04
  */
 
 defined('APP_VALID_REQUEST') || die('You cannot access the script directly.');
@@ -109,7 +109,7 @@ defined('APP_VALID_REQUEST') || die('You cannot access the script directly.');
 			<div data-dojo-type="dijit.layout.ContentPane" data-dojo-props="region: 'center', style: 'height: 100%; width: 100%'">
 				<div id="contentHooksLinkProviderItemsContainer" class="appContentPane" data-dojo-type="dojo.dnd.AutoSource" data-dojo-props="accept: [], selfAccept: false, selfCopy: false">
 					<div id="contentHooksLinkProviderTemplate" style="display: none">
-						<a href="{article_link}" title="{article_title}">{article_title}</a>
+						<a href="###article_link###" title="###article_title###">###article_title###</a>
 					</div>
 				</div>
 				<div id="contentHooksLinkProviderHelp" class="appCenter">
@@ -217,8 +217,8 @@ content.hooks.linkprovider.ArticleController.searchArticles = function(/*Object*
 			
 			var template = dojo.byId("contentHooksLinkProviderTemplate").innerHTML;
 			dojo.forEach(data.articles, function(article) {
-				var html = template.replace(/{article_link}/g, article.link)
-								   .replace(/{article_title}/g, article.title);
+				var html = template.replace(/###article_link###/g, article.link)
+								   .replace(/###article_title###/g, article.title);
 				dojo.create("div", {
 					className: "dojoDndItem contentHooksLinkProviderLinkItem",
 					innerHTML: html,
