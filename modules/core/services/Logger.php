@@ -10,7 +10,7 @@
  * @package		core
  * @subpackage	services
  * @since		1.0
- * @version		2012-07-02
+ * @version		2012-07-04
  */
 
 defined('APP_VALID_REQUEST') || die('You cannot access the script directly.');
@@ -20,15 +20,17 @@ class Core_Services_Logger
 	/**
 	 * Logs an exception to external file
 	 * 
-	 * @param Exception $exception The exception
+	 * @param Exception|string $exception The exception
 	 * @return void
 	 */
 	public static function log($exception)
 	{
+		$message = ($exception instanceof Exception) ? $exception->getTraceAsString() : $message;
+		
 		// Create a file log
 		$file = APP_TEMP_DIR . DS . 'logs' . DS . APP_HOST_CONFIG . '_' . date('Y') . '_' . date('m') . '.log';
 		$writer = new Zend_Log_Writer_Stream($file);
 		$logger = new Zend_Log($writer);
-		$logger->info($exception->getTraceAsString());
+		$logger->info($message);
 	}
 }

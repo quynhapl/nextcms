@@ -8,7 +8,7 @@
  * @link		http://nextcms.org
  * @category	bootstrap
  * @since		1.0
- * @version		2012-06-26
+ * @version		2012-07-04
  */
 
 // Exit if the PHP version does not meet the requirement.
@@ -78,6 +78,19 @@ $application = new Zend_Application(
 	file_exists($host) ? $host : $default
 );
 
+// Cache the include_once statements
+// http://framework.zend.com/manual/en/zend.loader.pluginloader.html
+require_once APP_ROOT_DIR . DS . 'modules/core/services/Loader.php';
+$includeCache = APP_TEMP_DIR . DS . 'cache' . DS . APP_HOST_CONFIG . '_loader.php';
+if (file_exists($includeCache)) {
+	include_once $includeCache;
+}
+Core_Services_Loader::setIncludeFileCache($includeCache);
+
+// Run it!
+$loader  = new Core_Services_Loader(array(
+	'Zend_Application_Resource' => 'Zend/Application/Resource',
+));
 $options = array(
 	'bootstrap' => array(
 		'path'	=> APP_ROOT_DIR . DS . 'Bootstrap.php',
@@ -90,9 +103,10 @@ $options = array(
 			'moduleDirectory'	  => APP_ROOT_DIR . DS . 'modules',
 		),
 	),
+	'pluginLoader' => $loader,
 );
+//$application->getBootstrap()->setPluginLoader($loader);
 
-// Run it!
 $options = $application->mergeOptions($application->getOptions(), $options);
 $application->setOptions($options)
 			->bootstrap()

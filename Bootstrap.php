@@ -8,7 +8,7 @@
  * @link		http://nextcms.org
  * @category	bootstrap
  * @since		1.0
- * @version		2012-06-25
+ * @version		2012-07-04
  */
 
 defined('APP_VALID_REQUEST') || die('You cannot access the script directly.');
@@ -116,7 +116,14 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 	 */
 	protected function _initView()
 	{
-		$view = new Core_Base_View();
+		$view	= new Core_Base_View();
+		$loader = new Core_Services_Loader(array(
+			'Zend_View_Helper' => 'Zend/View/Helper',
+			'Zend_View_Filter' => 'Zend/View/Filter',
+		));
+		$view->setPluginLoader($loader, 'filter')
+			 ->setPluginLoader($loader, 'helper');
+		
 		$viewRenderer = Zend_Controller_Action_HelperBroker::getStaticHelper('viewRenderer'); 
 		$viewRenderer->setView($view);
 		
