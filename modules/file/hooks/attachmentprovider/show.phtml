@@ -10,7 +10,7 @@
  * @package		file
  * @subpackage	hooks
  * @since		1.0
- * @version		2012-06-19
+ * @version		2012-07-04
  */
 
 defined('APP_VALID_REQUEST') || die('You cannot access the script directly.');
@@ -64,7 +64,7 @@ defined('APP_VALID_REQUEST') || die('You cannot access the script directly.');
 	<div data-dojo-type="dijit.layout.ContentPane" data-dojo-props="region: 'center', style: 'height: 100%; width: 100%'">
 		<div id="fileHooksAttachmentProviderItemsContainer" class="appContentPane" class="coreHooksLinkProviderLinkItemsContainer" data-dojo-type="dojo.dnd.AutoSource" data-dojo-props="accept: [], selfAccept: false, selfCopy: false">
 			<div id="fileHooksAttachmentProviderTemplate" style="display: none">
-				<a href="{attachment_link}" title="{attachment_title}">{attachment_title} (.{attachment_extension}, {attachment_size})</a>
+				<a href="###attachment_link###" title="###attachment_title###">###attachment_title### (.###attachment_extension###, ###attachment_size###)</a>
 			</div>
 		</div>
 		
@@ -134,10 +134,10 @@ file.hooks.attachmentprovider.AttachmentController.searchAttachments = function(
 			
 			var template = dojo.byId("fileHooksAttachmentProviderTemplate").innerHTML;
 			dojo.forEach(data.data.items, function(attachment) {
-				var html = template.replace(/{attachment_link}/g, attachment.link)
-								   .replace(/{attachment_title}/g, attachment.title)
-								   .replace(/{attachment_extension}/g, attachment.extension)
-								   .replace(/{attachment_size}/g, file.js.views.FileFormatter.formatSize(attachment.size, "0 byte"));
+				var html = template.replace(/###attachment_link###/g, attachment.link)
+								   .replace(/###attachment_title###/g, attachment.title)
+								   .replace(/###attachment_extension###/g, attachment.extension)
+								   .replace(/###attachment_size###/g, file.js.views.FileFormatter.formatSize(attachment.size, "0 byte"));
 				dojo.create("div", {
 					className: "dojoDndItem fileHooksAttachmentProviderLinkItem",
 					innerHTML: html,
