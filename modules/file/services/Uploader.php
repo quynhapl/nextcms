@@ -10,7 +10,7 @@
  * @package		file
  * @subpackage	services
  * @since		1.0
- * @version		2012-04-20
+ * @version		2012-07-09
  */
 
 defined('APP_VALID_REQUEST') || die('You cannot access the script directly.');
@@ -27,9 +27,26 @@ class File_Services_Uploader
 	/**
 	 * Upload errors
 	 */
+	
+	/**
+	 * The upload file is not allowed
+	 */
 	const ERROR_NOT_UPLOADABLE_EXT = 'ERROR_NOT_UPLOADABLE_EXT';
+	
+	/**
+	 * The upload file exceed allowed size
+	 */
 	const ERROR_BIG_FILE_SIZE	   = 'ERROR_BIG_FILE_SIZE';
-	const ERROR_GENERAL			   = 'ERROR_GENERAL';
+	
+	/**
+	 * No files selected
+	 */
+	const ERROR_NO_FILES		   = 'ERROR_NO_FILES';
+	
+	/**
+	 * Cannot move uploaded files to the destination directory
+	 */
+	const ERROR_CANNOT_MOVE		   = 'ERROR_CANNOT_MOVE';
 	
 	/**
 	 * Uploads a file or multiple files
@@ -60,9 +77,25 @@ class File_Services_Uploader
 						'name'		=> '',
 						'extension' => '',
 						'size'		=> 0,
-						'error'		=> self::ERROR_GENERAL,
+						'error'		=> self::ERROR_NO_FILES,
 					),
 				),
+			);
+		}
+		
+		// Format the array of uploaded files
+		// HTML5 uploader: $_FILES[$fileName]['name'] is an array
+		// Flash uploader: $_FILES[$fileName]['name'] is a string
+		$files = array(
+			'name'	   => array(),
+			'tmp_name' => array(),
+		);
+		if (is_array($_FILES[$fileName]['name'])) {
+			$files = $_FILES[$fileName];
+		} else {
+			$files = array(
+				'name'	   => array($_FILES[$fileName]['name']),
+				'tmp_name' => array($_FILES[$fileName]['tmp_name']),
 			);
 		}
 		
@@ -73,7 +106,7 @@ class File_Services_Uploader
 		$uploadableTypes = strtolower($uploadableTypes);
 		$uploadableTypes = explode(',', $uploadableTypes);
 		
-		$files	   = array();
+		$return	   = array();
 		
 		// Prepare the directories to store the uploaded files
 		$user	   = Zend_Auth::getInstance()->getIdentity();
@@ -83,7 +116,7 @@ class File_Services_Uploader
 		Core_Base_File::createDirectories($uploadDir, APP_ROOT_DIR);
 		
 		// Upload files
-		$numFiles   = count($_FILES[$fileName]['name']);
+		$numFiles   = count($files['name']);
 		$toolkit    = (Core_Services_Config::get('file', 'image_toolkit', File_Services_Installer::DEFAULT_IMAGE_TOOLKIT) == File_Services_Installer::DEFAULT_IMAGE_TOOLKIT)
 						? new Core_Base_Image_Adapters_Gd()
 						: new Core_Base_Image_Adapters_Imagick();
@@ -91,12 +124,13 @@ class File_Services_Uploader
 		$thumbnails = Zend_Json::decode($thumbnails);
 		
 		for ($i = 0; $i < $numFiles; $i++) {
-			$extension		= explode('.', $_FILES[$fileName]['name'][$i]);
-			$extension		= strtolower($extension[count($extension) - 1]);
-			$name			= basename($_FILES[$fileName]['name'][$i], '.' . $extension);
+			$name	   = (string) $files['name'][$i];
+			$extension = explode('.', $name);
+			$extension = strtolower($extension[count($extension) - 1]);
+			$name	   = basename($name . '', '.' . $extension);
 			
 			if (!in_array($extension, $uploadableTypes)) {
-				$files[] = array(
+				$return[] = array(
 					'original' => array(
 						'name'		=> $name,
 						'extension' => $extension,
@@ -112,13 +146,13 @@ class File_Services_Uploader
 			$uploadFilePath = APP_ROOT_DIR . DS . $uploadDir . DS . $uploadFileName;
 			
 			// Move uploaded file to the target directory
-			if (move_uploaded_file($_FILES[$fileName]['tmp_name'][$i], $uploadFilePath) === false) {
-				$files[] = array(
+			if (move_uploaded_file($files['tmp_name'][$i], $uploadFilePath) === false) {
+				$return[] = array(
 					'original' => array(
 						'name'		=> $name,
 						'extension' => $extension,
 						'size'		=> 0,
-						'error'		=> self::ERROR_GENERAL,
+						'error'		=> self::ERROR_CANNOT_MOVE,
 					),
 				);
 				continue;
@@ -215,10 +249,10 @@ class File_Services_Uploader
 				}
 			}
 			
-			$files[] = $item;
+			$return[] = $item;
 		}
 		
-		return $files;
+		return $return;
 	}
 	
 	/**
