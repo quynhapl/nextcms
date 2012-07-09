@@ -10,7 +10,7 @@
  * @package		core
  * @subpackage	views
  * @since		1.0
- * @version		2011-10-18
+ * @version		2012-07-09
  */
 
 defined('APP_VALID_REQUEST') || die('You cannot access the script directly.');
@@ -23,9 +23,9 @@ class Core_View_Helper_Url extends Zend_View_Helper_Url
 	/**
 	 * @see Zend_View_Helper_Url::url()
 	 */
-	public function url(array $urlOptions = array(), $name = null)
+	public function url(array $urlOptions = array(), $name = null, $reset = false, $encode = true)
 	{
-		$url	= parent::url($urlOptions, $name);
+		$url	= parent::url($urlOptions, $name, $reset, $encode);
 		$router = Zend_Controller_Front::getInstance()->getRouter();
 		
 		if ($router instanceof Zend_Controller_Router_Rewrite) {
