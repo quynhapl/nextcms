@@ -9,9 +9,11 @@
 	"show": {
 		"bigFileSizeError": "The file size is greater than allowed size",
 		"browseFilesAction": "Browse files and Upload ...",
+		"cannotMoveError": "Cannot move file to the destination directory",
 		"fileName": "Name",
 		"fileSize": "Size",
 		"maxUploadSize": "The maxium size of uploaded file is %s",
+		"noFilesError": "There are no files selected",
 		"notAllowed": "You are not allowed to upload",
 		"notUploadableExtensionError": "The file type is not allowed to upload",
 		"title": "Uploader",

@@ -10,7 +10,7 @@
  * @package		file
  * @subpackage	hooks
  * @since		1.0
- * @version		2012-07-02
+ * @version		2012-07-09
  */
 
 defined('APP_VALID_REQUEST') || die('You cannot access the script directly.');
@@ -33,92 +33,125 @@ defined('APP_VALID_REQUEST') || die('You cannot access the script directly.');
 		</div>
 	
 		<form data-dojo-type="dijit.form.Form" data-dojo-props="action: '<?php echo $this->url(array(), 'file_file_upload'); ?>', method: 'POST', encType: 'multipart/form-data', class: 'appForm'">
-		<div id="fileHooksUploaderUploader" data-dojo-type="dojox.form.Uploader" data-dojo-props="name: 'uploadedfile', multiple: true, type: 'file', uploadOnSelect: true, label: '<?php echo $this->translator(true)->_('show.browseFilesAction'); ?>', url: '<?php echo $this->url(array(), 'file_file_upload'); ?>?PHPSESSID=<?php echo Zend_Session::getId(); ?>&name=uploadedfile&mod=<?php echo $this->module; ?>&thumbnail=false', _url: '<?php echo $this->url(array(), 'file_file_upload'); ?>?PHPSESSID=<?php echo Zend_Session::getId(); ?>&thumbnail=false', _module: '<?php echo $this->module; ?>', style: 'width: 200px'">
-			<script type="dojo/method" data-dojo-event="onBegin" data-dojo-args="dataArray">
-			this.set("disabled", true);
-			</script>
-			<script type="dojo/method" data-dojo-event="onComplete" data-dojo-args="dataArray">
-			this.set("disabled", false);
-			var template = dojo.byId("fileHooksUploaderFileTemplate").innerHTML;
-			for (var i in dataArray) {
-				// Check error
-				if (dataArray[i].original.error) {
-					var message;
-					switch (dataArray[i].original.error) {
-						case "<?php echo File_Services_Uploader::ERROR_NOT_UPLOADABLE_EXT; ?>":
-							message = "<?php echo $this->translator()->_('show.notUploadableExtensionError'); ?>";
+		<div id="fileHooksUploaderUploader" data-dojo-type="dojox.form.Uploader" data-dojo-props="name: 'uploadedfile', flashFieldName: 'uploadedfile', deferredUploading: true, multiple: true, type: 'file', uploadOnSelect: true, label: '<?php echo $this->translator(true)->_('show.browseFilesAction'); ?>', url: '<?php echo $this->url(array(), 'file_file_upload'); ?>?PHPSESSID=<?php echo Zend_Session::getId(); ?>&name=uploadedfile&mod=<?php echo $this->module; ?>&thumbnail=false', _url: '<?php echo $this->url(array(), 'file_file_upload'); ?>?PHPSESSID=<?php echo Zend_Session::getId(); ?>&thumbnail=false', _module: '<?php echo $this->module; ?>', style: 'width: 200px'">
+			<script type="dojo/connect">
+			this.set("appUploader", dojo.isIE ? "flash" : "html5");
+			this.set("_url", this.get("_url") + "&uploader=" + this.get("appUploader"));
+			this.set("url", this.get("_url"));
+
+			this.showUploadedFile = function(dataArray) {
+				var template = dojo.byId("fileHooksUploaderFileTemplate").innerHTML;
+				for (var i in dataArray) {
+					// Check error
+					if (dataArray[i].original.error) {
+						var message;
+						switch (dataArray[i].original.error) {
+							case "<?php echo File_Services_Uploader::ERROR_NOT_UPLOADABLE_EXT; ?>":
+								message = "<?php echo $this->translator()->_('show.notUploadableExtensionError'); ?>";
+								break;
+							case "<?php echo File_Services_Uploader::ERROR_BIG_FILE_SIZE; ?>":
+								message = "<?php echo $this->translator()->_('show.bigFileSizeError'); ?>";
+								break;
+							case "<?php echo File_Services_Uploader::ERROR_NO_FILES; ?>":
+								message = "<?php echo $this->translator()->_('show.noFilesError'); ?>";
+								break;
+							case "<?php echo File_Services_Uploader::ERROR_CANNOT_MOVE; ?>":
+								message = "<?php echo $this->translator()->_('show.cannotMoveError'); ?>";
+								break;
+							default:
+								message = "<?php echo $this->translator()->_('show.uploadError'); ?>";
+								break;
+						}
+						dojo.publish("/app/global/notification", [{
+							message: message,
+							type: "error"
+						}]);
+						continue;
+					}
+
+					var html = template.replace(/###file_name###/g, dataArray[i].original.name)
+									   .replace(/###file_url###/g, dataArray[i].original.url)
+									   .replace(/###file_size###/g, file.js.views.FileFormatter.formatSize(dataArray[i].original.size));
+					var div = dojo.create("div", {
+						className: "fileHooksUploaderFileItem dojoDndItem",
+						innerHTML: html
+					}, "fileHooksUploaderFilesContainer");
+
+					switch (dataArray[i].original.extension.toLowerCase()) {
+						case "bmp":
+						case "gif":
+						case "jpg":
+						case "jpeg":
+						case "png":
+							var img = dojo.query("img", div)[0];
+							dojo.attr(img, "src", core.js.Constant.ROOT_URL + dataArray[i].original.url);
+							dojo.attr(div, {
+								dndtype: "appDndImage",
+								"data-app-dndimage": dojo.toJson({
+									url: core.js.Constant.ROOT_URL + dataArray[i].original.url,
+									title: dataArray[i].original.name
+								})
+							});
 							break;
-						case "<?php echo File_Services_Uploader::ERROR_BIG_FILE_SIZE; ?>":
-							message = "<?php echo $this->translator()->_('show.bigFileSizeError'); ?>";
+						// TODO: Add more extensions supported by the Strobe Media Playback
+						case "f4v":
+						case "flv":
+						case "m4v":
+						case "mov":
+						case "mp3":
+						case "mp4":
+						case "swf":
+							dojo.attr(div, {
+								dndtype: "appDndVideo,appDndLink",
+								"data-app-dndlink": core.js.base.Encoder.encode({
+									url: core.js.Constant.ROOT_URL + dataArray[i].original.url,
+									title: dataArray[i].original.name
+								}),
+								"data-app-dndvideo": core.js.base.Encoder.encode({
+									src: core.js.Constant.ROOT_URL + dataArray[i].original.url,
+									poster: ""
+								})
+							});
 							break;
 						default:
-							message = "<?php echo $this->translator()->_('show.uploadError'); ?>";
+							dojo.attr(div, {
+								dndtype: "appDndLink",
+								"data-app-dndlink": core.js.base.Encoder.encode({
+									url: core.js.Constant.ROOT_URL + dataArray[i].original.url,
+									title: dataArray[i].original.name
+								})
+							});
 							break;
 					}
-					dojo.publish("/app/global/notification", [{
-						message: message,
-						type: "error"
-					}]);
-					continue;
 				}
-
-				var html = template.replace(/{file_name}/g, dataArray[i].original.name)
-								   .replace(/{file_url}/g, dataArray[i].original.url)
-								   .replace(/{file_size}/g, file.js.views.FileFormatter.formatSize(dataArray[i].original.size));
-				var div = dojo.create("div", {
-					className: "fileHooksUploaderFileItem dojoDndItem",
-					innerHTML: html
-				}, "fileHooksUploaderFilesContainer");
-
-				switch (dataArray[i].original.extension.toLowerCase()) {
-					case "bmp":
-					case "gif":
-					case "jpg":
-					case "jpeg":
-					case "png":
-						var img = dojo.query("img", div)[0];
-						dojo.attr(img, "src", core.js.Constant.ROOT_URL + dataArray[i].original.url);
-						dojo.attr(div, {
-							dndtype: "appDndImage",
-							"data-app-dndimage": dojo.toJson({
-								url: core.js.Constant.ROOT_URL + dataArray[i].original.url,
-								title: dataArray[i].original.name
-							})
-						});
-						break;
-					// TODO: Add more extensions supported by the Strobe Media Playback
-					case "f4v":
-					case "flv":
-					case "m4v":
-					case "mov":
-					case "mp3":
-					case "mp4":
-					case "swf":
-						dojo.attr(div, {
-							dndtype: "appDndVideo,appDndLink",
-							"data-app-dndlink": core.js.base.Encoder.encode({
-								url: core.js.Constant.ROOT_URL + dataArray[i].original.url,
-								title: dataArray[i].original.name
-							}),
-							"data-app-dndvideo": core.js.base.Encoder.encode({
-								src: core.js.Constant.ROOT_URL + dataArray[i].original.url,
-								poster: ""
-							})
-						});
-						break;
-					default:
-						dojo.attr(div, {
-							dndtype: "appDndLink",
-							"data-app-dndlink": core.js.base.Encoder.encode({
-								url: core.js.Constant.ROOT_URL + dataArray[i].original.url,
-								title: dataArray[i].original.name
-							})
-						});
-						break;
-				}
+			};
+			</script>
+			<script type="dojo/method" data-dojo-event="onBegin" data-dojo-args="dataArray">
+			if ("html5" == this.get("appUploader")) {
+				this.set("disabled", true);
+			}
+			</script>
+			<script type="dojo/method" data-dojo-event="onProgress" data-dojo-args="evt">
+			dijit.byId("fileHooksUploaderProgress").update({
+				progress: evt.percent.substring(0, evt.percent.length - 1)
+			});
+			</script>
+			<script type="dojo/method" data-dojo-event="onFileComplete" data-dojo-args="dataArray">
+			if ("flash" == this.get("appUploader")) {
+				dataArray = dataArray.additionalParams.appUploadedFiles;
+				dataArray = core.js.base.Encoder.decode(dataArray);
+				this.showUploadedFile(dataArray);
+			}
+			</script>
+			<script type="dojo/method" data-dojo-event="onComplete" data-dojo-args="dataArray">
+			if ("html5" == this.get("appUploader")) {
+				this.set("disabled", false);		// FIXME: This does NOT work on IE9
+				this.showUploadedFile(dataArray);
 			}
 			</script>
 		</div>
+		
+		<div id="fileHooksUploaderProgress" data-dojo-type="dijit.ProgressBar"></div>
 		</form>
 	</div>
 	
@@ -130,8 +163,8 @@ defined('APP_VALID_REQUEST') || die('You cannot access the script directly.');
 					<img src="<?php echo $this->APP_ROOT_URL; ?>/modules/file/hooks/uploader/file.png" />				
 				</div>
 				<div class="fileHooksUploaderFileInfo">
-					<?php echo $this->translator()->_('show.fileName'); ?>: <a href="<?php echo $this->APP_ROOT_URL; ?>{file_url}" target="_blank">{file_name}</a><br />
-					<?php echo $this->translator()->_('show.fileSize'); ?>: {file_size}
+					<?php echo $this->translator()->_('show.fileName'); ?>: <a href="<?php echo $this->APP_ROOT_URL; ?>###file_url###" target="_blank">###file_name###</a><br />
+					<?php echo $this->translator()->_('show.fileSize'); ?>: ###file_size###
 				</div>
 			</div>
 		</div>
@@ -142,10 +175,12 @@ defined('APP_VALID_REQUEST') || die('You cannot access the script directly.');
 /* file.hooks.uploader */
 dojo.require("dijit.form.Form");
 dojo.require("dijit.layout.BorderContainer");
+dojo.require("dijit.ProgressBar");
 dojo.require("dojo.dnd.Source");
 dojo.require("dojox.layout.ContentPane");
 dojo.require("dojox.form.Uploader");
-dojo.require("dojox.form.uploader.plugins.Flash");
+dojo.require("core.js.dojo.dojox.form.uploader.plugins.HTML5");
+dojo.require("core.js.dojo.dojox.form.uploader.plugins.Flash");
 
 dojo.registerModulePath("file", "<?php echo $this->APP_STATIC_URL; ?>/modules/file");
 dojo.require("core.js.base.Encoder");

@@ -9,9 +9,11 @@
 	"show": {
 		"bigFileSizeError": "Dung lượng của tệp lớn hơn dung lượng cho phép",
 		"browseFilesAction": "Chọn tệp và Tải lên ...",
+		"cannotMoveError": "Không thể chép tệp vào thư mục đích",
 		"fileName": "Tên",
 		"fileSize": "Dung lượng",
 		"maxUploadSize": "Dung lượng tối đa của tệp tải lên là %s",
+		"noFilesError": "Bạn chưa chọn tệp tải lên",
 		"notAllowed": "Bạn không có quyền tải tệp lên",
 		"notUploadableExtensionError": "Kiểu của tệp không được phép tải lên",
 		"title": "Tải lên",
