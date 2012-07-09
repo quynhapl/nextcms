@@ -10,7 +10,7 @@
  * @package		media
  * @subpackage	hooks
  * @since		1.0
- * @version		2012-07-02
+ * @version		2012-07-09
  */
 
 defined('APP_VALID_REQUEST') || die('You cannot access the script directly.');
@@ -63,11 +63,25 @@ defined('APP_VALID_REQUEST') || die('You cannot access the script directly.');
 				<span><?php echo $this->translator()->_('show.addWatermark'); ?></span>
 			</div>
 			
-			<div id="mediaHooksEditorUploader" data-dojo-type="dojox.form.Uploader" data-dojo-props="name: 'uploadedfile', multiple: true, type: 'file', uploadOnSelect: true, label: '<?php echo $this->translator(true)->_('show.browseFilesAction'); ?>', url: '<?php echo $this->url(array(), 'file_file_upload'); ?>?PHPSESSID=<?php echo Zend_Session::getId(); ?>&name=uploadedfile&mod=<?php echo $this->module; ?>&thumbnail=false', _url: '<?php echo $this->url(array(), 'file_file_upload'); ?>?PHPSESSID=<?php echo Zend_Session::getId(); ?>', _module: '<?php echo $this->module; ?>', style: 'width: 200px'">
+			<div id="mediaHooksEditorUploader" data-dojo-type="dojox.form.Uploader" data-dojo-props="name: 'uploadedfile', flashFieldName: 'uploadedfile', deferredUploading: true, multiple: true, type: 'file', uploadOnSelect: true, label: '<?php echo $this->translator(true)->_('show.browseFilesAction'); ?>', url: '<?php echo $this->url(array(), 'file_file_upload'); ?>?PHPSESSID=<?php echo Zend_Session::getId(); ?>&name=uploadedfile&mod=<?php echo $this->module; ?>&thumbnail=false', _url: '<?php echo $this->url(array(), 'file_file_upload'); ?>?PHPSESSID=<?php echo Zend_Session::getId(); ?>', _module: '<?php echo $this->module; ?>', style: 'width: 200px'">
+				<script type="dojo/connect">
+				this.set("appUploader", dojo.isIE ? "flash" : "html5");
+				this.set("_url", this.get("_url") + "&uploader=" + this.get("appUploader"));
+				this.set("url", this.get("url") + "&uploader=" + this.get("appUploader"));
+				</script>
+				<script type="dojo/method" data-dojo-event="onProgress" data-dojo-args="evt">
+				dijit.byId("mediaHooksEditorUploaderProgress").update({
+					progress: evt.percent.substring(0, evt.percent.length - 1)
+				});
+				</script>
 				<script type="dojo/method" data-dojo-event="onBegin" data-dojo-args="dataArray">
-				this.set("disabled", true);
+				if ("html5" == this.get("appUploader")) {
+					this.set("disabled", true);
+				}
 				</script>
 			</div>
+			
+			<div id="mediaHooksEditorUploaderProgress" data-dojo-type="dijit.ProgressBar"></div>
 		</form>
 	</div>
 	
@@ -237,13 +251,16 @@ dojo.require("dijit.form.TextBox");
 dojo.require("dijit.layout.BorderContainer");
 dojo.require("dijit.layout.ContentPane");
 dojo.require("dijit.layout.TabContainer");
+dojo.require("dijit.ProgressBar");
 dojo.require("dijit.Toolbar");
 dojo.require("dijit.ToolbarSeparator");
 dojo.require("dijit.TooltipDialog");
 dojo.require("dojox.form.Uploader");
-dojo.require("dojox.form.uploader.plugins.Flash");
+dojo.require("core.js.dojo.dojox.form.uploader.plugins.HTML5");
+dojo.require("core.js.dojo.dojox.form.uploader.plugins.Flash");
 
 dojo.registerModulePath("media", "<?php echo $this->APP_STATIC_URL; ?>/modules/media");
+dojo.require("core.js.base.Encoder");
 dojo.require("core.js.Constant");
 dojo.require("media.js.controllers.PhotoEditor");
 dojo.require("media.js.controllers.PhotoEditorMediator");
@@ -284,11 +301,24 @@ dojo.addOnLoad(function() {
 					});
 
 	// Upload handler
-	dojo.connect(dijit.byId("mediaHooksEditorUploader"), "onComplete", function(dataArray) {
-		dijit.byId("mediaHooksEditorUploader").set("disabled", false);
+	var uploader = dijit.byId("mediaHooksEditorUploader");
+	uploader.showUploadedFile = function(dataArray) {
 		dojo.forEach(dataArray, function(file) {
 			imageListView.addImageItem(file);
 		});
+	};
+	dojo.connect(uploader, "onFileComplete", function(dataArray) {
+		if ("flash" == uploader.get("appUploader")) {
+			dataArray = dataArray.additionalParams.appUploadedFiles;
+			dataArray = core.js.base.Encoder.decode(dataArray);
+			uploader.showUploadedFile(dataArray);
+		}
+	});
+	dojo.connect(uploader, "onComplete", function(dataArray) {
+		if ("html5" == uploader.get("appUploader")) {
+			uploader.set("disabled", false);
+			uploader.showUploadedFile(dataArray);
+		}
 	});
 
 	// Load the image in the editor pane when clicking on the context menu
