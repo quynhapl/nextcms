@@ -10,7 +10,7 @@
  * @package		message
  * @subpackage	views
  * @since		1.0
- * @version		2012-04-06
+ * @version		2012-07-10
  */
 
 defined('APP_VALID_REQUEST') || die('You cannot access the script directly.');
@@ -32,7 +32,7 @@ $this->headTitle()->set($this->translator()->_('config.config.title'));
 				_this.set("disabled", true);
 
 				dojo.xhrPost({
-					url: "<?php echo $this->url(array(), 'comment_config_config'); ?>",
+					url: "<?php echo $this->url(array(), 'message_config_config'); ?>",
 					content: dojo.formToObject("messageConfigConfigForm"),
 					handleAs: "json",
 					load: function(data) {
