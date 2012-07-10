@@ -117,7 +117,7 @@ $this->headTitle()->set($this->translator()->_('message.send.title'));
 					var uploadType = dojo.isIE ? "flash" : "html5";
 					this.set("appUploadType", uploadType);
 					if ("html5" == uploadType) {
-						this.set("url", this.get("url") + "&uploader=html5");
+						this.set("url", this.get("url") + "&uploader=html5&name=uploadedfile");
 					}
 					
 					this.showUploadedAttachments = function(dataArray) {
