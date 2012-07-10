@@ -10,7 +10,7 @@
  * @package		message
  * @subpackage	views
  * @since		1.0
- * @version		2012-07-10
+ * @version		2012-07-11
  */
 
 defined('APP_VALID_REQUEST') || die('You cannot access the script directly.');
@@ -209,6 +209,9 @@ $this->headTitle()->set($this->translator()->_('message.send.title'));
 			
 			<div class="appFormRow">
 				<label for="content" class="appTopLabel"><?php echo $this->translator()->_('message._share.content'); ?>:</label>
+			</div>
+			
+			<div class="appFormRow">
 				<textarea id="messageMessageSendContentEditor" name="content" style="height: 300px; width: 400px"><?php if ($this->message) : ?><?php echo $this->escape('<br /><div class="messageQuote"><div class="messageQuoteSentDate">' . sprintf($this->translator()->_('message._share.sentByOnDate'), $this->user()->getById($this->message->sent_user)->user_name, $this->message->sent_date) . '</div><div class="messageQuoteContent">' . $this->message->content . '</div></div><br />'); ?><?php endif; ?></textarea>
 			</div>
 			
@@ -284,7 +287,7 @@ dojo.addOnLoad(function() {
 			width: "100%",
 			elements: "messageMessageSendContentEditor",
 			relative_urls: false,
-			content_css: "<?php echo $this->APP_STATIC_URL; ?>/modules/core/css/admin/default/styles.css",
+			content_css: "<?php echo $this->APP_STATIC_URL; ?>/modules/message/css/admin/default/styles.css",
 			remove_script_host: false,
 			oninit: function() {
 //				dojo.publish("/app/global/onLoadComplete");
