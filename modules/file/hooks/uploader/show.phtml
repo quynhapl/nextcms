@@ -64,11 +64,12 @@ dojo.require("dojo.dnd.Source");
 dojo.require("dojox.layout.ContentPane");
 dojo.require("dojox.form.Uploader");
 
+dojo.isIE ? dojo.require("core.js.dojo.dojox.form.uploader.plugins.Flash")
+		  : dojo.require("core.js.dojo.dojox.form.uploader.plugins.HTML5");
+
 dojo.registerModulePath("file", "<?php echo $this->APP_STATIC_URL; ?>/modules/file");
 dojo.require("core.js.base.Encoder");
 dojo.require("core.js.Constant");
-dojo.require("core.js.dojo.dojox.form.uploader.plugins.HTML5");
-dojo.require("core.js.dojo.dojox.form.uploader.plugins.Flash");
 dojo.require("file.js.views.FileFormatter");
 
 dojo.addOnLoad(function() {

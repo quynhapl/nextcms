@@ -173,10 +173,11 @@ dojo.require("dijit.layout.ContentPane");
 dojo.require("dijit.Toolbar");
 dojo.require("dojox.widget.Standby");
 
+dojo.isIE ? dojo.require("core.js.dojo.dojox.form.uploader.plugins.Flash")
+		  : dojo.require("core.js.dojo.dojox.form.uploader.plugins.HTML5");
+
 dojo.require("core.js.base.Encoder");
 dojo.require("core.js.Constant");
-dojo.require("core.js.dojo.dojox.form.uploader.plugins.HTML5");
-dojo.require("core.js.dojo.dojox.form.uploader.plugins.Flash");
 
 dojo.addOnLoad(function() {
 	var handler = dojo.subscribe("/app/global/onLoadComplete/media_photo_upload", function() {
