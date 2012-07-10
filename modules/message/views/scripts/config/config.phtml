@@ -58,7 +58,7 @@ $this->headTitle()->set($this->translator()->_('config.config.title'));
 			<!-- PrivateMessage -->
 			<div class="appFormRow">
 				<label for="attachments_dir"><?php echo $this->translator()->_('config.config.messageAttachmentDirectory'); ?>:</label>
-				<input data-dojo-type="dijit.form.ValidationTextBox" data-dojo-props="type: 'text', name: 'attachments_dir', value: '<?php echo addslashes($this->config('core', 'attachments_dir', Message_Services_Installer::DEFAULT_ATTACHMENTS_DIR)); ?>', style: 'width: 400px', required: true, missingMessage: '<?php echo $this->translator(true)->_('config.config.messageAttachmentDirectoryRequired'); ?>'" />		
+				<input data-dojo-type="dijit.form.ValidationTextBox" data-dojo-props="type: 'text', name: 'attachments_dir', value: '<?php echo addslashes($this->config('message', 'attachments_dir', Message_Services_Installer::DEFAULT_ATTACHMENTS_DIR)); ?>', style: 'width: 400px', required: true, missingMessage: '<?php echo $this->translator(true)->_('config.config.messageAttachmentDirectoryRequired'); ?>'" />		
 			</div>
 			
 			<div class="appFormRow">
@@ -68,14 +68,14 @@ $this->headTitle()->set($this->translator()->_('config.config.title'));
 			
 			<div class="appFormRow">
 				<label for="attachments_exts">&nbsp;</label>
-				<textarea data-dojo-type="dijit.form.SimpleTextarea" data-dojo-props="name: 'attachments_exts', style: 'width: 400px; height: 150px'"><?php echo $this->config('core', 'attachments_exts', ''); ?></textarea>
+				<textarea data-dojo-type="dijit.form.SimpleTextarea" data-dojo-props="name: 'attachments_exts', style: 'width: 400px; height: 150px'"><?php echo $this->config('message', 'attachments_exts', ''); ?></textarea>
 			</div>
 			<!-- /PrivateMessage -->
 			
 			<!-- PrivateMessageMailTemplate -->
 			<div class="appFormRow" style="padding: 4px 0">
 				<label for="email_enabled">&nbsp;</label>
-				<div data-dojo-type="dijit.form.CheckBox" data-dojo-props="name: 'email_enabled', checked: <?php if ($this->config('core', 'email_enabled', 'false') == 'true') : ?>true<?php else : ?>false<?php endif; ?>">
+				<div data-dojo-type="dijit.form.CheckBox" data-dojo-props="name: 'email_enabled', checked: <?php if ($this->config('message', 'email_enabled', 'false') == 'true') : ?>true<?php else : ?>false<?php endif; ?>">
 					<script type="dojo/connect" data-dojo-event="onChange" data-dojo-args="value">
 					dojo.style("messageConfigConfigMessageMailTemplate", "display", value == true ? "block" : "none");
 					</script>
@@ -83,7 +83,7 @@ $this->headTitle()->set($this->translator()->_('config.config.title'));
 				<?php echo $this->translator()->_('config.config.messageSentInformingEmail'); ?>
 			</div>
 			
-			<div id="messageConfigConfigMessageMailTemplate" style="display: <?php if ($this->config('core', 'email_enabled') == 'true') : ?>block<?php else : ?>none<?php endif; ?>">
+			<div id="messageConfigConfigMessageMailTemplate" style="display: <?php if ($this->config('message', 'email_enabled') == 'true') : ?>block<?php else : ?>none<?php endif; ?>">
 				<div class="appFormRow">
 					<label for="sent_from_name"><?php echo $this->translator()->_('config.config.sendFromName'); ?>:</label>
 					<input data-dojo-type="dijit.form.TextBox" data-dojo-props="type: 'text', name: 'sent_from_name', style: 'width: 200px', value: '<?php echo addslashes($this->messageSentMailTemplate['from_name']); ?>'">
