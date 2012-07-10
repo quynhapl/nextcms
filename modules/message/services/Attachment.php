@@ -10,7 +10,7 @@
  * @package		message
  * @subpackage	services
  * @since		1.0
- * @version		2012-02-28
+ * @version		2012-07-10
  */
 
 defined('APP_VALID_REQUEST') || die('You cannot access the script directly.');
@@ -104,6 +104,22 @@ class Message_Services_Attachment
 			throw new Exception('The second param is not an instance of Core_Models_User');
 		}
 		
+		// Format the array of uploaded files
+		// HTML5 uploader: $_FILES[$fileName]['name'] is an array
+		// Flash uploader: $_FILES[$fileName]['name'] is a string
+		$files = array(
+			'name'	   => array(),
+			'tmp_name' => array(),
+		);
+		if (is_array($_FILES[$fileName]['name'])) {
+			$files = $_FILES[$fileName];
+		} else {
+			$files = array(
+				'name'	   => array($_FILES[$fileName]['name']),
+				'tmp_name' => array($_FILES[$fileName]['tmp_name']),
+			);
+		}
+		
 		// The attachments will be stored in the directory of 
 		// APP_ROOT_DIR . '/upload/message/__attachments/###user_id###/###year###/###month###/###file###
 		$prefixPath = Core_Services_Config::get('message', 'attachments_dir', Message_Services_Installer::DEFAULT_ATTACHMENTS_DIR);
@@ -115,29 +131,29 @@ class Message_Services_Attachment
 		Core_Base_File::createDirectories($uploadDir, APP_ROOT_DIR);
 		
 		// Upload files
-		$files	  = array();
-		$numFiles = count($_FILES[$fileName]['name']);
+		$return	  = array();
+		$numFiles = count($files['name']);
 		
 		$allowedExtensions = Core_Services_Config::get('message', 'attachments_exts', '');
 		$allowedExtensions = ($allowedExtensions == '') ? array() : explode(',', $allowedExtensions);
 		
 		for ($i = 0; $i < $numFiles; $i++) {
-			$extension		= explode('.', $_FILES[$fileName]['name'][$i]);
+			$extension		= explode('.', $files['name'][$i]);
 			$extension		= strtolower($extension[count($extension) - 1]);
 			
 			if (count($allowedExtensions) > 0 && !in_array($extension, $allowedExtensions)) {
 				continue;
 			}
 			
-			$name			= basename($_FILES[$fileName]['name'][$i], '.' . $extension);
+			$name			= basename($files['name'][$i], '.' . $extension);
 			$fileId			= uniqid();
 			$uploadFileName = $fileId . '.' . $extension;
 			$uploadFilePath = APP_ROOT_DIR . DS . $uploadDir . DS . $uploadFileName;
 			
 			// Move uploaded file to the target directory
-			move_uploaded_file($_FILES[$fileName]['tmp_name'][$i], $uploadFilePath);
+			move_uploaded_file($files['tmp_name'][$i], $uploadFilePath);
 			
-			$files[] = array(
+			$return[] = array(
 				'path'		=> $userDir . '/' . $uploadFileName,
 				'name'		=> $name,
 				'extension' => $extension,
@@ -145,6 +161,6 @@ class Message_Services_Attachment
 			);
 		}
 		
-		return $files;
+		return $return;
 	}
 }

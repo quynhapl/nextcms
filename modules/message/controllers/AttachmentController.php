@@ -10,7 +10,7 @@
  * @package		message
  * @subpackage	controllers
  * @since		1.0
- * @version		2012-07-02
+ * @version		2012-07-10
  */
 
 defined('APP_VALID_REQUEST') || die('You cannot access the script directly.');
@@ -73,14 +73,35 @@ class Message_AttachmentController extends Zend_Controller_Action
 	 */
 	public function uploadAction()
 	{
-		$request   = $this->getRequest();
-		$fileName  = $request->getParam('name');
+		$request  = $this->getRequest();
+		$uploader = $request->getParam('uploader', 'flash');
+		$user	  = Zend_Auth::getInstance()->getIdentity();
 		
-		// I use Dojo Uploader in the client side
-		// and it automatically appends the "s" at the end of name
-		$fileName  = $request->getParam('name', 'uploadedfile') . 's';
-		$user	   = Zend_Auth::getInstance()->getIdentity();
-		$files     = Message_Services_Attachment::upload($fileName, $user);
-		$this->_helper->json($files);
+		switch ($uploader) {
+			case 'html5':
+				// Dojo HTML5 uploader automatically appends the "s" at the end of name
+				$fileName = $request->getParam('name', 'uploadedfile') . 's';
+				$files    = Message_Services_Attachment::upload($fileName, $user);
+				$this->_helper->json($files);
+				break;
+			case 'flash':
+			default:
+				// Use Flash to upload files
+				$this->getResponse()->setHeader('Content-Type', 'text/html; charset=utf-8');
+				$this->_helper->getHelper('layout')->disableLayout();
+				$this->_helper->getHelper('viewRenderer')->setNoRender();
+				
+				$fileName = $request->getParam('name', 'uploadedfile');
+				$files	  = Message_Services_Attachment::upload($fileName, $user);
+				$return	  = array(
+					'name=' . (isset($files[0]['name'])		 ? $files[0]['name']	  : ''),
+					'type=' . (isset($files[0]['extension']) ? $files[0]['extension'] : ''),
+					'size=' . (isset($files[0]['size'])		 ? $files[0]['size']	  : 0),
+					'appUploadedFiles=' . rawurlencode(base64_encode(Zend_Json::encode($files))),
+				);
+				$return = implode(',', $return);
+				$this->getResponse()->setBody($return);
+				break;
+		}
 	}
 }

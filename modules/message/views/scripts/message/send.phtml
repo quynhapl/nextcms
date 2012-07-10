@@ -10,7 +10,7 @@
  * @package		message
  * @subpackage	views
  * @since		1.0
- * @version		2012-07-02
+ * @version		2012-07-10
  */
 
 defined('APP_VALID_REQUEST') || die('You cannot access the script directly.');
@@ -106,76 +106,98 @@ $this->headTitle()->set($this->translator()->_('message.send.title'));
 				<div id="messageMessageSendBccAddressContainer"></div>
 			</div>
 
-			<!-- AttachmentsUploader -->			
+			<!-- AttachmentsUploader -->
 			<div class="appFormRow">
 				<label for="subject" class="appTopLabel"><?php echo $this->translator()->_('message._share.attachments'); ?>:</label>
 			</div>
 			
 			<div class="appFormRow">
-				<div id="messageMessageSendAttachmentUploader" data-dojo-type="dojox.form.Uploader" data-dojo-props="name: 'file', multiple: true, type: 'file', uploadOnSelect: true, label: '<?php echo $this->translator(true)->_('global._share.browseFilesUploadAction'); ?>', url: '<?php echo $this->url(array(), 'message_attachment_upload'); ?>?PHPSESSID=<?php echo Zend_Session::getId(); ?>&name=file', style: 'width: 150px'">
+				<div id="messageMessageSendAttachmentUploader" data-dojo-type="dojox.form.Uploader" data-dojo-props="name: 'uploadedfile', flashFieldName: 'uploadedfile', deferredUploading: true, multiple: true, type: 'file', uploadOnSelect: true, serverTimeout: 10000, label: '<?php echo $this->translator(true)->_('global._share.browseFilesUploadAction'); ?>', url: '<?php echo $this->url(array(), 'message_attachment_upload'); ?>?PHPSESSID=<?php echo Zend_Session::getId(); ?>', style: 'width: 150px'">
+					<script type="dojo/connect">
+					var uploadType = dojo.isIE ? "flash" : "html5";
+					this.set("appUploadType", uploadType);
+					if ("html5" == uploadType) {
+						this.set("url", this.get("url") + "&uploader=html5");
+					}
+					
+					this.showUploadedAttachments = function(dataArray) {
+						if (dataArray.length == 0) {
+							dojo.publish("/app/global/notification", [{
+								message: "<?php echo $this->translator()->_('message.send.cannotAttachFiles'); ?>",
+								type: "error"
+							}]);
+							return;
+						}
+
+						dojo.style("messageMessageSendAttachmentsContainer", "display", "block");
+						var sizeFormatter = file.js.views.FileFormatter.formatSize;
+						var deleteFileUrl = core.js.base.controllers.ActionProvider.get("message_attachment_delete").url;
+
+						dojo.forEach(dataArray, function(file) {
+							var div = dojo.create("div", {
+								style: "padding: 4px",
+								className: "messageAttachment"
+							}, "messageMessageSendAttachmentsContainer");
+							
+							// Name, extension and size of file
+							dojo.create("span", {
+								innerHTML: "<b>" + file.name + "</b> (." + file.extension + ", " + sizeFormatter(file.size, "0") + ")" 
+							}, div);
+							
+							// "Delete" link to remove the attachment
+							var link = dojo.create("a", {
+								href: "javascript: void(0);",
+								style: "padding: 0 8px",
+								innerHTML: "<?php echo $this->translator()->_('global._share.deleteAction'); ?>"
+							}, div);
+							dojo.connect(link, "onclick", function() {
+								dojo.xhrPost({
+									url: deleteFileUrl,
+									content: {
+										path: file.path
+									},
+									handleAs: "json",
+									load: function(data) {
+										if (data.result == "APP_RESULT_OK") {
+											dojo.query(div).orphan();
+											// If there is no attachments, hide the attachments container
+											if (dojo.query("#messageMessageSendAttachmentsContainer .messageAttachment").length == 0) {
+												dojo.style("messageMessageSendAttachmentsContainer", "display", "none");
+											}
+										}
+									}
+								});
+							});
+							
+							// Hidden input to store the file information
+							dojo.create("input", {
+								type: "hidden",
+								name: "attachments[]",
+								value: dojo.toJson(file)
+							}, div);
+						});
+					};
+					</script>
 					<script type="dojo/method" data-dojo-event="onBegin">
-					this.set("disabled", true);
+					if ("html5" == this.get("appUploadType")) {
+						this.set("disabled", true);
+					}
 					dijit.byId("messageMessageSendStandby").set("imageText", "<?php echo $this->translator()->_('global._share.uploadingAction'); ?>");
 					dijit.byId("messageMessageSendStandby").show();
 					</script>
-					<script type="dojo/method" data-dojo-event="onComplete" data-dojo-args="dataArray">
-					this.set("disabled", false);
-					dijit.byId("messageMessageSendStandby").hide();
-					if (dataArray.length == 0) {
-						dojo.publish("/app/global/notification", [{
-							message: "<?php echo $this->translator()->_('message.send.cannotAttachFiles'); ?>",
-							type: "error"
-						}]);
-						return;
+					<script type="dojo/connect" data-dojo-event="onFileComplete" data-dojo-args="dataArray">
+					if ("flash" == this.get("appUploadType")) {
+						dataArray = dataArray.additionalParams.appUploadedFiles;
+						dataArray = core.js.base.Encoder.decode(dataArray);
+						this.showUploadedAttachments(dataArray);
 					}
-
-					dojo.style("messageMessageSendAttachmentsContainer", "display", "block");
-					var sizeFormatter = file.js.views.FileFormatter.formatSize;
-					var deleteFileUrl = core.js.base.controllers.ActionProvider.get("message_attachment_delete").url;
-
-					dojo.forEach(dataArray, function(file) {
-						var div = dojo.create("div", {
-							style: "padding: 4px",
-							className: "messageAttachment"
-						}, "messageMessageSendAttachmentsContainer");
-						
-						// Name, extension and size of file
-						dojo.create("span", {
-							innerHTML: "<b>" + file.name + "</b> (." + file.extension + ", " + sizeFormatter(file.size, "0") + ")" 
-						}, div);
-						
-						// "Delete" link to remove the attachment
-						var link = dojo.create("a", {
-							href: "javascript: void(0);",
-							style: "padding: 0 8px",
-							innerHTML: "<?php echo $this->translator()->_('global._share.deleteAction'); ?>"
-						}, div);
-						dojo.connect(link, "onclick", function() {
-							dojo.xhrPost({
-								url: deleteFileUrl,
-								content: {
-									path: file.path
-								},
-								handleAs: "json",
-								load: function(data) {
-									if (data.result == "APP_RESULT_OK") {
-										dojo.query(div).orphan();
-										// If there is no attachments, hide the attachments container
-										if (dojo.query("#messageMessageSendAttachmentsContainer .messageAttachment").length == 0) {
-											dojo.style("messageMessageSendAttachmentsContainer", "display", "none");
-										}
-									}
-								}
-							});
-						});
-						
-						// Hidden input to store the file information
-						dojo.create("input", {
-							type: "hidden",
-							name: "attachments[]",
-							value: dojo.toJson(file)
-						}, div);
-					});
+					</script>
+					<script type="dojo/method" data-dojo-event="onComplete" data-dojo-args="dataArray">
+					dijit.byId("messageMessageSendStandby").hide();
+					if ("html5" == this.get("appUploadType")) {
+						this.set("disabled", false);
+						this.showUploadedAttachments(dataArray);
+					}
 					</script>
 				</div>
 			</div>
@@ -214,10 +236,13 @@ dojo.require("dijit.layout.ContentPane");
 dojo.require("dijit.Toolbar");
 dojo.require("dojo.NodeList-traverse");
 dojo.require("dojox.form.Uploader");
-dojo.require("dojox.form.uploader.plugins.Flash");
 dojo.require("dojox.widget.Standby");
 
+dojo.isIE ? dojo.require("core.js.dojo.dojox.form.uploader.plugins.Flash")
+		  : dojo.require("core.js.dojo.dojox.form.uploader.plugins.HTML5");
+
 dojo.require("core.js.base.controllers.ActionProvider");
+dojo.require("core.js.base.Encoder");
 dojo.require("core.js.views.UserCollectionView");
 dojo.require("file.js.views.FileFormatter");
 
