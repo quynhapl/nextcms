@@ -10,7 +10,7 @@
  * @package		core
  * @subpackage	base
  * @since		1.0
- * @version		2012-05-23
+ * @version		2012-07-11
  */
 
 defined('APP_VALID_REQUEST') || die('You cannot access the script directly.');
@@ -133,8 +133,8 @@ class Core_Base_Models_Entity
 			$properties = $this->_properties;
 		}
 		
-		foreach ($properties as $k) {
-			if (isset($this->_properties[$k])) {
+		foreach ($properties as $k => $v) {
+			if (isset($this->_properties[$k]) && is_string($this->_properties[$k])) {
 				$this->_properties[$k] = $hookRegistry->executeFilter('Core_SanitizeInput', $this->_properties[$k]);
 			}
 		}
