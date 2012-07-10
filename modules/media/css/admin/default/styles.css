@@ -9,7 +9,7 @@
  * @package		media
  * @subpackage	css
  * @since		1.0
- * @version		2012-06-01
+ * @version		2012-07-10
  */
  
 /********** MANAGE ALBUMS **********/
@@ -74,13 +74,16 @@
 .mediaPhotoResizeIcon { background-image: url(images/resize.png); }
 .mediaPhotoEditCroppedSizeLabel { color: #333; }
 
+/* Uploading progress text */
+.mediaPhotoUploadStandby { color: #769DC0; font-size: 30px; }
+
 /********** MANAGE PLAYLISTS **********/
 .mediaPlaylistList, .mediaPlaylistItemsContainer { margin: 0; padding: 0; }
 
 /* Item */
 .mediaPlaylistPosterContainer img { height: 60px; width: 60px; }
 .mediaPlaylistList .mediaPlaylistTitle { padding: 3px; text-decoration: none; }
-.mediaPlaylistItemSelected .mediaPlaylistTitle { background: #769DC0; /*#769DC0*/ color: #fff; }
+.mediaPlaylistItemSelected .mediaPlaylistTitle { background: #769DC0; color: #fff; }
 .mediaPlaylistTitle:hover { background-color: #abd6ff; color: #fff; }
 
 /* Counter */

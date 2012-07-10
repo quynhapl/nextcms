@@ -9,7 +9,7 @@
  * @package		core
  * @subpackage	js
  * @since		1.0
- * @version		2012-07-09
+ * @version		2012-07-10
  */
 
 /**
@@ -29,23 +29,41 @@ dojo.declare("core.js.dojo.dojox.form.uploader.plugins.Flash", dojox.form.upload
 		//		This method is called after a file is uploaded completely.
 	},
 	
+	_setUrlAttr: function(/*String*/ url) {
+		// I need to rebuild the embed flash when set new upload URL
+		if (this.inputNode && this.url && url && this.url != url) {
+			this.url = url;
+			var node = this.inputNode;
+			var handler = dojo.connect(this, "onLoad", this, function() {
+				dojo.destroy(node);
+				dojo.disconnect(handler);
+			});
+			this._createFlashUploader();
+		} else {
+			this.inherited(arguments);
+		}
+	},
+	
 	_connectFlash: function() {
-		this._subs = [];
 		this._cons = [];
 
-		var doSub = dojo.hitch(this, function(s, funcStr) {
-			this._subs.push(dojo.subscribe(this.id + s, this, funcStr));
-		});
-
-		doSub("/filesSelected", "_change");
-		doSub("/filesUploaded", "_complete");
-		doSub("/filesProgress", "_progress");
-		doSub("/filesError", "_error");
-		doSub("/filesCanceled", "onCancel");
-		doSub("/stageBlur", "_onFlashBlur");
-		
-		// NEW METHOD:
-		doSub("/fileComplete", "_fileComplete");
+		if (this._subs == null) {
+			this._subs = [];
+			
+			var doSub = dojo.hitch(this, function(s, funcStr) {
+				this._subs.push(dojo.subscribe(this.id + s, this, funcStr));
+			});
+	
+			doSub("/filesSelected", "_change");
+			doSub("/filesUploaded", "_complete");
+			doSub("/filesProgress", "_progress");
+			doSub("/filesError", "_error");
+			doSub("/filesCanceled", "onCancel");
+			doSub("/stageBlur", "_onFlashBlur");
+			
+			// NEW METHOD:
+			doSub("/fileComplete", "_fileComplete");
+		}
 		
 		var cs = dojo.hitch(this, function(s, nm) {
 			this._cons.push(dojo.subscribe(this.id + s, this, function(evt){
@@ -71,6 +89,19 @@ dojo.declare("core.js.dojo.dojox.form.uploader.plugins.Flash", dojox.form.upload
 		if (this.tabIndex >= 0) {
 			dojo.attr(this.domNode, "tabIndex", this.tabIndex);
 		}
+	},
+	
+	destroy: function(/*Boolean*/ preserveDom) {
+		// summary:
+		//		Destroy the widget
+		//		I need to unsubscribe all handlers
+		this.inherited(arguments);
+		dojo.forEach(this._subs, function(s) {
+			dojo.unsubscribe(s);
+		});
+		dojo.forEach(this._cons, function(s) {
+			dojo.unsubscribe(s);
+		});
 	}
 });
 

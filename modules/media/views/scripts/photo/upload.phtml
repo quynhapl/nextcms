@@ -10,7 +10,7 @@
  * @package		media
  * @subpackage	views
  * @since		1.0
- * @version		2012-07-02
+ * @version		2012-07-10
  */
 
 defined('APP_VALID_REQUEST') || die('You cannot access the script directly.');
@@ -122,11 +122,16 @@ $this->headTitle()->set($this->translator()->_('photo.upload.title'));
 					<label>&nbsp;</label>
 					<span data-dojo-type="dijit.form.CheckBox" data-dojo-props="disabled: <?php if (($options = $this->config('file', 'watermark')) && ($options = Zend_Json::decode($options)) && ($options['using'] != 'none')) : ?>false<?php else: ?>true<?php endif; ?>">
 						<script type="dojo/method" data-dojo-event="onChange">
-						var uploader = dijit.byId("mediaPhotoUploadUploader");
-						var params = {
-							watermark: this.get("checked") ? "true" : "false"
-						};
-						uploader.set("url", uploader.get("appUploadUrl") + "&" + dojo.objectToQuery(params));
+						var uploader  = dijit.byId("mediaPhotoUploadUploader");
+						var watermark = this.get("checked") ? "true" : "false";
+						switch (uploader.get("appUploadType")) {
+							case "html5":
+								uploader.set("url", "<?php echo $this->url(array(), 'file_file_upload'); ?>?PHPSESSID=<?php echo Zend_Session::getId(); ?>&mod=media&thumbnail=true&uploader=html5&name=" + uploader.get("name") + "&watermark=" + watermark);
+								break;
+							case "flash":
+								uploader.set("url", "<?php echo $this->url(array(), 'file_file_upload'); ?>/media/true/" + watermark + "?PHPSESSID=<?php echo Zend_Session::getId(); ?>");
+								break;
+						}
 						</script>
 					</span>
 					<span><?php echo $this->translator()->_('photo.upload.addWatermark'); ?></span>
@@ -135,36 +140,7 @@ $this->headTitle()->set($this->translator()->_('photo.upload.title'));
 				<!-- Uploader -->
 				<div class="appFormRow" id="mediaPhotoUploadUploaderContainer">
 					<label for="photos"><?php echo $this->translator()->_('photo.upload.selectPhotos'); ?>:</label>
-					<div id="mediaPhotoUploadUploader" data-dojo-type="dojox.form.Uploader" data-dojo-props="name: 'photos', multiple: true, type: 'file', uploadOnSelect: true, label: '<?php echo $this->translator(true)->_('global._share.browseFileAction'); ?>', url: '<?php echo $this->url(array(), 'file_file_upload'); ?>?PHPSESSID=<?php echo Zend_Session::getId(); ?>&mod=media&name=photos&thumbnail=true', appUploadUrl: '<?php echo $this->url(array(), 'file_file_upload'); ?>?PHPSESSID=<?php echo Zend_Session::getId(); ?>&mod=media&name=photos&thumbnail=true', style: 'width: 150px'">
-						<script type="dojo/method" data-dojo-event="onBegin">
-						this.set("disabled", true);
-						dijit.byId("mediaPhotoUploadStandby").set("imageText", "<?php echo $this->translator()->_('global._share.uploadingAction'); ?>");
-						dijit.byId("mediaPhotoUploadStandby").show();
-						</script>
-						<script type="dojo/method" data-dojo-event="onComplete" data-dojo-args="dataArray">
-						this.set("disabled", false);
-						dijit.byId("mediaPhotoUploadStandby").hide();
-						dojo.forEach(dataArray, function(file) {
-							var div    = dojo.create("div", {
-								className: "mediaPhotoItem"
-							}, "mediaPhotoUploadPhotos", "last");
-							var image  = dojo.create("img", {
-								src: core.js.Constant.ROOT_URL + file.thumbnail.url,
-								title: file.original.name
-							}, div);
-							var thumbs = {
-								name: file.original.name
-							};
-							dojo.forEach(['square', 'thumbnail', 'small', 'crop', 'medium', 'large', 'original'], function(thumbnailSize) {
-								thumbs[thumbnailSize] = file[thumbnailSize].url;
-							});
-							dojo.create("input", {
-								type: "hidden",
-								name: "thumbnails[]",
-								value: dojo.toJson(thumbs)
-							}, "mediaPhotoUploadForm", "last"); 
-						});
-						</script>
+					<div id="mediaPhotoUploadUploader">
 					</div>
 				</div>
 				
@@ -183,7 +159,7 @@ $this->headTitle()->set($this->translator()->_('photo.upload.title'));
 	<!-- /UploadForm -->
 </div>
 
-<div id="mediaPhotoUploadStandby" data-dojo-type="dojox.widget.Standby" data-dojo-props="target: 'mediaPhotoUploadContainer', imageText: '<?php echo $this->translator(true)->_('global._share.loadingAction'); ?>'"></div>
+<div id="mediaPhotoUploadStandby" data-dojo-type="dojox.widget.Standby" data-dojo-props="target: 'mediaPhotoUploadContainer', centerIndicator: 'image', imageText: '<?php echo $this->translator(true)->_('global._share.loadingAction'); ?>'"></div>
 
 <script type="text/javascript">
 dojo.require("dijit.form.Button");
@@ -192,11 +168,103 @@ dojo.require("dijit.form.Form");
 dojo.require("dijit.form.Select");
 dojo.require("dijit.form.TextBox");
 dojo.require("dojox.form.Uploader");
-dojo.require("dojox.form.uploader.plugins.Flash");
 dojo.require("dijit.layout.BorderContainer");
 dojo.require("dijit.layout.ContentPane");
 dojo.require("dijit.Toolbar");
 dojo.require("dojox.widget.Standby");
 
+dojo.require("core.js.base.Encoder");
 dojo.require("core.js.Constant");
+dojo.require("core.js.dojo.dojox.form.uploader.plugins.HTML5");
+dojo.require("core.js.dojo.dojox.form.uploader.plugins.Flash");
+
+dojo.addOnLoad(function() {
+	var handler = dojo.subscribe("/app/global/onLoadComplete/media_photo_upload", function() {
+		var uploadType = dojo.isIE ? "flash" : "html5";
+
+		var uploader = new dojox.form.Uploader({
+			name: "photos",
+			flashFieldName: "uploadedfile",
+			deferredUploading: true,
+			multiple: true,
+			type: "file",
+			uploadOnSelect: true,
+			label: "<?php echo $this->translator(true)->_('global._share.browseFileAction'); ?>",
+			url: ("html5" == uploadType) ? "<?php echo $this->url(array(), 'file_file_upload'); ?>?PHPSESSID=<?php echo Zend_Session::getId(); ?>&mod=media&thumbnail=true&uploader=html5&name=photos"
+										 : "<?php echo $this->url(array(), 'file_file_upload'); ?>/media/true/false?PHPSESSID=<?php echo Zend_Session::getId(); ?>",
+			style: "width: 150px",
+			// DOJO LESSON: This is very important parameter
+			// Increase it if you want to upload more files at the same time
+			serverTimeout: 10000,
+			
+			// Custom properties and methods
+			appUploadType: uploadType,
+
+			showUploadedPhotos: function(dataArray) {
+				// summary:
+				//		Shows the uploaded photos
+				dojo.forEach(dataArray, function(file) {
+					var div    = dojo.create("div", {
+						className: "mediaPhotoItem"
+					}, "mediaPhotoUploadPhotos", "last");
+					var image  = dojo.create("img", {
+						src: core.js.Constant.ROOT_URL + file.thumbnail.url,
+						title: file.original.name
+					}, div);
+					var thumbs = {
+						name: file.original.name
+					};
+					dojo.forEach(["square", "thumbnail", "small", "crop", "medium", "large", "original"], function(thumbnailSize) {
+						thumbs[thumbnailSize] = file[thumbnailSize].url;
+					});
+					dojo.create("input", {
+						type: "hidden",
+						name: "thumbnails[]",
+						value: dojo.toJson(thumbs)
+					}, "mediaPhotoUploadForm", "last"); 
+				});
+			}
+		}, "mediaPhotoUploadUploader");
+
+		dojo.connect(uploader, "onBegin", function() {
+			if ("html5" == uploader.get("appUploadType")) {
+				uploader.set("disabled", true);
+			}
+			dijit.byId("mediaPhotoUploadStandby")
+				 .set("centerIndicator", "image")
+				 .set("text", "<?php echo $this->translator()->_('global._share.uploadingAction'); ?>")
+				 .show();
+		});
+
+		dojo.connect(uploader, "onProgress", function(evt) {
+			dijit.byId("mediaPhotoUploadStandby")
+				 .set("centerIndicator", "text")
+				 .set("text", evt.percent);
+			dojo.style(dijit.byId("mediaPhotoUploadStandby")._textNode, {
+				opacity: 1
+			});
+			dojo.addClass(dijit.byId("mediaPhotoUploadStandby")._textNode, "mediaPhotoUploadStandby");
+		});
+		
+		dojo.connect(uploader, "onFileComplete", function(dataArray) {
+			if ("flash" == uploader.get("appUploadType")) {
+				dataArray = dataArray.additionalParams.appUploadedFiles;
+				dataArray = core.js.base.Encoder.decode(dataArray);
+				uploader.showUploadedPhotos(dataArray);
+			}
+		});
+
+		dojo.connect(uploader, "onComplete", function(dataArray) {
+			dijit.byId("mediaPhotoUploadStandby").hide();
+			if ("html5" == uploader.get("appUploadType")) {
+				uploader.set("disabled", false);
+				uploader.showUploadedPhotos(dataArray);
+			}
+		});
+
+		// Show the message of informing the maximum upload size at the desired position
+		dijit.byId("mediaPhotoUploadContainer").resize();
+		dojo.unsubscribe(handler);
+	});
+});
 </script>
