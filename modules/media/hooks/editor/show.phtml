@@ -10,7 +10,7 @@
  * @package		media
  * @subpackage	hooks
  * @since		1.0
- * @version		2012-07-09
+ * @version		2012-07-10
  */
 
 defined('APP_VALID_REQUEST') || die('You cannot access the script directly.');
@@ -31,12 +31,11 @@ defined('APP_VALID_REQUEST') || die('You cannot access the script directly.');
 				<span id="mediaHooksEditorGenerateThumb" data-dojo-type="dijit.form.CheckBox">
 					<script type="dojo/method" data-dojo-event="onChange">
 					var uploader = dijit.byId("mediaHooksEditorUploader");
-					var params = {
-						mod: uploader.get("_module"),
-						thumbnail: this.get("checked") ? "true" : "false",
-						watermark: dijit.byId("mediaHooksEditorAddWatermark").get("checked") ? "true" : "false"
-					};
-					uploader.set("url", uploader.get("_url") + "&" + dojo.objectToQuery(params));
+					uploader.set("appGenerateThumbnails", this.get("checked") ? "true" : "false")
+							.set("url", uploader.get("appUploadUrlTemplate")
+												.replace(/###module###/g,	 uploader.get("appModule"))
+												.replace(/###thumbnail###/g, uploader.get("appGenerateThumbnails"))
+												.replace(/###watermark###/g, uploader.get("appAddWatermark")));
 					</script>
 				</span>
 				<span><?php echo $this->translator()->_('show.generateThumbnails'); ?></span>
@@ -52,34 +51,17 @@ defined('APP_VALID_REQUEST') || die('You cannot access the script directly.');
 					</script>
 					<script type="dojo/method" data-dojo-event="onChange">
 					var uploader = dijit.byId("mediaHooksEditorUploader");
-					var params = {
-						mod: uploader.get("_module"),
-						thumbnail: dijit.byId("mediaHooksEditorGenerateThumb").get("checked") ? "true" : "false",
-						watermark: this.get("checked") ? "true" : "false"
-					};
-					uploader.set("url", uploader.get("_url") + "&" + dojo.objectToQuery(params));
+					uploader.set("appAddWatermark", this.get("checked") ? "true" : "false")
+							.set("url", uploader.get("appUploadUrlTemplate")
+												.replace(/###module###/g,	 uploader.get("appModule"))
+												.replace(/###thumbnail###/g, uploader.get("appGenerateThumbnails"))
+												.replace(/###watermark###/g, uploader.get("appAddWatermark")));
 					</script>
 				</span>
 				<span><?php echo $this->translator()->_('show.addWatermark'); ?></span>
 			</div>
 			
-			<div id="mediaHooksEditorUploader" data-dojo-type="dojox.form.Uploader" data-dojo-props="name: 'uploadedfile', flashFieldName: 'uploadedfile', deferredUploading: true, multiple: true, type: 'file', uploadOnSelect: true, label: '<?php echo $this->translator(true)->_('show.browseFilesAction'); ?>', url: '<?php echo $this->url(array(), 'file_file_upload'); ?>?PHPSESSID=<?php echo Zend_Session::getId(); ?>&name=uploadedfile&mod=<?php echo $this->module; ?>&thumbnail=false', _url: '<?php echo $this->url(array(), 'file_file_upload'); ?>?PHPSESSID=<?php echo Zend_Session::getId(); ?>', _module: '<?php echo $this->module; ?>', style: 'width: 200px'">
-				<script type="dojo/connect">
-				this.set("appUploader", dojo.isIE ? "flash" : "html5");
-				this.set("_url", this.get("_url") + "&uploader=" + this.get("appUploader"));
-				this.set("url", this.get("url") + "&uploader=" + this.get("appUploader"));
-				</script>
-				<script type="dojo/method" data-dojo-event="onProgress" data-dojo-args="evt">
-				dijit.byId("mediaHooksEditorUploaderProgress").update({
-					progress: evt.percent.substring(0, evt.percent.length - 1)
-				});
-				</script>
-				<script type="dojo/method" data-dojo-event="onBegin" data-dojo-args="dataArray">
-				if ("html5" == this.get("appUploader")) {
-					this.set("disabled", true);
-				}
-				</script>
-			</div>
+			<div id="mediaHooksEditorUploader"></div>
 			
 			<div id="mediaHooksEditorUploaderProgress" data-dojo-type="dijit.ProgressBar"></div>
 		</form>
@@ -256,12 +238,14 @@ dojo.require("dijit.Toolbar");
 dojo.require("dijit.ToolbarSeparator");
 dojo.require("dijit.TooltipDialog");
 dojo.require("dojox.form.Uploader");
-dojo.require("core.js.dojo.dojox.form.uploader.plugins.HTML5");
-dojo.require("core.js.dojo.dojox.form.uploader.plugins.Flash");
 
 dojo.registerModulePath("media", "<?php echo $this->APP_STATIC_URL; ?>/modules/media");
 dojo.require("core.js.base.Encoder");
 dojo.require("core.js.Constant");
+
+dojo.isIE ? dojo.require("core.js.dojo.dojox.form.uploader.plugins.Flash")
+		  : dojo.require("core.js.dojo.dojox.form.uploader.plugins.HTML5");
+
 dojo.require("media.js.controllers.PhotoEditor");
 dojo.require("media.js.controllers.PhotoEditorMediator");
 dojo.require("media.hooks.editor.ImageListView");
@@ -285,8 +269,11 @@ dojo.addOnLoad(function() {
 			var module = (pos == -1) ? url : url.substr(0, pos); 
 
 			var uploader = dijit.byId("mediaHooksEditorUploader");
-			uploader.set("_module", module);
-			uploader.set("url", uploader.get("_url") + "&mod=" + uploader.get("_module") + "&thumbnail=" + (dijit.byId("mediaHooksEditorGenerateThumb").checked ? "true" : "false"));
+			uploader.set("appModule", module)
+					.set("url", uploader.get("appUploadUrlTemplate")
+										.replace(/###module###/g,	 uploader.get("appModule"))
+										.replace(/###thumbnail###/g, uploader.get("appGenerateThumbnails"))
+										.replace(/###watermark###/g, uploader.get("appAddWatermark")));
 		}
 	});
 	
@@ -300,24 +287,63 @@ dojo.addOnLoad(function() {
 						onCleaned: "/app/media/hooks/editor/onCleaned"
 					});
 
-	// Upload handler
-	var uploader = dijit.byId("mediaHooksEditorUploader");
-	uploader.showUploadedFile = function(dataArray) {
-		dojo.forEach(dataArray, function(file) {
-			imageListView.addImageItem(file);
-		});
-	};
-	dojo.connect(uploader, "onFileComplete", function(dataArray) {
-		if ("flash" == uploader.get("appUploader")) {
-			dataArray = dataArray.additionalParams.appUploadedFiles;
-			dataArray = core.js.base.Encoder.decode(dataArray);
-			uploader.showUploadedFile(dataArray);
+	////////// Upload handler //////////
+	var uploadType = dojo.isIE ? "flash" : "html5";
+	var uploader   = new dojox.form.Uploader({
+		name: "uploadedfile",
+		flashFieldName: "uploadedfile",
+		deferredUploading: true,
+		multiple: true,
+		type: "file",
+		uploadOnSelect: true,
+		label: "<?php echo $this->translator(true)->_('show.browseFilesAction'); ?>",
+		url: ("html5" == uploadType) ? "<?php echo $this->url(array(), 'file_file_upload'); ?>?PHPSESSID=<?php echo Zend_Session::getId(); ?>&name=uploadedfile&uploader=html5&mod=media"
+									 : "<?php echo $this->url(array(), 'file_file_upload'); ?>/media/false/false?PHPSESSID=<?php echo Zend_Session::getId(); ?>",
+		style: "width: 200px",
+		
+		// Increase it if you want to upload more files at the same time
+		// when use Flash uploader
+		serverTimeout: 10000,
+	
+		// Custom properties and methods
+		appUploadType: uploadType,
+		appModule: "media",
+		appGenerateThumbnails: "false",
+		appAddWatermark: "false",
+		appUploadUrlTemplate: ("html5" == uploadType) ? "<?php echo $this->url(array(), 'file_file_upload'); ?>?PHPSESSID=<?php echo Zend_Session::getId(); ?>&name=uploadedfile&uploader=html5&mod=###module###&thumbnail=###thumbnail###&watermark=###watermark###"
+									 				  : "<?php echo $this->url(array(), 'file_file_upload'); ?>/###module###/###thumbnail###/###watermark###?PHPSESSID=<?php echo Zend_Session::getId(); ?>",
+		
+		showUploadedImages: function(dataArray) {
+			dojo.forEach(dataArray, function(file) {
+				imageListView.addImageItem(file);
+			});
+		}
+	}, "mediaHooksEditorUploader");
+	
+	dojo.connect(uploader, "onBegin", function() {
+		if ("html5" == uploader.get("appUploadType")) {
+			uploader.set("disabled", true);
 		}
 	});
+	
+	dojo.connect(uploader, "onProgress", function(evt) {
+		dijit.byId("mediaHooksEditorUploaderProgress").update({
+			progress: evt.percent.substring(0, evt.percent.length - 1)
+		});
+	});
+	
+	dojo.connect(uploader, "onFileComplete", function(dataArray) {
+		if ("flash" == uploader.get("appUploadType")) {
+			dataArray = dataArray.additionalParams.appUploadedFiles;
+			dataArray = core.js.base.Encoder.decode(dataArray);
+			uploader.showUploadedImages(dataArray);
+		}
+	});
+	
 	dojo.connect(uploader, "onComplete", function(dataArray) {
-		if ("html5" == uploader.get("appUploader")) {
+		if ("html5" == uploader.get("appUploadType")) {
 			uploader.set("disabled", false);
-			uploader.showUploadedFile(dataArray);
+			uploader.showUploadedImages(dataArray);
 		}
 	});
 
@@ -361,7 +387,7 @@ dojo.addOnLoad(function() {
 	}, "mediaHooksEditorRedoButton"));
 	mediaHooksEditor.setEditorMediator(mediaHooksEditorMediator);
 
-	// Save handler
+	////////// Save handler //////////
 	dojo.subscribe("/app/media/hooks/editor/onSave", mediaHooksEditor, function() {
 		mediaHooksEditor.save();
 	});
@@ -374,7 +400,7 @@ dojo.addOnLoad(function() {
 		mediaHooksEditor.clean();
 	});
 
-	// Processing handler
+	////////// Processing handler //////////
 	dojo.subscribe("/app/media/hooks/editor/onRotate", mediaHooksEditor, function(angle) {
 		mediaHooksEditor.rotate(angle);
 	});
@@ -388,7 +414,7 @@ dojo.addOnLoad(function() {
 		mediaHooksEditor.zoom(numOfPercents);
 	});
 
-	// Resize handler
+	////////// Resize handler //////////
 	dojo.subscribe("/app/media/hooks/editor/onSetResizeBy", mediaHooksEditor, function(resizeBy) {
 		mediaHooksEditor.setResizeBy(resizeBy);
 	});

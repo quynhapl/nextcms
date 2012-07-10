@@ -31,7 +31,9 @@ dojo.declare("core.js.dojo.dojox.form.uploader.plugins.Flash", dojox.form.upload
 	
 	_setUrlAttr: function(/*String*/ url) {
 		// I need to rebuild the embed flash when set new upload URL
-		if (this.inputNode && this.url && url && this.url != url) {
+		if (this.inputNode && this.url && url &&
+				(this.url != url) && ("flash" == this.uploadType))
+		{
 			this.url = url;
 			var node = this.inputNode;
 			var handler = dojo.connect(this, "onLoad", this, function() {
