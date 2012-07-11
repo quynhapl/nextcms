@@ -10,7 +10,7 @@
  * @package		util
  * @subpackage	hooks
  * @since		1.0
- * @version		2012-04-06
+ * @version		2012-07-11
  */
 
 defined('APP_VALID_REQUEST') || die('You cannot access the script directly.');
@@ -47,6 +47,8 @@ class Util_Hooks_Twitterupdater_Hook extends Core_Base_Extension_Hook
 	 */
 	public static function post($entity, $url)
 	{
+		Core_Services_Db::connect('slave');
+		
 		$options = Core_Services_Hook::getOptions('twitterupdater', 'util');
 		if (!$options || !isset($options['access_token']) || !isset($options['access_token_secret'])
 			|| !$options['access_token'] || !$options['access_token_secret'])
@@ -94,6 +96,8 @@ class Util_Hooks_Twitterupdater_Hook extends Core_Base_Extension_Hook
 	 */
 	public function configAction()
 	{
+		Core_Services_Db::connect('master');
+		
 		$options = Core_Services_Hook::getOptionsByInstance($this);
 		$this->view->assign(array(
 			'shortUrlService'	=> ($options && isset($options['shorturl_service'])) ? $options['shorturl_service'] : 'TinyUrlCom',
