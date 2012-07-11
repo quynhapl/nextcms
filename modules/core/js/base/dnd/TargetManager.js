@@ -9,7 +9,7 @@
  * @package		core
  * @subpackage	js
  * @since		1.0
- * @version		2012-05-25
+ * @version		2012-07-11
  */
 
 dojo.provide("core.js.base.dnd.TargetManager");
@@ -130,6 +130,25 @@ core.js.base.dnd.TargetManager.getInstance = function() {
 		core.js.base.dnd.TargetManager._instance = new core.js.base.dnd.TargetManager();
 	}
 	return core.js.base.dnd.TargetManager._instance;	// core.js.base.dnd.TargetManager
+};
+
+core.js.base.dnd.TargetManager.getThumbnails = function(/*DomNode*/ node) {
+	// summary:
+	//		Checks whether a node contains the thumbnails in all sizes
+	//		The thumbnails are encoded in JSON format and set as value of
+	//		the "data-app-dndthumbnails" attribute
+	var thumbnails = dojo.attr(node, "data-app-dndthumbnails");
+	if (!thumbnails) {
+		return false;		// Boolean
+	}
+	var thumbs = dojo.fromJson(thumbnails);
+	var sizes  = ["original", "square", "thumbnail", "small", "crop", "medium", "large"];
+	for (var i in sizes) {
+		if (!thumbs[sizes[i]]) {
+			return false;		// Boolean
+		}
+	}
+	return thumbs;	// Object
 };
 
 ////////// COMMON HANDLERS //////////

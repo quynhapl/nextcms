@@ -216,26 +216,15 @@ core.js.base.Resource.loadCss("<?php echo $this->APP_STATIC_URL; ?>/static/js/do
 						});
 						</script>
 						<script type="dojo/method" data-dojo-event="onDropExternal" data-dojo-args="source, nodes, copy">
-						var thumbnails = dojo.attr(nodes[0], "data-app-dndthumbnails");
-						if (!thumbnails) {
+						var thumbs = core.js.base.dnd.TargetManager.getThumbnails(nodes[0]);
+						if (thumbs == false) {
 							return;
 						}
-						var thumbs = dojo.fromJson(thumbnails);
-						var ok	   = true;
-						var sizes  = ["original", "square", "thumbnail", "small", "crop", "medium", "large"];
-						for (var i in sizes) {
-							if (!thumbs[sizes[i]]) {
-								ok = false;
-								break;
-							}
-						}
-						if (ok) {
-							dojo.attr("contentArticleEditCover", "value", thumbnails);
-							dojo.query("img", this.node).orphan();
-							dojo.create("img", {
-								src: core.js.Constant.ROOT_URL + thumbs.crop
-							}, this.node);
-						}
+						dojo.attr("contentArticleEditCover", "value", dojo.toJson(thumbs));
+						dojo.query("img", this.node).orphan();
+						dojo.create("img", {
+							src: core.js.Constant.ROOT_URL + thumbs.crop
+						}, this.node);
 						</script>
 						<?php if ($this->article->image_crop) : ?>
 						<img src="<?php echo $this->APP_ROOT_URL . $this->article->image_crop; ?>" />
