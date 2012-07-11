@@ -2,5 +2,10 @@
 	"_about": {
 		"description": "Show a slideshow of all images found in a given content",
 		"title": "Slideshow"
+	},
+	"config": {
+		"duration": "Duration time of the slideshow (in milliseconds)", 
+		"durationRequired": "The duration time is required",
+		"runSlideshowAutomatically": "Run slideshow automatically"
 	}
 }

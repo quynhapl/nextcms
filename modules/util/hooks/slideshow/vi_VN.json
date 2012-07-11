@@ -2,5 +2,10 @@
 	"_about": {
 		"description": "Hiển thị trình chiếu gồm tất cả các ảnh tìm thấy trong nội dung nào đó",
 		"title": "Trình chiếu"
+	},
+	"config": {
+		"duration": "Thời gian hiển thị mỗi slide (tính theo mili giây)", 
+		"durationRequired": "Thời gian hiển thị là bắt buộc",
+		"runSlideshowAutomatically": "Chạy trình chiếu tự động"
 	}
 }

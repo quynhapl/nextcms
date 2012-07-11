@@ -1,0 +1,38 @@
+<?php
+/**
+ * NextCMS
+ * 
+ * @author		Nguyen Huu Phuoc <thenextcms@gmail.com>
+ * @copyright	Copyright (c) 2011 - 2012, Nguyen Huu Phuoc
+ * @license		http://nextcms.org/license.txt	(GNU GPL version 2 or later)
+ * @link		http://nextcms.org
+ * @category	modules
+ * @package		util
+ * @subpackage	hooks
+ * @since		1.0
+ * @version		2012-07-11
+ */
+
+defined('APP_VALID_REQUEST') || die('You cannot access the script directly.');
+?>
+
+<div class="appFormRow">
+	<div data-dojo-type="dijit.form.CheckBox" data-dojo-props="name: 'autorun', value: 'true', checked: <?php if ('true' == $this->autorun) : ?>true<?php else: ?>false<?php endif; ?>">
+		<script type="dojo/connect" data-dojo-event="onChange" data-dojo-args="value">
+		if (!value) {
+			dijit.byId("utilHooksSlideshowConfigDuration").set("value", 0);
+		}
+		</script>
+	</div>
+	<?php echo $this->translator()->_('config.runSlideshowAutomatically'); ?>
+</div>
+
+<div class="appFormRow">
+	<label class="appTopLabel" for="duration"><?php echo $this->translator()->_('config.duration'); ?>:</label>
+	<input id="utilHooksSlideshowConfigDuration" data-dojo-type="dijit.form.ValidationTextBox" data-dojo-props="name: 'duration', value: '<?php echo $this->duration; ?>', style: 'width: 100px', required: true, missingMessage: '<?php echo $this->translator(true)->_('config.durationRequired'); ?>'" />
+</div>
+
+<script type="text/javascript">
+dojo.require("dijit.form.CheckBox");
+dojo.require("dijit.form.ValidationTextBox");
+</script>

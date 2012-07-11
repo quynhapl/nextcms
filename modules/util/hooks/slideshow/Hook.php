@@ -10,7 +10,7 @@
  * @package		util
  * @subpackage	hooks
  * @since		1.0
- * @version		2012-05-30
+ * @version		2012-07-11
  */
 
 defined('APP_VALID_REQUEST') || die('You cannot access the script directly.');
@@ -47,5 +47,47 @@ class Util_Hooks_Slideshow_Hook extends Core_Base_Extension_Hook
 	 */
 	public function showAction()
 	{
+		Core_Services_Db::connect('slave');
+		
+		$options = Core_Services_Hook::getOptionsByInstance($this);
+		$this->view->assign(array(
+			'autorun'  => ($options && isset($options['autorun'])) ? $options['autorun'] : 'true',
+			'duration' => ($options && isset($options['duration'])) ? $options['duration'] : 5000,
+		));
+	}
+	
+	/**
+	 * Shows configuration form
+	 * 
+	 * @return void
+	 */
+	public function configAction()
+	{
+		Core_Services_Db::connect('master');
+		
+		$options = Core_Services_Hook::getOptionsByInstance($this);
+		$this->view->assign(array(
+			'autorun'  => ($options && isset($options['autorun'])) ? $options['autorun'] : 'true',
+			'duration' => ($options && isset($options['duration'])) ? $options['duration'] : 5000,
+		));
+	}
+	
+	/**
+	 * Saves the hook's options
+	 * 
+	 * @return string
+	 */
+	public function saveAction()
+	{
+		Core_Services_Db::connect('master');
+		
+		$request = $this->getRequest();
+		$hook	 = Core_Services_Hook::getHookInstance('slideshow', 'util');
+		$options = array(
+			'autorun'  => $request->getParam('autorun') ? 'true' : 'false',
+			'duration' => $request->getParam('duration', 5000),
+		);
+		$result = Core_Services_Hook::setOptionsForInstance($this, $options);
+		return $result ? 'true' : 'false';
 	}
 }
