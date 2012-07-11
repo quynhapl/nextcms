@@ -10,7 +10,7 @@
  * @package		content
  * @subpackage	views
  * @since		1.0
- * @version		2012-06-12
+ * @version		2012-07-11
  */
 
 defined('APP_VALID_REQUEST') || die('You cannot access the script directly.');
@@ -209,11 +209,23 @@ core.js.base.Resource.loadCss("<?php echo $this->APP_STATIC_URL; ?>/static/js/do
 						</script>
 						<script type="dojo/method" data-dojo-event="onDropExternal" data-dojo-args="source, nodes, copy">
 						var thumbnails = dojo.attr(nodes[0], "data-app-dndthumbnails");
-						if (thumbnails) {
+						if (!thumbnails) {
+							return;
+						}
+						var thumbs = dojo.fromJson(thumbnails);
+						var ok	   = true;
+						var sizes  = ["original", "square", "thumbnail", "small", "crop", "medium", "large"];
+						for (var i in sizes) {
+							if (!thumbs[sizes[i]]) {
+								ok = false;
+								break;
+							}
+						}
+						if (ok) {
 							dojo.attr("contentArticleAddCover", "value", thumbnails);
 							dojo.query("img", this.node).orphan();
 							dojo.create("img", {
-								src: core.js.Constant.ROOT_URL + dojo.fromJson(thumbnails).crop
+								src: core.js.Constant.ROOT_URL + thumbs.crop
 							}, this.node);
 						}
 						</script>
