@@ -9,7 +9,7 @@
  * @package		media
  * @subpackage	js
  * @since		1.0
- * @version		2012-03-28
+ * @version		2012-07-11
  */
 
 dojo.provide("media.js.views.PlaylistListView");
@@ -17,6 +17,7 @@ dojo.provide("media.js.views.PlaylistListView");
 dojo.require("dojo.dnd.Source");
 
 dojo.require("core.js.base.controllers.ActionProvider");
+dojo.require("core.js.base.dnd.TargetManager");
 dojo.require("media.js.views.PlaylistItemView");
 
 dojo.declare("media.js.views.PlaylistListView", null, {
@@ -57,9 +58,9 @@ dojo.declare("media.js.views.PlaylistListView", null, {
 				new dojo.dnd.Target(coverNode, {
 					accept: ["appDndImage"],
 					onDropExternal: function(source, nodes, copy) {
-						var thumbnails = dojo.attr(nodes[0], "data-app-dndthumbnails");
-						if (thumbnails) {
-							_this.onUpdatePoster(playlistItemView, dojo.fromJson(thumbnails));
+						var thumbnails = core.js.base.dnd.TargetManager.getThumbnails(nodes[0]);
+						if (thumbnails != false) {
+							_this.onUpdatePoster(playlistItemView, thumbnails);
 						}
 					}
 				});
