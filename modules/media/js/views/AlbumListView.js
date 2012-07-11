@@ -9,7 +9,7 @@
  * @package		media
  * @subpackage	js
  * @since		1.0
- * @version		2012-03-28
+ * @version		2012-07-11
  */
 
 dojo.provide("media.js.views.AlbumListView");
@@ -17,6 +17,7 @@ dojo.provide("media.js.views.AlbumListView");
 dojo.require("dojo.dnd.Source");
 
 dojo.require("core.js.base.controllers.ActionProvider");
+dojo.require("core.js.base.dnd.TargetManager");
 dojo.require("media.js.views.AlbumItemView");
 
 dojo.declare("media.js.views.AlbumListView", null, {
@@ -67,9 +68,9 @@ dojo.declare("media.js.views.AlbumListView", null, {
 				new dojo.dnd.Target(coverNode, {
 					accept: ["appDndImage"],
 					onDropExternal: function(source, nodes, copy) {
-						var thumbnails = dojo.attr(nodes[0], "data-app-dndthumbnails");
-						if (thumbnails) {
-							_this.onUpdateCover(albumItemView, dojo.fromJson(thumbnails));
+						var thumbnails = core.js.base.dnd.TargetManager.getThumbnails(nodes[0]);
+						if (thumbnails != false) {
+							_this.onUpdateCover(albumItemView, thumbnails);
 						}
 					}
 				});
