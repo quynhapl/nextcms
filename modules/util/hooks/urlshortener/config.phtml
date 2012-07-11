@@ -10,7 +10,7 @@
  * @package		util
  * @subpackage	hooks
  * @since		1.0
- * @version		2011-12-05
+ * @version		2012-07-11
  */
 
 defined('APP_VALID_REQUEST') || die('You cannot access the script directly.');
@@ -18,7 +18,7 @@ defined('APP_VALID_REQUEST') || die('You cannot access the script directly.');
 
 <div class="appFormRow">
 	<label for="adapter"><?php echo $this->translator()->_('config.service'); ?>:</label>
-	<select data-dojo-type="dijit.form.Select" data-dojo-props="name: 'adapter'">
+	<select data-dojo-type="dijit.form.Select" data-dojo-props="name: 'adapter', value: '<?php echo $this->adapter; ?>'">
 		<option value="TinyUrlCom">tinyurl.com</option>
 		<option value="IsGd">is.gd</option>
 		<option value="JdemCz">jdem.cz</option>
