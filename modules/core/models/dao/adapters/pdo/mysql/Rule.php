@@ -10,7 +10,7 @@
  * @package		core
  * @subpackage	models
  * @since		1.0
- * @version		2011-10-31
+ * @version		2012-07-11
  */
 
 defined('APP_VALID_REQUEST') || die('You cannot access the script directly.');
@@ -68,12 +68,22 @@ class Core_Models_Dao_Adapters_Pdo_Mysql_Rule extends Core_Base_Models_Dao
 	 */
 	public function setRolePermissions($role, $privileges)
 	{
+		$privileges = array_unique($privileges);
+		
 		// Reset the role's privileges
-		$this->_conn->delete($this->_prefix . 'core_rule', 
-							array(
-								'obj_id = ?'   => $role->role_id,
-								'obj_type = ?' => Core_Models_Rule::TYPE_ROLE,
-							));
+		$modules = array();
+		foreach ($privileges as $privilege) {
+			list($action, $controller, $module, $extensionType) = explode('_', $privilege);
+			if (!in_array($module, $modules)) {
+				$modules[] = $module;
+				$this->_conn->delete($this->_prefix . 'core_rule',
+									array(
+										'obj_id = ?'	  => $role->role_id,
+										'obj_type = ?'	  => Core_Models_Rule::TYPE_ROLE,
+										'module_name = ?' => $module,
+									));
+			}
+		}
 		
 		// Set permissions to role
 		foreach ($privileges as $privilege) {
@@ -97,12 +107,22 @@ class Core_Models_Dao_Adapters_Pdo_Mysql_Rule extends Core_Base_Models_Dao
 	 */
 	public function setUserPermissions($user, $privileges)
 	{
+		$privileges = array_unique($privileges);
+		
 		// Reset user's permissions
-		$this->_conn->delete($this->_prefix . 'core_rule',
-							array(
-								'obj_id = ?'   => $user->user_id,
-								'obj_type = ?' => Core_Models_Rule::TYPE_USER,
-							));
+		$modules = array();
+		foreach ($privileges as $privilege) {
+			list($action, $controller, $module, $extensionType) = explode('_', $privilege);
+			if (!in_array($module, $modules)) {
+				$modules[] = $module;
+				$this->_conn->delete($this->_prefix . 'core_rule',
+									array(
+										'obj_id = ?'	  => $user->user_id,
+										'obj_type = ?'	  => Core_Models_Rule::TYPE_USER,
+										'module_name = ?' => $module,
+									));
+			}
+		}
 		
 		// Set permissions to user
 		foreach ($privileges as $privilege) {

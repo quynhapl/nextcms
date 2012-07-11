@@ -10,7 +10,7 @@
  * @package		media
  * @subpackage	configs
  * @since		1.0
- * @version		2012-04-20
+ * @version		2012-07-11
  */
 
 defined('APP_VALID_REQUEST') || die('You cannot access the script directly.');
@@ -58,7 +58,7 @@ return array(
 		'translationKey' => '_permission.config.description',
 		'description'	 => 'Configure module',
 		'actions'		 => array(
-			'activate' => array(
+			'config' => array(
 				'translationKey' => '_permission.config.actions.config',
 				'description'	 => 'Configure module',
 			),

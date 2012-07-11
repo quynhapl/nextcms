@@ -10,7 +10,7 @@
  * @package		core
  * @subpackage	services
  * @since		1.0
- * @version		2011-10-31
+ * @version		2012-07-11
  */
 
 defined('APP_VALID_REQUEST') || die('You cannot access the script directly.');
@@ -95,7 +95,8 @@ class Core_Services_Rule
 	 * Sets role permissions
 	 * 
 	 * @param Core_Models_Role $role The role instance
-	 * @param array $privileges Array of privileges. Each item is a string defined as actioName_controllerName_moduleName
+	 * @param array $privileges Array of privileges. Each item is a string defined as actionName_controllerName_moduleName_extensionType
+	 * extensionType can be "module", "hook", "plugin", "task", or "widget"
 	 * @return bool
 	 */
 	public static function setRolePermissions($role, $privileges)
@@ -123,7 +124,8 @@ class Core_Services_Rule
 	 * Sets user permissions
 	 * 
 	 * @param Core_Models_User $user The user instance
-	 * @param array $privileges Array of privileges. Each item is a string defined as actioName_controllerName_moduleName
+	 * @param array $privileges Array of privileges. Each item is a string defined as actionName_controllerName_moduleName_extensionType
+	 * extensionType can be "module", "hook", "plugin", "task", or "widget"
 	 * @return bool
 	 */
 	public static function setUserPermissions($user, $privileges)
