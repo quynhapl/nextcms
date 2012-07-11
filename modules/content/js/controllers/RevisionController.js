@@ -9,7 +9,7 @@
  * @package		content
  * @subpackage	js
  * @since		1.0
- * @version		2012-02-14
+ * @version		2012-07-11
  */
 
 dojo.provide("content.js.controllers.RevisionController");
@@ -131,7 +131,7 @@ dojo.declare("content.js.controllers.RevisionController", null, {
 			}]);
 			
 			if (data.result == "APP_RESULT_OK") {
-				// this.searchRevisions();
+				this.searchRevisions();
 			}
 		});
 		
