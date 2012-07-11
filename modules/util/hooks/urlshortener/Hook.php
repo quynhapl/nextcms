@@ -10,7 +10,7 @@
  * @package		util
  * @subpackage	hooks
  * @since		1.0
- * @version		2012-06-14
+ * @version		2012-07-11
  */
 
 defined('APP_VALID_REQUEST') || die('You cannot access the script directly.');
@@ -76,6 +76,12 @@ class Util_Hooks_Urlshortener_Hook extends Core_Base_Extension_Hook
 	 */
 	public function configAction()
 	{
+		Core_Services_Db::connect('master');
+		
+		$options = Core_Services_Hook::getOptionsByInstance($this);
+		$this->view->assign(array(
+			'adapter' => ($options && isset($options['adapter'])) ? $options['adapter'] : 'TinyUrlCom',
+		));
 	}
 	
 	/**
