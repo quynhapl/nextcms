@@ -9,7 +9,7 @@
  * @package		media
  * @subpackage	js
  * @since		1.0
- * @version		2012-03-28
+ * @version		2012-07-11
  */
 
 dojo.provide("media.js.views.VideoListView");
@@ -17,6 +17,7 @@ dojo.provide("media.js.views.VideoListView");
 dojo.require("dojo.dnd.Source");
 
 dojo.require("core.js.base.controllers.ActionProvider");
+dojo.require("core.js.base.dnd.TargetManager");
 dojo.require("media.js.views.VideoItemView");
 
 dojo.declare("media.js.views.VideoListView", null, {
@@ -69,8 +70,10 @@ dojo.declare("media.js.views.VideoListView", null, {
 					new dojo.dnd.Target(posterNode, {
 						accept: ["appDndImage"],
 						onDropExternal: function(source, nodes, copy) {
-							var thumbnails = dojo.attr(nodes[0], "data-app-dndthumbnails");
-							_this.onUpdatePoster(videoItemView, dojo.fromJson(thumbnails));
+							var thumbnails = core.js.base.dnd.TargetManager.getThumbnails(nodes[0]);
+							if (thumbnails != false) {
+								_this.onUpdatePoster(videoItemView, thumbnails);
+							}
 						}
 					});
 				})();
