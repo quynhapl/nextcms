@@ -9,7 +9,7 @@
  * @package		content
  * @subpackage	js
  * @since		1.0
- * @version		2012-03-28
+ * @version		2012-07-11
  */
 
 dojo.provide("content.js.views.ArticleListView");
@@ -17,6 +17,7 @@ dojo.provide("content.js.views.ArticleListView");
 dojo.require("dojo.dnd.Source");
 
 dojo.require("core.js.base.controllers.ActionProvider");
+dojo.require("core.js.base.dnd.TargetManager");
 dojo.require("content.js.views.ArticleItemView");
 
 dojo.declare("content.js.views.ArticleListView", null, {
@@ -69,8 +70,10 @@ dojo.declare("content.js.views.ArticleListView", null, {
 					new dojo.dnd.Target(coverNode, {
 						accept: ["appDndImage"],
 						onDropExternal: function(source, nodes, copy) {
-							var thumbnails = dojo.attr(nodes[0], "data-app-dndthumbnails");
-							_this.onUpdateCover(articleItemView, dojo.fromJson(thumbnails));
+							var thumbnails = core.js.base.dnd.TargetManager.getThumbnails(nodes[0]);
+							if (thumbnails != false) {
+								_this.onUpdateCover(articleItemView, thumbnails);
+							}
 						}
 					});
 				})();
