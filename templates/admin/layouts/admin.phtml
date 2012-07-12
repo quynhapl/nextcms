@@ -10,7 +10,7 @@
  * @package		admin
  * @subpackage	layouts
  * @since		1.0
- * @version		2012-07-11
+ * @version		2012-07-12
  */
 
 defined('APP_VALID_REQUEST') || die('You cannot access the script directly.');
@@ -78,7 +78,7 @@ defined('APP_VALID_REQUEST') || die('You cannot access the script directly.');
 
 					<!-- HomepageMenuItem -->
 					<div data-dojo-type="dijit.MenuItem" data-dojo-props="iconClass: 'appIcon appHomeIcon'">
-						<a href="<?php echo $this->baseUrl(); ?>" class="appTopMenuItem" data-app-ajax="false"><?php echo $this->translator()->setLanguageDir('/modules/core/languages')->_('global.layout.homepage'); ?></a>
+						<a href="<?php echo $this->APP_URL; ?>" class="appTopMenuItem" data-app-ajax="false"><?php echo $this->translator()->setLanguageDir('/modules/core/languages')->_('global.layout.homepage'); ?></a>
 					</div>
 					<!-- /HomepageMenuItem -->
 					
