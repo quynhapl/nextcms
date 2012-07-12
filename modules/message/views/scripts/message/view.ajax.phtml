@@ -10,7 +10,7 @@
  * @package		message
  * @subpackage	views
  * @since		1.0
- * @version		2012-03-10
+ * @version		2012-07-12
  */
 
 defined('APP_VALID_REQUEST') || die('You cannot access the script directly.');
@@ -92,7 +92,7 @@ $this->headTitle()->set($this->translator()->_('message.view.title'));
 						
 						<?php if ($file = Zend_Json::decode($attachment)) : ?>
 						<div style="padding: 4px">
-							<b><a href="<?php echo $this->url(array(), 'message_attachment_download'); ?>?path=<?php echo $this->encryptor()->encrypt($file['path']); ?>" target="_blank"><?php echo $file['name']; ?></a></b> (.<?php echo $file['extension']; ?>, <?php echo $this->fileFormatter()->formatSize($file['size']); ?>)
+							<b><a href="<?php echo $this->url(array(), 'message_attachment_download'); ?>?path=<?php echo $this->encryptor()->encrypt($this->encoder()->encode(array('path' => $file['path'], 'receiver' => Zend_Auth::getInstance()->getIdentity()->user_id))); ?>" target="_blank"><?php echo $file['name']; ?></a></b> (.<?php echo $file['extension']; ?>, <?php echo $this->fileFormatter()->formatSize($file['size']); ?>)
 						</div>
 						<?php endif; ?>
 						

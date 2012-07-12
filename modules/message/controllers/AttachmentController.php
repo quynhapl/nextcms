@@ -10,7 +10,7 @@
  * @package		message
  * @subpackage	controllers
  * @since		1.0
- * @version		2012-07-10
+ * @version		2012-07-12
  */
 
 defined('APP_VALID_REQUEST') || die('You cannot access the script directly.');
@@ -47,9 +47,15 @@ class Message_AttachmentController extends Zend_Controller_Action
 		
 		$request = $this->getRequest();
 		$path	 = $request->getParam('path');
-		$path	 = Core_Services_Encryptor::decrypt($path);
+		$path	 = $this->view->encryptor()->decrypt($path);
+		$path	 = $this->view->encoder()->decode($path);
 		$user    = Zend_Auth::getInstance()->getIdentity();
-		$file    = Message_Services_Attachment::download($path, $user);
+		
+		if ($path['receiver'] != $user->user_id) {
+			throw new Exception('Cannot download the attachment because you are not the receiver');
+		}
+		
+		$file    = Message_Services_Attachment::download($path['path'], $user);
 		if (file_exists($file)) {
 			header('Content-Description: File Transfer');
 			header('Content-Type: application/octet-stream');

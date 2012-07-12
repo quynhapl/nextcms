@@ -10,7 +10,7 @@
  * @package		message
  * @subpackage	services
  * @since		1.0
- * @version		2012-07-10
+ * @version		2012-07-12
  */
 
 defined('APP_VALID_REQUEST') || die('You cannot access the script directly.');
@@ -63,9 +63,6 @@ class Message_Services_Attachment
 		
 		$path = ltrim($path, '/');
 		$path = rtrim($path, '/');
-		if (!preg_match('/^' . $user->user_id . '\/(\d{4})\/(\d{2})\/(.+)$/', $path)) {
-			throw new Exception('Invalid path');
-		}
 		
 		// Only allow users who receive the private message to download the attachment
 		$conn		 = Core_Services_Db::getConnection();
