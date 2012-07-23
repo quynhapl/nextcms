@@ -9,10 +9,8 @@
  * @package		core
  * @subpackage	js
  * @since		1.0
- * @version		2011-12-11
+ * @version		2012-07-24
  */
-
-dojo.provide("core.js.base.I18N");
 
 // This class provides the simillar API with dojo.i18n package.
 // dojo.i18n supports the language file in *.js. Meanwhile, I need a file
@@ -36,7 +34,7 @@ dojo.provide("core.js.base.I18N");
 // |	</script>
 //
 // - Then, get the object that consists of all translated items:
-// |	dojo.addOnLoad(function() {
+// |	dojoReady(function() {
 // |		core.js.base.I18N.requireLocalization("yourModuleName/languages");
 // |		var items = core.js.base.I18N.getLocalization("yourModuleName/languages");
 // |		console.log(items);
@@ -57,85 +55,76 @@ dojo.provide("core.js.base.I18N");
 // then you can access the translated items as follow:
 // |	var loadingString = core.js.base.I18N.getLocalization("core/languages")._global.loadingAction;
 
-core.js.base.I18N.requireLocalization = function(/*String*/ path, /*String?*/ locale) {
-	// summary:
-	//		Loads the language file
-	// path:
-	//		Path to the language file. The popular cases are:
-	//		- moduleName/languages
-	//		- moduleName/plugins/pluginName
-	//		- moduleName/hooks/hookName
-	//		- moduleName/widgets/widgetName
-	if (!locale) {
-		locale = core.js.base.I18N._locale;
-	}
-	var paths = path.split("/");
-	var bundlePackage = paths.join(".") + "." + locale;
-
-	// Check if the package is loaded or not
-	// The package is defined as appModuleName.languages
-	// DOJO LESSON: Use dojo._loadedModules to see the list of modules that have
-	// been loaded:
-	// 		console.log(dojo._loadedModules);
-	var bundle = dojo._loadedModules[bundlePackage];
-	if (!bundle) {
-		bundle = dojo["provide"](bundlePackage);
-		var moduleName = paths.splice(0, 1)[0];
-		var syms = dojo._getModuleSymbols(moduleName);
-		
-		// Path to language file
-		var file = syms.join("/") + "/" + paths.join("/") + "/" + locale + ".json";
-
-		var loaded = false;
-		loaded = dojo._loadPath(file, null, function(hash) {
-			hash = hash.root || hash;
-//			var clazz = function() {
-//			};
-//			clazz.prototype = parent;
-//			bundle[locale] = new clazz();
-			bundle[locale] = {};
-			for ( var j in hash) {
-				bundle[locale][j] = hash[j];
-			}
-		});
-	}
-};
-
-core.js.base.I18N.getLocalization = function(/*String*/ path, /*String?*/ locale) {
-	if (!locale) {
-		locale = core.js.base.I18N._locale;
-	}
-	var paths = path.split("/");
-	var bundlePackage = paths.join(".") + "." + locale;
-	var bundle = dojo._loadedModules[bundlePackage];
-
-	if (bundle) {
-		var localization = bundle[locale];
-
-		if (localization) {
-//			var clazz = function() {
-//			};
-//			clazz.prototype = localization;
-//			return new clazz(); // Object
-			return localization; // Object
+define([
+    "dojo/_base/xhr",
+    "dojo/json",
+	"dojo/_base/kernel",
+	"dojo/_base/loader"
+	], function(dojoXhr, dojoJson, dojo) {
+	dojo.provide("core.js.base.I18N");
+	
+	core.js.base.I18N._cacheBundlePackages = {};
+	
+	core.js.base.I18N.requireLocalization = function(/*String*/ path, /*String?*/ locale) {
+		// summary:
+		//		Loads the language file
+		// path:
+		//		Path to the language file. The popular cases are:
+		//		- moduleName/languages
+		//		- moduleName/plugins/pluginName
+		//		- moduleName/hooks/hookName
+		//		- moduleName/widgets/widgetName
+		if (!locale) {
+			locale = core.js.base.I18N._locale;
 		}
-	}
+		var paths  = path.split("/");
+		var bundle = paths.join(".") + "." + locale;
 
-	throw new Error("Locale not found: path=" + path + ", locale=" + locale);
-};
+		// Check if the package is loaded or not
+		// The package is defined as appModuleName.languages
+		var module = paths.splice(0, 1)[0];
+		var file   = module + "/" + paths.join("/") + "/" + locale + ".json";
+		file	   = require.toUrl(file);
+		
+		// FIXME: Use dojo.cache
+		if (!core.js.base.I18N._cacheBundlePackages[bundle]) {
+			dojoXhr.get({
+				url: file,
+				sync: true,
+				load: function(data) {
+					core.js.base.I18N._cacheBundlePackages[bundle] = dojoJson.parse(data);
+				}
+			});
+		}
+	};
 
-// The locale
-// It should be set at the top of page
-core.js.base.I18N._locale = "en_US";
+	core.js.base.I18N.getLocalization = function(/*String*/ path, /*String?*/ locale) {
+		if (!locale) {
+			locale = core.js.base.I18N._locale;
+		}
+		var paths  = path.split("/");
+		var bundle = paths.join(".") + "." + locale;
+		var cache  = core.js.base.I18N._cacheBundlePackages[bundle];
+		if (cache) {
+			return cache;
+		}
 
-core.js.base.I18N.setLocale = function(/*String*/ locale) {
-	// summary:
-	// 		Sets the locale (en_US, vi_VN, etc)
-	core.js.base.I18N._locale = locale;
-};
+		throw new Error("Locale not found: path=" + path + ", locale=" + locale);
+	};
 
-core.js.base.I18N.getLocale = function() {
-	// summary:
-	//		Gets the locale
-	return core.js.base.I18N._locale;	// String
-};
+	// The locale
+	// It should be set at the top of page
+	core.js.base.I18N._locale = "en_US";
+
+	core.js.base.I18N.setLocale = function(/*String*/ locale) {
+		// summary:
+		// 		Sets the locale (en_US, vi_VN, etc)
+		core.js.base.I18N._locale = locale;
+	};
+
+	core.js.base.I18N.getLocale = function() {
+		// summary:
+		//		Gets the locale
+		return core.js.base.I18N._locale;	// String
+	};
+});

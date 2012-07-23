@@ -9,31 +9,39 @@
  * @package		core
  * @subpackage	js
  * @since		1.0
- * @version		2012-06-12
+ * @version		2012-07-24
  */
 
-dojo.provide("core.js.base.Resource");
+define([
+	"dojo/dom-construct",
+	"dojo/_base/kernel",
+	"dojo/_base/loader",
+	"dojo/query"
+	], function(dojoDomConstruct, dojo) {
+	dojo.provide("core.js.base.Resource");
+	
+	core.js.base.Resource.loadCss = function(/*String*/ path) {
+		// summary:
+		//		Loads a given CSS file
+		if (dojo.query('link[type="text/css"][href="' + path + '"]').length == 0) {
+			dojoDomConstruct.create("link", {
+				href: path,
+				media: "screen",
+				rel: "stylesheet",
+				type: "text/css"
+			}, dojo.query("head")[0]);
+		}
+	};
+	
+	core.js.base.Resource.loadJs = function(/*String*/ path) {
+		// summary:
+		//		Loads a given JS file
+		if (dojo.query('script[type="text/javascript"][src="' + path + '"]').length == 0) {
+			dojoDomConstruct.create("script", {
+				type: "text/javascript",
+				src: path
+			}, dojo.query("head")[0]);
+		}
+	};
+});
 
-core.js.base.Resource.loadCss = function(/*String*/ path) {
-	// summary:
-	//		Loads a given CSS file
-	if (dojo.query('link[type="text/css"][href="' + path + '"]').length == 0) {
-		dojo.create("link", {
-			href: path,
-			media: "screen",
-			rel: "stylesheet",
-			type: "text/css"
-		}, dojo.query("head")[0]);
-	}
-};
-
-core.js.base.Resource.loadJs = function(/*String*/ path) {
-	// summary:
-	//		Loads a given JS file
-	if (dojo.query('script[type="text/javascript"][src="' + path + '"]').length == 0) {
-		dojo.create("script", {
-			type: "text/javascript",
-			src: path
-		}, dojo.query("head")[0]);
-	}
-};

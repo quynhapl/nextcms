@@ -10,7 +10,7 @@
  * @package		core
  * @subpackage	views
  * @since		1.0
- * @version		2012-06-12
+ * @version		2012-07-24
  */
 
 defined('APP_VALID_REQUEST') || die('You cannot access the script directly.');
@@ -21,8 +21,9 @@ $this->headTitle()->set($this->translator()->_('install.check.title'));
 ?>
 
 <script type="text/javascript">
-dojo.require("core.js.base.Resource");
-core.js.base.Resource.loadCss("<?php echo $this->APP_STATIC_URL; ?>/modules/core/css/admin/default/styles.css");
+require(["core/js/base/Resource"], function(resource) {
+	resource.loadCss("<?php echo $this->APP_STATIC_URL; ?>/modules/core/css/admin/default/styles.css");
+});
 </script>
 
 <!-- Extensions -->
@@ -48,5 +49,12 @@ core.js.base.Resource.loadCss("<?php echo $this->APP_STATIC_URL; ?>/modules/core
 <!-- /Files -->
 
 <script type="text/javascript">
-dijit.byId("appInstallNextButton").attr("disabled", <?php echo $this->pass ? "false" : "true"; ?>);
+require([
+	"dojo/ready",
+	"dijit/registry"
+	], function(dojoReady) {
+	dojoReady(function() {
+		dijit.registry.byId("appInstallNextButton").set("disabled", <?php echo $this->pass ? "false" : "true"; ?>);
+	});
+});
 </script>
