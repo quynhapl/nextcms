@@ -9,131 +9,138 @@
  * @package		core
  * @subpackage	js
  * @since		1.0
- * @version		2011-10-28
+ * @version		2012-07-24
  */
 
-dojo.provide("core.js.base.views.Helper");
-
-dojo.require("dojox.layout.ContentPane");
-dojo.require("dojox.widget.DialogSimple");
-dojo.require("dojox.widget.Standby");
-
-dojo.require("core.js.base.I18N");
-
-dojo.declare("core.js.base.views.Helper", null, {
-	// _id: String
-	_id: null,
-	
-	// _i18n: Object
-	_i18n: null,
-	
-	////////// HELPER CONTROLS //////////
-	
-	// _dialog: dijit.Dialog
-	//		Dialog for showing additional form
-	_dialog: null,
-	
-	// _pane: dojox.layout.ContentPane
-	//		The pane for showing additional UI
-	_pane: null,
-	
-	// _standby: dojox.widget.Standby
-	_standby: null,
-	
-	constructor: function(/*String*/ id) {
-		this._id = id;
-	},
-	
-	setLanguageData: function(/*Object*/ languageData) {
-		this._i18n = languageData;
-		return this;	// core.js.base.views.Helper
-	},
-	
-	setModule: function(/*String*/ module) {
-		core.js.base.I18N.requireLocalization(module + "/languages");
-		this._i18n = core.js.base.I18N.getLocalization(module + "/languages");
+define([
+	"dojo/_base/declare",
+	"dojo/_base/lang",
+	"dojo/on",
+	"dojo/topic",
+	"dijit/registry",
+	"dojo/parser",
+	"dojox/layout/ContentPane",
+	"dojox/widget/DialogSimple",
+	"dojox/widget/Standby",
+	"core/js/base/I18N"
+], function(dojoDeclare, dojoLang, dojoOn, dojoTopic) {
+	return dojoDeclare("core.js.base.views.Helper", null, {
+		// _id: String
+		_id: null,
 		
-		return this;	// core.js.base.views.Helper
-	},
-	
-	////////// MANAGE UI CONTROLS //////////
-	
-	showDialog: function(/*String*/ url, /*Object*/ settings) {
-		// summary:
-		//		Shows the dialog when creating request of given URL
-		settings = dojo.mixin({
-			loadingMessage: "<div style='text-align: center'><span class='dijitContentPaneLoading'>" + this._i18n.global._share.loadingAction + "</span></div>"
-		}, settings);
-		this._dialog = new dojox.widget.DialogSimple(settings);
-		this._dialog.set("href", url);
-		this._dialog.show();
+		// _i18n: Object
+		_i18n: null,
 		
-		return this._dialog;	// dojox.widget.DialogSimple
-	},
-	
-	closeDialog: function() {
-		// summary:
-		//		Closes the dialog that is created by the showDialog() method
-		if (this._dialog) {
-			// this._dialog.hide();
-			dijit.byId(this._id).removeChild(this._dialog);
-			this._dialog.destroyRecursive();
-			this._dialog = null;
-		}
-	},
-	
-	showPane: function(/*String*/ url, /*Object*/ settings) {
-		// summary:
-		//		Shows additional pane when creating request of given URL
-		var defaultSettings = {
-			region: "right",
-			splitter: true,
-			gutters: false,
-			minSize: 400,
-			style: "height: 100%; width: 40%",
-			loadingMessage: "<div class='appCenter'><div><span class='dijitContentPaneLoading'>" + this._i18n.global._share.loadingAction + "</span></div></div>"
-		};
-		settings = dojo.mixin(defaultSettings, settings);
-		if (this._pane == null) {
-			this._pane = new dojox.layout.ContentPane(settings);
-			dijit.byId(this._id).addChild(this._pane);
-		}
-		this._pane.set("href", url);
-		dojo.connect(this._pane, "onDownloadEnd", this, function() {
-			dojo.publish("/app/global/onLoadComplete", [ this._pane.get("href") ]);
-		});
+		////////// HELPER CONTROLS //////////
 		
-		return this._pane;	// dojox.layout.ContentPane
-	},
-	
-	removePane: function() {
-		// summary:
-		//		Removes additional pane which is created by showPane() method
-		if (this._pane != null) {
-			dijit.byId(this._id).removeChild(this._pane);
-			this._pane.destroyRecursive();
-			this._pane = null;
-		}
-	},
-	
-	showStandby: function() {
-		// summary:
-		//		Shows the Standby widget
-		if (this._standby == null) {
-			// Init the Standby widget
-			this._standby = new dojox.widget.Standby({
-				target: this._id,
-				imageText: this._i18n.global._share.loadingAction
+		// _dialog: dijit.Dialog
+		//		Dialog for showing additional form
+		_dialog: null,
+		
+		// _pane: dojox.layout.ContentPane
+		//		The pane for showing additional UI
+		_pane: null,
+		
+		// _standby: dojox.widget.Standby
+		_standby: null,
+		
+		constructor: function(/*String*/ id) {
+			this._id = id;
+		},
+		
+		setLanguageData: function(/*Object*/ languageData) {
+			this._i18n = languageData;
+			return this;	// core.js.base.views.Helper
+		},
+		
+		setModule: function(/*String*/ module) {
+			core.js.base.I18N.requireLocalization(module + "/languages");
+			this._i18n = core.js.base.I18N.getLocalization(module + "/languages");
+			
+			return this;	// core.js.base.views.Helper
+		},
+		
+		////////// MANAGE UI CONTROLS //////////
+		
+		showDialog: function(/*String*/ url, /*Object*/ settings) {
+			// summary:
+			//		Shows the dialog when creating request of given URL
+			settings = dojoLang.mixin({
+				loadingMessage: "<div style='text-align: center'><span class='dijitContentPaneLoading'>" + this._i18n.global._share.loadingAction + "</span></div>"
+			}, settings);
+			this._dialog = new dojox.widget.DialogSimple(settings);
+			this._dialog.set("href", url);
+			this._dialog.show();
+			
+			return this._dialog;	// dojox.widget.DialogSimple
+		},
+		
+		closeDialog: function() {
+			// summary:
+			//		Closes the dialog that is created by the showDialog() method
+			if (this._dialog) {
+				// this._dialog.hide();
+				dijit.registry.byId(this._id).removeChild(this._dialog);
+				this._dialog.destroyRecursive();
+				this._dialog = null;
+			}
+		},
+		
+		showPane: function(/*String*/ url, /*Object*/ settings) {
+			// summary:
+			//		Shows additional pane when creating request of given URL
+			var defaultSettings = {
+				region: "right",
+				splitter: true,
+				gutters: false,
+				minSize: 400,
+				style: "height: 100%; width: 40%",
+				loadingMessage: "<div class='appCenter'><div><span class='dijitContentPaneLoading'>" + this._i18n.global._share.loadingAction + "</span></div></div>"
+			};
+			settings = dojoLang.mixin(defaultSettings, settings);
+			if (this._pane == null) {
+				this._pane = new dojox.layout.ContentPane(settings);
+				dijit.registry.byId(this._id).addChild(this._pane);
+			}
+			this._pane.set("href", url);
+			
+			var self = this;
+			dojoOn(this._pane, "downloadend", function() {
+				dojoTopic.publish("/app/global/onLoadComplete", self._pane.get("href"));
 			});
-			document.body.appendChild(this._standby.domNode);
-			this._standby.startup();
+			
+			return this._pane;	// dojox.layout.ContentPane
+		},
+		
+		removePane: function() {
+			// summary:
+			//		Removes additional pane which is created by showPane() method
+			if (this._pane != null) {
+				dijit.registry.byId(this._id).removeChild(this._pane);
+				this._pane.destroyRecursive();
+				this._pane = null;
+			}
+		},
+		
+		showStandby: function() {
+			// summary:
+			//		Shows the Standby widget
+			if (this._standby == null) {
+				// Init the Standby widget
+				this._standby = new dojox.widget.Standby({
+					target: this._id,
+					imageText: this._i18n.global._share.loadingAction
+				});
+				document.body.appendChild(this._standby.domNode);
+				this._standby.startup();
+			}
+			this._standby.show();
+		},
+		
+		hideStandby: function() {
+			// summary:
+			//		Hides the Standby widget
+			this._standby.hide();
 		}
-		this._standby.show();
-	},
-	
-	hideStandby: function() {
-		// summary:
-		//		Hides the Standby widget
-		this._standby.hide();
-	}
+	});
 });

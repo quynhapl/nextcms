@@ -8,7 +8,7 @@
  * @link		http://nextcms.org
  * @category	bootstrap
  * @since		1.0
- * @version		2012-07-04
+ * @version		2012-07-24
  */
 
 // Exit if the PHP version does not meet the requirement.
@@ -25,7 +25,7 @@ define('APP_ROOT_DIR', dirname(__FILE__));
 define('APP_TEMP_DIR', APP_ROOT_DIR . DS . 'temp');
 
 // Version of Dojo and jQuery libraries
-define('APP_DOJO_VER',   '1.6.1');
+define('APP_DOJO_VER',   '1.7.3');
 define('APP_JQUERY_VER', '1.7.2');
 
 // This variable is used to prevent user from accessing the script directly.

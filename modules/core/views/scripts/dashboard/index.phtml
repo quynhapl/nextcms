@@ -10,7 +10,7 @@
  * @package		core
  * @subpackage	views
  * @since		1.0
- * @version		2012-05-30
+ * @version		2012-07-24
  */
 
 defined('APP_VALID_REQUEST') || die('You cannot access the script directly.');
@@ -37,62 +37,69 @@ $this->headTitle()->set($this->translator()->_('dashboard.index.title'));
 </div>
 
 <?php $this->script()->captureStart(); ?>
-dojo.require("dijit.layout.BorderContainer");
-dojo.require("dijit.layout.ContentPane");
-
-dojo.registerModulePath("core", "<?php echo $this->APP_STATIC_URL; ?>/modules/core");
-dojo.require("core.js.base.controllers.ActionProvider");
-dojo.require("core.js.controllers.LayoutController");
-dojo.require("core.js.base.views.Helper");
-dojo.require("core.js.views.LayoutToolbar");
-
-dojo.addOnLoad(function() {
-	// Don't load the widgets on user's dashboard if user is viewing other page
-	if (dojo.hash() == "") {
-		// Provide the actions
-		<?php foreach (array(
-						'core_extension_render',
-					) as $name) : ?>
-		core.js.base.controllers.ActionProvider.set("<?php echo $name; ?>", {
-			url: "<?php echo $this->url(array(), $name); ?>",
-			isAllowed: true
-		});
-		<?php endforeach; ?>
-	
-		var layoutData = <?php if ($this->layout) : ?><?php echo $this->layout; ?><?php else : ?>{"containers":[{"containers":[],"cls":"dojox.layout.GridContainer","numZones":3}],"cls":"dijit.layout.BorderContainer","region":"center","style":"height: 100%; width: 100%"}<?php endif; ?>;
+require([
+	"dojo/_base/xhr",
+	"dojo/aspect",
+	"dojo/json",
+	"dojo/ready",
+	"dojo/topic",
+	"dojo/hash",
+	"dojo/parser",
+	"dijit/layout/BorderContainer",
+	"dijit/layout/ContentPane",
+	"core/js/base/controllers/ActionProvider",
+	"core/js/controllers/LayoutController",
+	"core/js/base/views/Helper",
+	"core/js/views/LayoutToolbar"
+], function(dojoXhr, dojoAspect, dojoJson, dojoReady, dojoTopic) {
+	dojoReady(function() {
+		// Don't load the widgets on user's dashboard if user is viewing other page
+		if ("" == dojo.hash()) {
+			// Provide the actions
+			<?php foreach (array(
+							'core_extension_render',
+						) as $name) : ?>
+			core.js.base.controllers.ActionProvider.set("<?php echo $name; ?>", {
+				url: "<?php echo $this->url(array(), $name); ?>",
+				isAllowed: true
+			});
+			<?php endforeach; ?>
 		
-		var layoutController = new core.js.controllers.LayoutController("coreDashboardIndexLayout");
-		layoutController.setLayoutToolbar(new core.js.views.LayoutToolbar("coreDashboardIndexToolbar"))
-						.setLayoutData(layoutData);
-		layoutController.switchToMode("preview");
-		
-		// Save layout handler
-		var helper = new core.js.base.views.Helper("coreDashboardIndexContainer");
-		dojo.connect(layoutController, "onSaveLayout", function(layoutData) {
-			helper.setModule("core").showStandby();
-			dojo.xhrPost({
-				url: "<?php echo $this->url(array(), 'core_dashboard_index'); ?>",
-				content: {
-					format: "json",
-					layout: dojo.toJson(layoutData)
-				},
-				handleAs: "json",
-				load: function(data) {
-					helper.hideStandby();
-					var message = (data.result == "APP_RESULT_OK")
+			var layoutData = <?php if ($this->layout) : ?><?php echo $this->layout; ?><?php else : ?>{"containers":[{"containers":[],"cls":"dojox.layout.GridContainer","numZones":3}],"cls":"dijit.layout.BorderContainer","region":"center","style":"height: 100%; width: 100%"}<?php endif; ?>;
+			
+			var layoutController = new core.js.controllers.LayoutController("coreDashboardIndexLayout");
+			layoutController.setLayoutToolbar(new core.js.views.LayoutToolbar("coreDashboardIndexToolbar"))
+							.setLayoutData(layoutData);
+			layoutController.switchToMode("preview");
+			
+			// Save layout handler
+			var helper = new core.js.base.views.Helper("coreDashboardIndexContainer");
+			dojoAspect.after(layoutController, "onSaveLayout", function(layoutData) {
+				helper.setModule("core").showStandby();
+				dojoXhr.post({
+					url: "<?php echo $this->url(array(), 'core_dashboard_index'); ?>",
+					content: {
+						format: "json",
+						layout: dojoJson.stringify(layoutData)
+					},
+					handleAs: "json",
+					load: function(data) {
+						helper.hideStandby();
+						var message = ("APP_RESULT_OK" == data.result)
 									? "<?php echo $this->translator()->_('dashboard.index.success'); ?>" 
 									: "<?php echo $this->translator()->_('dashboard.index.error'); ?>";
-					dojo.publish("/app/global/notification", [{
-						message: message,
-						type: (data.result == "APP_RESULT_OK") ? "message" : "error"
-					}]);
-					
-					if (data.result == "APP_RESULT_OK") {
-						layoutController.setLayoutData(layoutData);
+						dojoTopic.publish("/app/global/notification", {
+							message: message,
+							type: ("APP_RESULT_OK" == data.result) ? "message" : "error"
+						});
+						
+						if ("APP_RESULT_OK" == data.result) {
+							layoutController.setLayoutData(layoutData);
+						}
 					}
-				}
+				});
 			});
-		});
-	}
+		}
+	});
 });
 <?php $this->script()->captureEnd(); ?>

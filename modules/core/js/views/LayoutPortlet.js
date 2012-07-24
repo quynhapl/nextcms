@@ -9,16 +9,19 @@
  * @package		core
  * @subpackage	js
  * @since		1.0
- * @version		2011-10-18
+ * @version		2012-07-24
  */
 
-dojo.provide("core.js.views.LayoutPortlet");
-
-dojo.require("dojox.layout.ContentPane");
-dojo.require("dojox.widget.Portlet");
-
-// DOJO LESSON: Because dojox.widget.Portlet extends from dijit.layout.ContentPane,
-// it cannot execute JS code inside the content:
-//		porlet.set("content", "...");
-// I create new class which extends from both dojox.widget.Portlet and dojox.layout.ContentPane
-dojo.declare("core.js.views.LayoutPortlet", [dojox.widget.Portlet, dojox.layout.ContentPane], {});
+define([
+	"dojo/_base/declare",
+	"dojo/parser",
+	"dojox/layout/ContentPane",
+	"dojox/widget/Portlet"
+], function(dojoDeclare) {
+	// DOJO LESSON: Because dojox.widget.Portlet extends from dijit.layout.ContentPane,
+	// it cannot execute JS code inside the content:
+	//			porlet.set("content", "...");
+	// I create new class which extends from both dojox.widget.Portlet and dojox.layout.ContentPane
+	return dojoDeclare("core.js.views.LayoutPortlet", [dojox.widget.Portlet, dojox.layout.ContentPane], {
+	});
+});	
