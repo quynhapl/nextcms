@@ -122,10 +122,10 @@ define([
 					// If there is form, then the NextButton will handle the form submit
 					var dijitForm = dijit.registry.byId(dojoDomAttr.get(form, "id"));
 					if (dijitForm.validate()) {
-						var data	= dijitForm.attr("value");
+						var data	= dijitForm.get("value");
 						data.format = "json";
 
-						this._standBy.show();
+						self._standBy.show();
 						dojoTopic.publish("/app/global/installNotification", { message: self._stepPanes[index].appNotificationMessage });
 						
 						// Submit form
