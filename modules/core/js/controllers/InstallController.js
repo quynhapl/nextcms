@@ -25,7 +25,7 @@ define([
 	"dijit/registry",
 	"dojox/widget/Standby",
 	"core/js/base/I18N"
-	], function(dojoArray, dojoDeclare, dojoXhr, dojoAspect, dojoDomAttr, dojoOn, dojoTopic) {
+], function(dojoArray, dojoDeclare, dojoXhr, dojoAspect, dojoDomAttr, dojoOn, dojoTopic) {
 	return dojoDeclare("core.js.controllers.InstallController", null, {
 		// _id: String
 		// 		The ID of DomNode showing entire the wizard
@@ -77,7 +77,8 @@ define([
 			var self = this;
 			dojoAspect.before(this._wizardContainer, "selectChild", function(child) {
 				document.title = child.get("title");
-				// If I am at the past step, change the label of Next Button to "Done"
+
+				// If I am at the last step, change the label of Next Button to "Done"
 				if (dojoArray.indexOf(self._wizardContainer.getChildren(), child) == self._stepPanes.length - 1) {
 					self._nextButton.set("label", self._i18n.install._share.doneButton);
 				} else {

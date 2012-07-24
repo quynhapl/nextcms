@@ -51,8 +51,9 @@ require(["core/js/base/Resource"], function(resource) {
 <script type="text/javascript">
 require([
 	"dojo/ready",
+	"dojo/parser",
 	"dijit/registry"
-	], function(dojoReady) {
+], function(dojoReady) {
 	dojoReady(function() {
 		dijit.registry.byId("appInstallNextButton").set("disabled", <?php echo $this->pass ? "false" : "true"; ?>);
 	});

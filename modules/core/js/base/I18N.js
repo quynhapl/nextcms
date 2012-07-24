@@ -60,7 +60,7 @@ define([
     "dojo/json",
 	"dojo/_base/kernel",
 	"dojo/_base/loader"
-	], function(dojoXhr, dojoJson, dojo) {
+], function(dojoXhr, dojoJson, dojo) {
 	dojo.provide("core.js.base.I18N");
 	
 	core.js.base.I18N._cacheBundlePackages = {};

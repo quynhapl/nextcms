@@ -10,13 +10,13 @@
  * @package		core
  * @subpackage	views
  * @since		1.0
- * @version		2012-06-25
+ * @version		2012-07-24
  */
 
 defined('APP_VALID_REQUEST') || die('You cannot access the script directly.');
 ?>
 
-<form id="coreInstallConfigForm" data-dojo-type="dijit.form.Form" data-dojo-props="action: '', method: 'POST', class: 'appForm'">
+<div id="coreInstallConfigForm" data-dojo-type="dijit.form.Form" data-dojo-props="action: '', method: 'POST', class: 'appForm'">
 	<!-- DBSettings -->
 	<h2><?php echo $this->translator()->_('install.config.db'); ?></h2>
 	
@@ -37,24 +37,19 @@ defined('APP_VALID_REQUEST') || die('You cannot access the script directly.');
 
 	<div class="appFormRow">
 		<label for="server"><?php echo $this->translator()->_('install.config.dbServer'); ?>:</label>
-		<input data-dojo-type="dijit.form.ValidationTextBox"
-			data-dojo-props="type: 'text', value: 'localhost', name: 'server', width: '200px', required: true, missingMessage: '<?php echo $this->translator(true)->_('install.config.dbServerRequired'); ?>'" />
+		<input data-dojo-type="dijit.form.ValidationTextBox" data-dojo-props="type: 'text', value: 'localhost', name: 'server', width: '200px', required: true, missingMessage: '<?php echo $this->translator(true)->_('install.config.dbServerRequired'); ?>'" />
 	</div>
 
 	<div class="appFormRow">
 		<label for="port"><?php echo $this->translator()->_('install.config.dbPort'); ?>:</label>
-		<input id="coreInstallConfigPortTextbox"
-			data-dojo-type="dijit.form.ValidationTextBox"
-			data-dojo-props="type: 'text', value: 3306, name: 'port', style: 'width: 100px', required: true, missingMessage: '<?php echo $this->translator(true)->_('install.config.dbPortRequired'); ?>'">
+		<input id="coreInstallConfigPortTextbox" data-dojo-type="dijit.form.ValidationTextBox" data-dojo-props="type: 'text', value: 3306, name: 'port', style: 'width: 100px', required: true, missingMessage: '<?php echo $this->translator(true)->_('install.config.dbPortRequired'); ?>'">
 	</div>
 
 	<div class="appFormRow">
 		<label for="dbNameSelect"><?php echo $this->translator()->_('install.config.dbName'); ?>:</label>
-		<select id="coreInstallConfigDbSelect"
-			data-dojo-type="dijit.form.Select"
-			data-dojo-props="name: 'dbNameSelect', style: 'width: 200px'">
-			<script type="dojo/connect" data-dojo-event="onChange" data-dojo-args="value">
-			if (value != "") {
+		<select id="coreInstallConfigDbSelect" data-dojo-type="dijit.form.Select" data-dojo-props="name: 'dbNameSelect', style: 'width: 200px'">
+			<script type="dojo/on" data-dojo-event="change" data-dojo-args="value">
+			if (value) {
 				dijit.byId("coreInstallConfigDbNameTextBox").set("value", value);
 			}
 			</script>
@@ -63,85 +58,99 @@ defined('APP_VALID_REQUEST') || die('You cannot access the script directly.');
 	</div>
 
 	<div class="appFormRow">
-		<label for="dbName">&nbsp;</label> <input
-			id="coreInstallConfigDbNameTextBox"
-			data-dojo-type="dijit.form.TextBox"
-			data-dojo-props="type: 'text', name: 'dbName', width: '200px', placeHolder: '<?php echo $this->translator(true)->_('install.config.dbNameManuallyHelp'); ?>'" />
+		<label for="dbName">&nbsp;</label>
+		<input id="coreInstallConfigDbNameTextBox" data-dojo-type="dijit.form.TextBox" data-dojo-props="type: 'text', name: 'dbName', width: '200px', placeHolder: '<?php echo $this->translator(true)->_('install.config.dbNameManuallyHelp'); ?>'" />
 	</div>
 
 	<div class="appFormRow">
 		<label for="prefix"><?php echo $this->translator()->_('install.config.dbPrefix'); ?>:</label>
-		<input data-dojo-type="dijit.form.TextBox"
-			data-dojo-props="type: 'text', name: 'prefix', style: 'width: 100px'">
+		<input data-dojo-type="dijit.form.TextBox" data-dojo-props="type: 'text', name: 'prefix', style: 'width: 100px'">
 	</div>
 
 	<div class="appFormRow">
 		<label for="username"><?php echo $this->translator()->_('install.config.dbUsername'); ?>:</label>
-		<input data-dojo-type="dijit.form.ValidationTextBox"
-			data-dojo-props="type: 'text', name: 'username', width: '200px', required: true, missingMessage: '<?php echo $this->translator(true)->_('install.config.dbUsernameRequired'); ?>'" />
+		<input data-dojo-type="dijit.form.ValidationTextBox" data-dojo-props="type: 'text', name: 'username', width: '200px', required: true, missingMessage: '<?php echo $this->translator(true)->_('install.config.dbUsernameRequired'); ?>'" />
 	</div>
 
 	<div class="appFormRow">
 		<label for="password"><?php echo $this->translator()->_('install.config.dbPassword'); ?>:</label>
-		<input data-dojo-type="dijit.form.TextBox"
-			data-dojo-props="type: 'password', name: 'password', width: '200px'" />
+		<input data-dojo-type="dijit.form.TextBox" data-dojo-props="type: 'password', name: 'password', width: '200px'" />
 	</div>
 
 	<div class="appFormRow">
-		<label>&nbsp;</label> <a href="javascript: void(0);" onClick="javascript: testDbConnection();"><?php echo $this->translator()->_('install.config.dbTestConn'); ?></a>
+		<label>&nbsp;</label> <a href="javascript: void(0);" id="coreInstallConfigTestDb"><?php echo $this->translator()->_('install.config.dbTestConn'); ?></a>
 	</div>
 	<!-- /DBSettings -->
-</form>
+</div>
 
 <script type="text/javascript">
-dojo.require("dijit.form.Form");
-dojo.require("dijit.form.Select");
-dojo.require("dijit.form.TextBox");
-dojo.require("dijit.form.ValidationTextBox");
-dojo.require("dojox.widget.Standby");
-
-function testDbConnection() {
-	var form = dijit.byId("coreInstallConfigForm");
-	if (!form.validate()) {
-		return;
-	}
-
-	var appInstallConfigStandBy = new dojox.widget.Standby({
-		target: "coreInstallConfigForm",
-		imageText: "<?php echo $this->translator()->setLanguageDir('modules/core/languages')->_('install.config.dbConnecting'); ?>"
-	});
-	document.body.appendChild(appInstallConfigStandBy.domNode);
-	appInstallConfigStandBy.startup();
-	appInstallConfigStandBy.show();
-	
-	dojo.xhrPost({
-		url: "<?php echo $this->url(array(), 'core_install_testdb'); ?>",
-		content: form.attr("value"),
-		handleAs: "json",
-		load: function(data) {
-			appInstallConfigStandBy.hide();
-			
-			if (data.result == "APP_RESULT_ERROR") {
-				dojo.publish("/app/global/installNotification", [{ message: "<?php echo $this->translator()->_('install.config.dbConnError'); ?>", type: "error", duration: 1000 }]);
-			} else {
-				dojo.publish("/app/global/installNotification", [{ message: "<?php echo $this->translator()->_('install.config.dbConnSuccess'); ?>", duration: 1000 }]);
-
-				// Show the list of available databases
-				var options = dijit.byId("coreInstallConfigDbSelect").getOptions();
-				dojo.forEach(options, function(option, index) {
-					dijit.byId("coreInstallConfigDbSelect").removeOption(option);
-				});
-				var dbName = dijit.byId("coreInstallConfigDbNameTextBox").get("value");
-				dijit.byId("coreInstallConfigDbNameTextBox").reset();
-				for (var i in data.databases) {
-					dijit.byId("coreInstallConfigDbSelect").addOption({
-						value: data.databases[i],
-						label: data.databases[i],
-						selected: (data.databases[i] == dbName)
-					});
-				}
+require([
+	"dojo/_base/array",
+	"dojo/_base/xhr",
+	"dojo/dom",
+	"dojo/on",
+	"dojo/ready",
+	"dojo/topic",
+	"dojo/parser",
+	"dijit/form/Form",
+	"dijit/form/Select",
+	"dijit/form/TextBox",
+	"dijit/form/ValidationTextBox",
+	"dijit/registry",
+	"dojox/widget/Standby"
+], function(dojoArray, dojoXhr, dojoDom, dojoOn, dojoReady, dojoTopic) {
+	dojoReady(function() {
+		dojoOn(dojoDom.byId("coreInstallConfigTestDb"), "click", function() {
+			var form = dijit.registry.byId("coreInstallConfigForm");
+			if (!form.validate()) {
+				return;
 			}
-		}
+
+			var appInstallConfigStandBy = new dojox.widget.Standby({
+				target: "coreInstallConfigForm",
+				imageText: "<?php echo $this->translator()->setLanguageDir('modules/core/languages')->_('install.config.dbConnecting'); ?>"
+			});
+			document.body.appendChild(appInstallConfigStandBy.domNode);
+			appInstallConfigStandBy.startup();
+			appInstallConfigStandBy.show();
+
+			dojoXhr.post({
+				url: "<?php echo $this->url(array(), 'core_install_testdb'); ?>",
+				content: form.get("value"),
+				handleAs: "json",
+				load: function(data) {
+					appInstallConfigStandBy.hide();
+					
+					if ("APP_RESULT_ERROR" == data.result) {
+						dojoTopic.publish("/app/global/installNotification", {
+							message: "<?php echo $this->translator()->_('install.config.dbConnError'); ?>",
+							type: "error",
+							duration: 1000
+						});
+					} else {
+						dojoTopic.publish("/app/global/installNotification", {
+							message: "<?php echo $this->translator()->_('install.config.dbConnSuccess'); ?>",
+							duration: 1000
+						});
+		
+						// Show the list of available databases
+						var options = dijit.registry.byId("coreInstallConfigDbSelect").getOptions();
+						dojoArray.forEach(options, function(option, index) {
+							dijit.registry.byId("coreInstallConfigDbSelect").removeOption(option);
+						});
+						var dbName = dijit.registry.byId("coreInstallConfigDbNameTextBox").get("value");
+						dijit.registry.byId("coreInstallConfigDbNameTextBox").reset();
+						for (var i in data.databases) {
+							dijit.registry.byId("coreInstallConfigDbSelect").addOption({
+								value: data.databases[i],
+								label: data.databases[i],
+								selected: (data.databases[i] == dbName)
+							});
+						}
+					}
+				}
+			});
+		});
 	});
-};
+});
 </script>

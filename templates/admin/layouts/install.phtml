@@ -36,8 +36,7 @@ defined('APP_VALID_REQUEST') || die('You cannot access the script directly.');
 	}
 	echo $this->headLink();
 	?>
-	<script type="text/javascript" src="<?php echo $this->APP_STATIC_URL; ?>/static/js/dojo/<?php echo APP_DOJO_VER; ?>/dojo/dojo.js" data-dojo-config="async: true, parseOnLoad: true, isDebug: true"></script>
-<!--	<script type="text/javascript" src="<?php echo $this->APP_STATIC_URL; ?>/static/js/dojo/<?php echo APP_DOJO_VER; ?>/dojo/app-dojo.js"></script>-->
+	<script type="text/javascript" src="<?php echo $this->APP_STATIC_URL; ?>/static/js/dojo/<?php echo APP_DOJO_VER; ?>/dojo/dojo.js" data-dojo-config="async: false, parseOnLoad: true, isDebug: true"></script>
 	<script type="text/javascript">
 	require({
 		paths: {
@@ -85,7 +84,7 @@ require([
 	"dojox/layout/ContentPane",
 	"dojox/widget/Toaster",
 	"core/js/controllers/InstallController"
-	], function(dojoReady) {
+], function(dojoReady) {
 	dojoReady(function() {
 		var appInstallController = new core.js.controllers.InstallController("appInstallWizardContainer");
 		appInstallController.setWizardContainer(dijit.registry.byId("appInstallTabContainer"))
@@ -95,6 +94,7 @@ require([
 								title: "<?php echo $this->translator()->setLanguageDir('modules/core/languages')->_('install.check.title'); ?>",
 								href: "<?php echo $this->url(array(), 'core_install_check'); ?>",
 								loadingMessage: "",
+								preventCache: true,
 								appNotificationMessage: "",
 								appRoute: "core_install_check"
 							}))
@@ -103,6 +103,7 @@ require([
 								title: "<?php echo $this->translator()->setLanguageDir('modules/core/languages')->_('install.config.title'); ?>",
 								href: "<?php echo $this->url(array(), 'core_install_config'); ?>",
 								loadingMessage: "",
+								preventCache: true,
 								appNotificationMessage: "<?php echo $this->translator()->setLanguageDir('modules/core/languages')->_('install.config.saving'); ?>",
 								appRoute: "core_install_config"
 							}))
@@ -111,6 +112,7 @@ require([
 								title: "<?php echo $this->translator()->setLanguageDir('modules/core/languages')->_('install.complete.title'); ?>",
 								href: "<?php echo $this->url(array(), 'core_install_complete'); ?>",
 								loadingMessage: "",
+								preventCache: true,
 								appNotificationMessage: "<?php echo $this->translator()->setLanguageDir('modules/core/languages')->_('install.complete.creatingUser'); ?>",
 								appRoute: "core_install_complete"
 							}));
