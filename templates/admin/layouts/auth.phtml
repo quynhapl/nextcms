@@ -10,7 +10,7 @@
  * @package		admin
  * @subpackage	layouts
  * @since		1.0
- * @version		2012-07-11
+ * @version		2012-07-24
  */
 
 defined('APP_VALID_REQUEST') || die('You cannot access the script directly.');
@@ -30,15 +30,14 @@ defined('APP_VALID_REQUEST') || die('You cannot access the script directly.');
 		 ->appendStylesheet($this->APP_STATIC_URL . '/static/js/dojo/' . APP_DOJO_VER . '/dojox/widget/Toaster/Toaster.css')
 		 ->appendStylesheet($this->APP_STATIC_URL . '/templates/admin/skins/default/styles.css');
 	// Support RTL language
-	if ($this->APP_LANGUAGE_DIR == 'rtl') {
+	if ('rtl' == $this->APP_LANGUAGE_DIR) {
 		$this->headLink()
 			 ->appendStylesheet($this->APP_STATIC_URL . '/static/js/dojo/' . APP_DOJO_VER . '/dijit/themes/' . $this->dojoConfig()->getTheme() . '/' . $this->dojoConfig()->getTheme() . '_rtl.css')
 			 ->appendStylesheet($this->APP_STATIC_URL . '/templates/admin/skins/default/styles_rtl.css');
 	}
 	echo $this->headLink();
 	?>
-	<script type="text/javascript" src="<?php echo $this->APP_STATIC_URL; ?>/static/js/dojo/<?php echo APP_DOJO_VER; ?>/dojo/dojo.js" data-dojo-config="parseOnLoad: true"></script>
-	<script type="text/javascript" src="<?php echo $this->APP_STATIC_URL; ?>/static/js/dojo/<?php echo APP_DOJO_VER; ?>/dojo/app-dojo.js"></script>
+	<script type="text/javascript" src="<?php echo $this->APP_STATIC_URL; ?>/static/js/dojo/<?php echo APP_DOJO_VER; ?>/dojo/dojo.js" data-dojo-config="async: false, parseOnLoad: true"></script>
 	<script type="text/javascript" src="<?php echo $this->APP_STATIC_URL; ?>/static/js/jquery/<?php echo APP_JQUERY_VER; ?>/jquery.min.js"></script>
 </head>
 <body class="<?php echo $this->dojoConfig()->getTheme(); ?>">
@@ -51,7 +50,10 @@ defined('APP_VALID_REQUEST') || die('You cannot access the script directly.');
 	<?php echo $this->flashMessenger(); ?>
 
 <script type="text/javascript">
-dojo.require("dojox.widget.Toaster");
+require([
+	"dojo/parser",
+	"dojox/widget/Toaster"
+]);
 </script>
 
 <?php
