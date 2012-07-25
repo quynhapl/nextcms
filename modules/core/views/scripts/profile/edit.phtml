@@ -10,7 +10,7 @@
  * @package		core
  * @subpackage	views
  * @since		1.0
- * @version		2012-06-18
+ * @version		2012-07-25
  */
 
 defined('APP_VALID_REQUEST') || die('You cannot access the script directly.');
@@ -26,38 +26,40 @@ $this->headTitle()->set($this->translator()->_('profile.edit.title'));
 		<button data-dojo-type="dijit.form.Button" data-dojo-props="type: 'submit', iconClass: 'appIcon appSaveIcon'">
 			<?php echo $this->translator()->_('global._share.saveAction'); ?>
 			<script type="dojo/method" data-dojo-event="onClick" data-dojo-args="e">
-			var _this			= this;
-			var form			= dijit.byId("coreProfileEditForm");
-			var isValidUsername = dijit.byId("coreProfileEditUsernameTextbox").get("isValidUsername");
-			var isValidEmail	= dijit.byId("coreProfileEditEmailTextbox").get("isValidEmail");
-			if (isValidUsername && isValidEmail && form.validate()) {
-				dijit.byId("coreProfileEditStandby").show();
-			
-				// Disable button
-				_this.set("disabled", true);
-
-				dojo.xhrPost({
-					url: "<?php echo $this->url(array(), 'core_profile_edit'); ?>",
-					content: dojo.formToObject("coreProfileEditForm"),
-					handleAs: "json",
-					load: function(data) {
-						_this.set("disabled", false);
-						dijit.byId("coreProfileEditStandby").hide();
-						dojo.publish("/app/global/notification", [{
-							message: (data.result == "APP_RESULT_OK") ? "<?php echo $this->translator()->_('profile.edit.success'); ?>" : "<?php echo $this->translator()->_('profile.edit.error'); ?>",
-							type: (data.result == "APP_RESULT_OK") ? "message" : "error"
-						}]);
-					}
-				});
-			}
+			var self = this;
+			require(["dojo/_base/xhr", "dojo/dom-form", "dojo/topic", "dijit/registry"], function(dojoXhr, dojoDomForm, dojoTopic) {
+				var form			= dijit.registry.byId("coreProfileEditForm");
+				var isValidUsername = dijit.registry.byId("coreProfileEditUsernameTextbox").get("isValidUsername");
+				var isValidEmail	= dijit.registry.byId("coreProfileEditEmailTextbox").get("isValidEmail");
+				if (isValidUsername && isValidEmail && form.validate()) {
+					dijit.registry.byId("coreProfileEditStandby").show();
+				
+					// Disable button
+					self.set("disabled", true);
+	
+					dojoXhr.post({
+						url: "<?php echo $this->url(array(), 'core_profile_edit'); ?>",
+						content: dojoDomForm.toObject("coreProfileEditForm"),
+						handleAs: "json",
+						load: function(data) {
+							self.set("disabled", false);
+							dijit.registry.byId("coreProfileEditStandby").hide();
+							dojoTopic.publish("/app/global/notification", {
+								message: ("APP_RESULT_OK" == data.result) ? "<?php echo $this->translator()->_('profile.edit.success'); ?>" : "<?php echo $this->translator()->_('profile.edit.error'); ?>",
+								type: ("APP_RESULT_OK" == data.result) ? "message" : "error"
+							});
+						}
+					});
+				}
+			});
 			</script>
 		</button>
 	</div>
-	<!-- Toolbar -->
+	<!-- /Toolbar -->
 	
 	<!-- EditForm -->
 	<div data-dojo-type="dijit.layout.ContentPane" data-dojo-props="region: 'center'" class="appContentPane">
-		<form id="coreProfileEditForm" data-dojo-type="dijit.form.Form" data-dojo-props="action: '', method: 'POST', class: 'appForm'">
+		<div id="coreProfileEditForm" data-dojo-type="dijit.form.Form" data-dojo-props="action: '', method: 'POST', class: 'appForm'">
 			<h2 class="appHeadline" style="margin-top: 0"><span><?php echo $this->translator()->_('profile.edit.title'); ?></span></h2>
 			
 			<div data-dojo-type="dijit.layout.TabContainer" data-dojo-props="closable: true, nested: true, style: 'height: 100%'">
@@ -67,26 +69,28 @@ $this->headTitle()->set($this->translator()->_('profile.edit.title'));
 						<label for="user_name"><?php echo $this->translator()->_('user._share.username'); ?>:</label>
 						<div id="coreProfileEditUsernameTextbox" data-dojo-type="dijit.form.ValidationTextBox"
 							data-dojo-props="isValidUsername: true, type: 'text', name: 'user_name', value: '<?php echo $this->user->user_name; ?>', readOnly: <?php if ($this->user->isRootUser()) : ?>true<?php else : ?>false<?php endif; ?>, style: 'width: 200px', required: true, promptMessage: '<?php echo $this->translator(true)->_('user._share.usernameRequired'); ?>', invalidMessage: '<?php echo $this->translator(true)->_('user._share.usernameValidator'); ?>'">
-							<script type="dojo/connect" data-dojo-event="onChange" data-dojo-args="value">
-							var _this = this;
-							dojo.xhrPost({
-								url: "<?php echo $this->url(array(), 'core_user_checkusername'); ?>",
-								handleAs: "json",
-								content: {
-									user_name: value
-								},
-								load: function(data) {
-									var isValid = data.result == true || data.result == "<?php echo $this->user->user_id; ?>";
-									_this.set("isValidUsername", isValid);
-									if (!isValid) {
-										// FIXME: How to show the error message and set the status as "error".
-										// The following hack (because state is readonly property) does not 
-										// always prevent user to submit form:
-										// 		_this.state = "Error";
-										// 		dijit.byId("coreProfileEditForm").state = "Error";
-										_this.displayMessage(_this.invalidMessage);
+							<script type="dojo/on" data-dojo-event="change" data-dojo-args="value">
+							var self = this;
+							require(["dojo/_base/xhr"], function(dojoXhr) {
+								dojoXhr.post({
+									url: "<?php echo $this->url(array(), 'core_user_checkusername'); ?>",
+									handleAs: "json",
+									content: {
+										user_name: value
+									},
+									load: function(data) {
+										var isValid = data.result == true || data.result == "<?php echo $this->user->user_id; ?>";
+										self.set("isValidUsername", isValid);
+										if (!isValid) {
+											// FIXME: How to show the error message and set the status as "error".
+											// The following hack (because state is readonly property) does not 
+											// always prevent user to submit form:
+											// 		self.state = "Error";
+											// 		dijit.regitry.byId("coreProfileEditForm").state = "Error";
+											self.displayMessage(self.invalidMessage);
+										}
 									}
-								}
+								});
 							});
 							</script>
 						</div>
@@ -114,21 +118,23 @@ $this->headTitle()->set($this->translator()->_('profile.edit.title'));
 						<label for="email"><?php echo $this->translator()->_('user._share.email'); ?>:</label>
 						<div id="coreProfileEditEmailTextbox" data-dojo-type="dijit.form.ValidationTextBox" 
 							data-dojo-props="isValidEmail: true, type: 'text', name: 'email', style: 'width: 200px', value: '<?php echo $this->user->email; ?>', required: true, promptMessage: '<?php echo $this->translator(true)->_('user._share.emailRequired'); ?>', invalidMessage: '<?php echo $this->translator(true)->_('user._share.emailValidator'); ?>'">
-							<script type="dojo/connect" data-dojo-event="onChange" data-dojo-args="value">
-							var _this = this;
-							dojo.xhrPost({
-								url: "<?php echo $this->url(array(), 'core_user_checkemail'); ?>",
-								handleAs: "json",
-								content: {
-									email: value
-								},
-								load: function(data) {
-									var isValid = data.result == true || data.result == "<?php echo $this->user->user_id; ?>";
-									_this.set("isValidEmail", isValid);
-									if (!isValid) {
-										_this.displayMessage(_this.invalidMessage);
+							<script type="dojo/on" data-dojo-event="change" data-dojo-args="value">
+							var self = this;
+							require(["dojo/_base/xhr"], function(dojoXhr) {
+								dojoXhr.post({
+									url: "<?php echo $this->url(array(), 'core_user_checkemail'); ?>",
+									handleAs: "json",
+									content: {
+										email: value
+									},
+									load: function(data) {
+										var isValid = data.result == true || data.result == "<?php echo $this->user->user_id; ?>";
+										self.set("isValidEmail", isValid);
+										if (!isValid) {
+											self.displayMessage(self.invalidMessage);
+										}
 									}
-								}
+								});
 							});
 							</script>
 						</div>
@@ -232,7 +238,7 @@ $this->headTitle()->set($this->translator()->_('profile.edit.title'));
 				
 				<input type="hidden" name="format" value="json" />
 			</div>
-		</form>
+		</div>
 	</div>
 	<!-- /EditForm -->
 </div>
@@ -242,35 +248,41 @@ $this->headTitle()->set($this->translator()->_('profile.edit.title'));
 <script type="text/javascript">
 document.title = "<?php echo $this->translator()->setLanguageDir('/modules/core/languages')->_('profile.edit.title'); ?>";
 
-dojo.require("dijit.form.Button");
-dojo.require("dijit.form.DateTextBox");
-dojo.require("dijit.form.Form");
-dojo.require("dijit.form.Select");
-dojo.require("dijit.form.SimpleTextarea");
-dojo.require("dijit.form.TextBox");
-dojo.require("dijit.form.ValidationTextBox");
-dojo.require("dijit.layout.BorderContainer");
-dojo.require("dijit.layout.ContentPane");
-dojo.require("dijit.layout.TabContainer");
-dojo.require("dijit.Toolbar");
-dojo.require("dojox.widget.Standby");
-
-dojo.require("core.js.views.PasswordStrengthMeter");
-
-dojo.addOnLoad(function() {
-	var handler = dojo.subscribe("/app/global/onLoadComplete/core_profile_edit", function() {
-		// Create new password strength meter instance
-		var passwordStrengthMeter = new core.js.views.PasswordStrengthMeter("coreProfileEditPasswordStrengthMeter");
-		passwordStrengthMeter.setUsername(dijit.byId("coreProfileEditUsernameTextbox").get("value"));
-		
-		dojo.connect(dijit.byId("coreProfileEditUsernameTextbox"), "onKeyUp", function() {
-			passwordStrengthMeter.setUsername(dijit.byId("coreProfileEditUsernameTextbox").get("value"));
+require([
+	"dojo/on",
+	"dojo/ready",
+	"dojo/topic",
+	"dojo/parser",
+	"dijit/form/Button",
+	"dijit/form/DateTextBox",
+	"dijit/form/Form",
+	"dijit/form/Select",
+	"dijit/form/SimpleTextarea",
+	"dijit/form/TextBox",
+	"dijit/form/ValidationTextBox",
+	"dijit/layout/BorderContainer",
+	"dijit/layout/ContentPane",
+	"dijit/layout/TabContainer",
+	"dijit/registry",
+	"dijit/Toolbar",
+	"dojox/widget/Standby",
+	"core/js/views/PasswordStrengthMeter"
+], function(dojoOn, dojoReady, dojoTopic) {
+	dojoReady(function() {
+		var handler = dojoTopic.subscribe("/app/global/onLoadComplete/core_profile_edit", function() {
+			// Create new password strength meter instance
+			var passwordStrengthMeter = new core.js.views.PasswordStrengthMeter("coreProfileEditPasswordStrengthMeter");
+			passwordStrengthMeter.setUsername(dijit.registry.byId("coreProfileEditUsernameTextbox").get("value"));
+			
+			dojoOn(dijit.byId("coreProfileEditUsernameTextbox"), "keyup", function() {
+				passwordStrengthMeter.setUsername(dijit.registry.byId("coreProfileEditUsernameTextbox").get("value"));
+			});
+			dojoOn(dijit.byId("coreProfileEditPasswordTextbox"), "keyup", function() {
+				passwordStrengthMeter.checkPassword(dijit.registry.byId("coreProfileEditPasswordTextbox").get("value"));
+			});
+			
+			handler.remove();
 		});
-		dojo.connect(dijit.byId("coreProfileEditPasswordTextbox"), "onKeyUp", function() {
-			passwordStrengthMeter.checkPassword(dijit.byId("coreProfileEditPasswordTextbox").get("value"));
-		});
-		
-		dojo.unsubscribe(handler);
 	});
 });
 </script>

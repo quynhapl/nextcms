@@ -9,7 +9,7 @@
  * @package		core
  * @subpackage	js
  * @since		1.0
- * @version		2012-07-24
+ * @version		2012-07-25
  */
 
 define([
@@ -28,7 +28,106 @@ define([
 	"core/js/base/controllers/ActionProvider",
 	"core/js/base/Encoder"
 ], function(dojoArray, dojoDeclare, dojoDomAttr, dojoDomClass, dojoJson, dojoOn, dojoTopic) {
-	dojo.provide("core.js.base.dnd.TargetManager");
+	var targetManager = dojoDeclare("core.js.base.dnd.TargetManager", null, {
+		// ID_PREFIX: [const] String
+		ID_PREFIX: "baseDndTarget_",
+		
+		// _uniqueId: Integer
+		_uniqueId: 0,
+		
+		// _targets: Array
+		_targets: [],
+		
+		// _handlers: Array
+		_handlers: [],
+		
+		add: function(/*DomNode*/ node, /*Array*/ acceptClasses, /*Function*/ onDropExternalCallback) {
+			// summary:
+			//		It is impossible to execute multiple onDropExternal handlers on dojo.dnd.Target instances
+			//		of the same node as follow:
+			//		| 	new dojo.dnd.Target(node, {
+			//		|		accept: ["a"],
+			//		|		onDropExternal: function(source, nodes, copy) {
+			//		|			console.log("a");
+			//		|		}
+			//		| 	});
+			//	
+			//		| 	new dojo.dnd.Target(node, {
+			//		|		accept: ["b"],
+			//		|		onDropExternal: function(source, nodes, copy) {
+			//		|			console.log("b");
+			//		|		}
+			//		| 	});
+			//		You will get only "a" or "b" (in the console window) depending on which target instance is created first.
+			//		This method allows you to add many onDropExternal callbacks as you want.
+			// example:
+			//		| 	var manager = core.js.base.dnd.TargetManager.getInstance();
+			//		| 	manager.add(node, ["a"], function(node, source, nodes, copy) {
+			//		|		console.log("a");
+			//		| 	});
+			//		| 	manager.add(node, ["b"], function(node, source, nodes, copy) {
+			//		|		console.log("b");
+			//		| 	});
+			//		And you will see both "a" and "b" (in the console window)
+			//		after dropping acceptable nodes to the target node.
+			
+			var id = dojoDomAttr.get(node, "id");
+			if (!id) {
+				// Generate unique Id for the node
+				this._uniqueId++;
+				id = this.ID_PREFIX + this._uniqueId;
+				dojoDomAttr.set(node, "id", id);
+			}
+			
+			if (!this._targets[id]) {
+				// If the node is not in the list, create new target
+				var target = new dojo.dnd.Target(node, {
+					accept: acceptClasses,
+					onDropExternal: function(source, nodes, copy) {
+						onDropExternalCallback(target, source, nodes, copy);
+					}
+				});
+				this._targets[id]  = target;
+				this._handlers[id] = [ onDropExternalCallback ];
+			} else {
+				var target = this._targets[id];
+				// Update "accept" property
+				for (var i = 0; i < acceptClasses.length; i++) {
+					if (!target.accept[acceptClasses[i]]) {
+						target.accept[acceptClasses[i]] = 1;
+					}
+				}
+				
+				// Avoid to duplicate handlers
+				if (this._handlers[id].indexOf(onDropExternalCallback) == -1) {
+					this._handlers[id].push(onDropExternalCallback);
+					
+					// Connect the onDropExternal method
+					dojoOn(target, "dropexternal", function(source, nodes, copy) {
+						onDropExternalCallback(target, source, nodes, copy);
+					});
+				}
+			}
+		},
+		
+		addTarget: function(/*dojo.dnd.Target*/ target) {
+			// summary:
+			//		Adds given target instance
+			var id = dojoDomAttr.get(target.node, "id");
+			this._targets[id]  = target;
+			this._handlers[id] = new Array();
+		},
+		
+		deleteTarget: function(/*String*/ id) {
+			// summary:
+			//		Removes the dnd target of given element
+			// id:
+			//		Id of element
+			if (this._targets[id]) {
+				delete this._targets[id];
+			}
+		}
+	});
 	
 	// Unique instance
 	core.js.base.dnd.TargetManager._instance = null;
@@ -301,104 +400,5 @@ define([
 		});
 	};
 	
-	return dojoDeclare("core.js.base.dnd.TargetManager", null, {
-		// ID_PREFIX: [const] String
-		ID_PREFIX: "baseDndTarget_",
-		
-		// _uniqueId: Integer
-		_uniqueId: 0,
-		
-		// _targets: Array
-		_targets: [],
-		
-		// _handlers: Array
-		_handlers: [],
-		
-		add: function(/*DomNode*/ node, /*Array*/ acceptClasses, /*Function*/ onDropExternalCallback) {
-			// summary:
-			//		It is impossible to execute multiple onDropExternal handlers on dojo.dnd.Target instances
-			//		of the same node as follow:
-			//		| 	new dojo.dnd.Target(node, {
-			//		|		accept: ["a"],
-			//		|		onDropExternal: function(source, nodes, copy) {
-			//		|			console.log("a");
-			//		|		}
-			//		| 	});
-			//	
-			//		| 	new dojo.dnd.Target(node, {
-			//		|		accept: ["b"],
-			//		|		onDropExternal: function(source, nodes, copy) {
-			//		|			console.log("b");
-			//		|		}
-			//		| 	});
-			//		You will get only "a" or "b" (in the console window) depending on which target instance is created first.
-			//		This method allows you to add many onDropExternal callbacks as you want.
-			// example:
-			//		| 	var manager = core.js.base.dnd.TargetManager.getInstance();
-			//		| 	manager.add(node, ["a"], function(node, source, nodes, copy) {
-			//		|		console.log("a");
-			//		| 	});
-			//		| 	manager.add(node, ["b"], function(node, source, nodes, copy) {
-			//		|		console.log("b");
-			//		| 	});
-			//		And you will see both "a" and "b" (in the console window)
-			//		after dropping acceptable nodes to the target node.
-			
-			var id = dojoDomAttr.get(node, "id");
-			if (!id) {
-				// Generate unique Id for the node
-				this._uniqueId++;
-				id = this.ID_PREFIX + this._uniqueId;
-				dojoDomAttr.set(node, "id", id);
-			}
-			
-			if (!this._targets[id]) {
-				// If the node is not in the list, create new target
-				var target = new dojo.dnd.Target(node, {
-					accept: acceptClasses,
-					onDropExternal: function(source, nodes, copy) {
-						onDropExternalCallback(target, source, nodes, copy);
-					}
-				});
-				this._targets[id]  = target;
-				this._handlers[id] = [ onDropExternalCallback ];
-			} else {
-				var target = this._targets[id];
-				// Update "accept" property
-				for (var i = 0; i < acceptClasses.length; i++) {
-					if (!target.accept[acceptClasses[i]]) {
-						target.accept[acceptClasses[i]] = 1;
-					}
-				}
-				
-				// Avoid to duplicate handlers
-				if (this._handlers[id].indexOf(onDropExternalCallback) == -1) {
-					this._handlers[id].push(onDropExternalCallback);
-					
-					// Connect the onDropExternal method
-					dojoOn(target, "dropexternal", function(source, nodes, copy) {
-						onDropExternalCallback(target, source, nodes, copy);
-					});
-				}
-			}
-		},
-		
-		addTarget: function(/*dojo.dnd.Target*/ target) {
-			// summary:
-			//		Adds given target instance
-			var id = dojoDomAttr.get(target.node, "id");
-			this._targets[id]  = target;
-			this._handlers[id] = new Array();
-		},
-		
-		deleteTarget: function(/*String*/ id) {
-			// summary:
-			//		Removes the dnd target of given element
-			// id:
-			//		Id of element
-			if (this._targets[id]) {
-				delete this._targets[id];
-			}
-		}
-	});
+	return targetManager;
 });

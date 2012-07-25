@@ -10,7 +10,7 @@
  * @package		admin
  * @subpackage	layouts
  * @since		1.0
- * @version		2012-07-24
+ * @version		2012-07-25
  */
 
 defined('APP_VALID_REQUEST') || die('You cannot access the script directly.');
@@ -217,6 +217,7 @@ require([
 	"dojox/widget/Standby",
 	"dojox/widget/Toaster",
 	"core/js/base/controllers/ActionProvider",
+	"core/js/base/controllers/Subscriber",
 	"core/js/base/dnd/TargetManager"
 ], function(dojoArray, dojoFx, dojoLang, dojoDomAttr, dojoDomStyle, dojoIoQuery, dojoOn, dojoReady, dojoTopic) {
 	dojoReady(function() {
@@ -356,9 +357,11 @@ require([
 			
 			// Well, actually, there is built-in method provided by Dojo.
 			// Just set href attribute, and Dojo does everything for me:
-			dijit.registry.byId("appContentPane").set("href", url);
-			dojoOn(dijit.registry.byId("appContentPane"), "downloadend", function() {
-				dojoTopic.publish("/app/global/onLoadComplete", dijit.registry.byId("appContentPane").get("href"));
+			var appContentPane = dijit.registry.byId("appContentPane"); 
+			appContentPane.set("preventCache", true)
+						  .set("href", url);
+			dojoOn(appContentPane, "downloadend", function() {
+				dojoTopic.publish("/app/global/onLoadComplete", appContentPane.get("href"));
 			});
 		});
 	
@@ -380,7 +383,7 @@ require([
 		//		<div data-dojo-type="..." id="pane"></div>
 		//		...
 		//		dijit.registry.byId("pane").set("href", backendUrl);
-		//		dojoOn(dijit.registry.byId("pane"), "downloadEnd", function() {
+		//		dojoOn(dijit.registry.byId("pane"), "downloadend", function() {
 		//			dojoTopic.publish("/app/global/onLoadComplete/moduleName_controllerName_actionName");
 		//		});
 		
