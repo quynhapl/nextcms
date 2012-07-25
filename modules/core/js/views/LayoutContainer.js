@@ -9,7 +9,7 @@
  * @package		core
  * @subpackage	js
  * @since		1.0
- * @version		2012-07-24
+ * @version		2012-07-25
  */
 
 define([
@@ -563,7 +563,7 @@ define([
 						url: url,
 						content: dojoLang.mixin(params, widget.params),
 						load: function(data) {
-							pane.setContent(data);
+							pane.set("content", data);
 							dojoTopic.publish("/app/global/onLoadComplete", url);
 							self._activateTabInsidePortlet(pane);
 							self._loadWidgetParams(pane, widget);
@@ -596,17 +596,19 @@ define([
 						portletSettings.toggle();
 					}
 				});
-				/*dojoXhr.post({
+				/*
+				dojoXhr.post({
 					url: url,
 					content: dojoLang.mixin(params, widget.params),
 					load: function(data) {
-						porlet.setContent(data);
+						porlet.set("content", data);
 						if (showSettings) {
 							porlet.addChild(portletSettings);
 							portletSettings.toggle();
 						}
 					}
-				});*/
+				});
+				*/
 			} else if (showSettings) {
 				// Hide the container showing widget output
 				dojoDomStyle.set(portlet.containerNode, "display", "none");
