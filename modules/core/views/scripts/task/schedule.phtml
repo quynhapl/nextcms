@@ -10,7 +10,7 @@
  * @package		core
  * @subpackage	views
  * @since		1.0
- * @version		2011-10-18
+ * @version		2012-07-26
  */
 
 defined('APP_VALID_REQUEST') || die('You cannot access the script directly.');
@@ -26,17 +26,23 @@ $this->headTitle()->set($this->translator()->_('task.schedule.title'));
 		<button data-dojo-type="dijit.form.Button" data-dojo-props="type: 'submit', iconClass: 'appIcon appSaveIcon'">
 			<?php echo $this->translator()->_('global._share.saveAction'); ?>
 			<script type="dojo/method" data-dojo-event="onClick" data-dojo-args="e">
-			var _this = this;
-			_this.set("disabled", true);
-			dojo.publish("/app/core/task/schedule/onStart");
-			dojo.xhrPost({
-				url: "<?php echo $this->url(array(), 'core_task_schedule'); ?>",
-				content: dojo.formToObject("coreTaskScheduleForm"),
-				handleAs: "json",
-				load: function(data) {
-					_this.set("disabled", false);
-					dojo.publish("/app/core/task/schedule/onComplete", [ data ]);
-				}
+			var self = this;
+			require([
+				"dojo/_base/xhr",
+				"dojo/dom-form",
+				"dojo/topic"
+			], function(dojoXhr, dojoDomForm, dojoTopic) {
+				self.set("disabled", true);
+				dojoTopic.publish("/app/core/task/schedule/onStart");
+				dojoXhr.post({
+					url: "<?php echo $this->url(array(), 'core_task_schedule'); ?>",
+					content: dojoDomForm.toObject("coreTaskScheduleForm"),
+					handleAs: "json",
+					load: function(data) {
+						self.set("disabled", false);
+						dojoTopic.publish("/app/core/task/schedule/onComplete", data);
+					}
+				});
 			});
 			</script>
 		</button>
@@ -44,7 +50,9 @@ $this->headTitle()->set($this->translator()->_('task.schedule.title'));
 		<button data-dojo-type="dijit.form.Button" data-dojo-props="type: 'button', iconClass: 'appIcon appCancelIcon'">
 			<?php echo $this->translator()->_('global._share.cancelAction'); ?>
 			<script type="dojo/method" data-dojo-event="onClick" data-dojo-args="e">
-			dojo.publish("/app/core/task/schedule/onCancel");
+			require(["dojo/topic"], function(dojoTopic) {
+				dojoTopic.publish("/app/core/task/schedule/onCancel");
+			});
 			</script>
 		</button>	
 	</div>
@@ -52,7 +60,7 @@ $this->headTitle()->set($this->translator()->_('task.schedule.title'));
 	
 	<!-- ScheduleForm -->
 	<div data-dojo-type="dijit.layout.ContentPane" data-dojo-props="region: 'center', class: 'appContentPane'">
-		<form id="coreTaskScheduleForm" data-dojo-type="dijit.form.Form" data-dojo-props="action: '', method: 'POST', class: 'appForm'">
+		<div id="coreTaskScheduleForm" data-dojo-type="dijit.form.Form" data-dojo-props="action: '', method: 'POST', class: 'appForm'">
 			<h2 class="appHeadline" style="margin-top: 0"><span><?php echo $this->translator()->_('task.schedule.title'); ?></span></h2>
 			
 			<div class="appFormRow">
@@ -121,16 +129,19 @@ $this->headTitle()->set($this->translator()->_('task.schedule.title'));
 			<input type="hidden" name="mod" value="<?php echo $this->task->module; ?>" />
 			<input type="hidden" name="name" value="<?php echo $this->task->name; ?>" />
 			<input type="hidden" name="format" value="json" />
-		</form>
+		</div>
 	</div>
 	<!-- /ScheduleForm -->
 </div>
 
 <script type="text/javascript">
-dojo.require("dijit.form.Button");
-dojo.require("dijit.form.Form");
-dojo.require("dijit.form.Select");
-dojo.require("dijit.layout.BorderContainer");
-dojo.require("dijit.layout.ContentPane");
-dojo.require("dijit.Toolbar");
+require([
+	"dojo/parser",
+	"dijit/form/Button",
+	"dijit/form/Form",
+	"dijit/form/Select",
+	"dijit/layout/BorderContainer",
+	"dijit/layout/ContentPane",
+	"dijit/Toolbar"	
+]);
 </script>
