@@ -10,7 +10,7 @@
  * @package		admin
  * @subpackage	layouts
  * @since		1.0
- * @version		2012-07-25
+ * @version		2012-07-26
  */
 
 defined('APP_VALID_REQUEST') || die('You cannot access the script directly.');
@@ -70,18 +70,18 @@ defined('APP_VALID_REQUEST') || die('You cannot access the script directly.');
 	<div id="appBodyContainer" data-dojo-type="dijit.layout.BorderContainer" data-dojo-props="design: 'headline', gutters: true">
 		<!-- Menu -->
 		<div data-dojo-type="dijit.MenuBar" data-dojo-props="region:'top'">
-			<div data-dojo-type="dijit.PopupMenuBarItem">
+			<div id="appLayoutAdminPersonalMenuBar" data-dojo-type="dijit.PopupMenuBarItem">
 				<span><?php echo sprintf($this->translator()->setLanguageDir('/modules/core/languages')->_('global.layout.welcome'), Zend_Auth::getInstance()->getIdentity()->user_name); ?></span>
 
 				<div data-dojo-type="dijit.Menu">
 					<!-- DashboardMenuItem -->
-					<div data-dojo-type="dijit.MenuItem">
+					<div id="appLayoutAdminDashboardMenuItem" data-dojo-type="dijit.MenuItem">
 						<a href="<?php echo $this->url(array(), 'core_dashboard_index'); ?>" class="appTopMenuItem" data-app-ajax="false"><?php echo $this->translator()->setLanguageDir('/modules/core/languages')->_('global.layout.dashboard'); ?></a>
 					</div>
 					<!-- /DashboardMenuItem -->
 
 					<!-- HomepageMenuItem -->
-					<div data-dojo-type="dijit.MenuItem" data-dojo-props="iconClass: 'appIcon appHomeIcon'">
+					<div id="appLayoutAdminHomepageMenuItem" data-dojo-type="dijit.MenuItem" data-dojo-props="iconClass: 'appIcon appHomeIcon'">
 						<a href="<?php echo $this->APP_URL; ?>" class="appTopMenuItem" data-app-ajax="false"><?php echo $this->translator()->setLanguageDir('/modules/core/languages')->_('global.layout.homepage'); ?></a>
 					</div>
 					<!-- /HomepageMenuItem -->
@@ -89,13 +89,13 @@ defined('APP_VALID_REQUEST') || die('You cannot access the script directly.');
 					<div data-dojo-type="dijit.MenuSeparator"></div>
 					
 					<!-- ProfileMenuItem -->
-					<div data-dojo-type="dijit.MenuItem" data-dojo-props="iconClass: 'appIcon appProfileIcon'">
+					<div id="appLayoutAdminProfileMenuItem" data-dojo-type="dijit.MenuItem" data-dojo-props="iconClass: 'appIcon appProfileIcon'">
 						<a href="<?php echo $this->url(array(), 'core_profile_edit'); ?>" class="appTopMenuItem" data-app-ajax="true"><?php echo $this->translator()->setLanguageDir('/modules/core/languages')->_('global.layout.profile'); ?></a>
 					</div>
 					<!-- /ProfileMenuItem -->
 					
 					<!-- OpenIdMenuItem -->
-					<div data-dojo-type="dijit.MenuItem" data-dojo-props="iconClass: 'appIcon appOpenIdIcon'">
+					<div id="appLayoutAdminOpenIdMenuItem" data-dojo-type="dijit.MenuItem" data-dojo-props="iconClass: 'appIcon appOpenIdIcon'">
 						<a href="<?php echo $this->url(array(), 'core_openid_list'); ?>" class="appTopMenuItem" data-app-ajax="true"><?php echo $this->translator()->setLanguageDir('/modules/core/languages')->_('global.layout.openIdIdentities'); ?></a>
 					</div>
 					<!-- /OpenIdMenuItem -->
@@ -105,7 +105,7 @@ defined('APP_VALID_REQUEST') || die('You cannot access the script directly.');
 					<div data-dojo-type="dijit.MenuSeparator"></div>
 					
 					<!-- LogoutMenuItem -->
-					<div data-dojo-type="dijit.MenuItem">
+					<div id="appLayoutAdminLogoutMenuItem" data-dojo-type="dijit.MenuItem">
 						<a href="<?php echo $this->url(array(), 'core_auth_logout'); ?>" class="appTopMenuItem" data-app-ajax="false"><?php echo $this->translator()->setLanguageDir('/modules/core/languages')->_('global.layout.logout'); ?></a>
 					</div>
 					<!-- /LogoutMenuItem -->
@@ -114,17 +114,17 @@ defined('APP_VALID_REQUEST') || die('You cannot access the script directly.');
 			
 			<!-- ModulesMenu -->
 			<?php if ($modules = $this->backendMenu()->modules()) : ?>
-			<div data-dojo-type="dijit.PopupMenuBarItem">
+			<div id="appLayoutAdminModulesMenuBar" data-dojo-type="dijit.PopupMenuBarItem">
 				<span><?php echo $this->translator()->setLanguageDir('/modules/core/languages')->_('global.layout.modules'); ?></span>
 				
 				<div data-dojo-type="dijit.Menu">
 					<?php foreach ($modules as $module => $items) : ?>
-					<div data-dojo-type="dijit.PopupMenuItem">
+					<div id="appLayoutAdminModulesMenu_<?php echo $module; ?>" data-dojo-type="dijit.PopupMenuItem">
 						<span><?php if ($items['icon']) : ?><img src="<?php echo $this->APP_STATIC_URL . $items['icon']; ?>" style="vertical-align: middle" /> <?php endif; ?><?php echo $items['name']; ?></span>
 						
 						<div data-dojo-type="dijit.Menu">
 							<?php foreach ($items['items'] as $route => $data) : ?>
-							<div data-dojo-type="dijit.MenuItem">
+							<div id="appLayoutAdminModulesMenuItem_<?php echo $route; ?>" data-dojo-type="dijit.MenuItem">
 								<a href="<?php echo $this->url(array(), $route); ?>" class="appTopMenuItem" data-app-ajax="<?php if ($data['ajax']) : ?>true<?php else : ?>false<?php endif; ?>"><?php if ($data['icon']) : ?><img src="<?php echo $this->APP_STATIC_URL . $data['icon']; ?>" style="vertical-align: middle" /> <?php endif; ?><?php echo $data['title']; ?></a>
 							</div>
 							<?php endforeach; ?>
@@ -176,11 +176,12 @@ defined('APP_VALID_REQUEST') || die('You cannot access the script directly.');
 
 	<!-- Notifications -->
 	<div data-dojo-type="dojox.widget.Toaster" data-dojo-props="positionDirection: '<?php echo $this->config('core', 'notification_position', 'tr-down'); ?>', messageTopic: '/app/global/notification', separator: '<hr />', duration: <?php echo $this->config('core', 'notification_duration', 2) * 1000; ?>">
-		<script type="dojo/connect">
+		<script type="dojo/on">
+		var self = this;
 		require(["dojo/topic"], function(dojoTopic) {
-			dojoTopic.subscribe("/app/global/updateNotificationSettings", this, function(data) {
-				this.positionDirection = data.position || "tr-down";
-				this.duration		   = data.duration || 2000;
+			dojoTopic.subscribe("/app/global/updateNotificationSettings", function(data) {
+				self.positionDirection = data.position || "tr-down";
+				self.duration		   = data.duration || 2000;
 			});
 		});
 		</script>
