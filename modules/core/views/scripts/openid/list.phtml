@@ -10,7 +10,7 @@
  * @package		core
  * @subpackage	views
  * @since		1.0
- * @version		2012-04-06
+ * @version		2012-07-26
  */
 
 defined('APP_VALID_REQUEST') || die('You cannot access the script directly.');
@@ -35,52 +35,66 @@ $this->headTitle()->set($this->translator()->_('openid.list.title'));
 		<?php else : ?>
 			<div style="padding-bottom: 8px"><?php echo $this->translator()->_('openid.list.help'); ?>:</div>
 			
-			<?php foreach ($this->openIdUrls as $url) : ?>
+			<?php foreach ($this->openIdUrls as $index => $url) : ?>
 			<div class="coreOpenIdListUrlItem" style="padding-bottom: 4px">
 				<input data-dojo-type="dijit.form.TextBox" data-dojo-props="style: 'width: 400px', disabled: true, value: '<?php echo addslashes($url); ?>'" /> 
-				<button data-dojo-type="dijit.form.Button" data-dojo-props="type: 'button', __url: '<?php echo addslashes($url); ?>'">
+				<button id="coreOpenIdListDeleteButton_<?php echo $index; ?>" data-dojo-type="dijit.form.Button" data-dojo-props="type: 'button', appOpenIdUrl: '<?php echo addslashes($url); ?>'">
 					<?php echo $this->translator()->_('global._share.deleteAction'); ?>
-					<script type="dojo/connect" data-dojo-event="onClick">
-					var params = {
-						openid_url: this.get("__url")
-					};
+					<script type="dojo/on" data-dojo-event="click">
 					var button = this;
-					var dialog = new dojox.widget.DialogSimple({
-						title: "<?php echo $this->translator()->_('openid.delete.title'); ?>",
-						loadingMessage: "<div style='text-align: center'><span class='dijitContentPaneLoading'><?php echo $this->translator()->_('global._share.loadingAction'); ?></span></div>",
-						style: "width: 250px",
-						refreshOnShow: true,
-						onCancel: function() {
+					require([
+						"dojo/_base/lang",
+						"dojo/dom-attr",
+						"dojo/io-query",
+						"dojo/topic",
+						"dojo/NodeList-traverse",
+						"dojo/query",
+						"core/js/base/controllers/Subscriber"
+					], function(dojoLang, dojoDomAttr, dojoIoQuery, dojoTopic) {
+						var params = {
+							openid_url: button.get("appOpenIdUrl")
+						};
+						var dialog = new dojox.widget.DialogSimple({
+							title: "<?php echo $this->translator()->_('openid.delete.title'); ?>",
+							loadingMessage: "<div style='text-align: center'><span class='dijitContentPaneLoading'><?php echo $this->translator()->_('global._share.loadingAction'); ?></span></div>",
+							style: "width: 250px",
+							refreshOnShow: true,
+							onCancel: function() {
+								dialog.destroyRecursive();
+							}
+						});
+						dojoTopic.subscribe("/app/core/openid/delete/onCancel", dojoLang.hitch(dialog, "onCancel"));
+
+						// I have to unsubscribe all handlers by the topic of "/app/core/openid/delete/onComplete"
+						core.js.base.controllers.Subscriber.unsubscribe("/app/core/openid/list", "/app/core/openid/delete/onComplete");
+
+						var handler = core.js.base.controllers.Subscriber.subscribe("/app/core/openid/list", "/app/core/openid/delete/onComplete", dialog, function(data) {
 							dialog.destroyRecursive();
-						}
-					});
-					dojo.subscribe("/app/core/openid/delete/onCancel", dialog, "onCancel");
-					var handler = dojo.subscribe("/app/core/openid/delete/onComplete", dialog, function(data) {
-						dialog.destroyRecursive();
-						var message = (data.result == "APP_RESULT_OK")
+							var message = ("APP_RESULT_OK" == data.result)
 										? "<?php echo $this->translator()->_('openid.delete.success'); ?>"
 										: "<?php echo $this->translator()->_('openid.delete.error'); ?>";
-						dojo.publish("/app/global/notification", [{
-							message: message,
-							type: (data.result == "APP_RESULT_OK") ? "message" : "error"
-						}]);
-
-						// Remove the DIV container which shows the OpenID URL and the "Delete" button
-						if (data.result == "APP_RESULT_OK") {
-							var container = dojo.query(button.domNode).closest(".coreOpenIdListUrlItem")[0];
-							dojo.query(container).orphan();
-						}
-
-						if (dojo.query("#coreOpenIdListUrlsContainer .coreOpenIdListUrlItem").length == 0) {
-							dojo.attr("coreOpenIdListUrlsContainer", {
-								innerHTML: "<?php echo $this->translator()->_('openid.list.notFound'); ?>"
+							dojoTopic.publish("/app/global/notification", {
+								message: message,
+								type: ("APP_RESULT_OK" == data.result) ? "message" : "error"
 							});
-						}
-
-						dojo.unsubscribe(handler);
+	
+							// Remove the DIV container which shows the OpenID URL and the "Delete" button
+							if ("APP_RESULT_OK" == data.result) {
+								var container = dojo.query(button.domNode).closest(".coreOpenIdListUrlItem")[0];
+								dojo.query(container).orphan();
+							}
+	
+							if (dojo.query("#coreOpenIdListUrlsContainer .coreOpenIdListUrlItem").length == 0) {
+								dojoDomAttr.set("coreOpenIdListUrlsContainer", {
+									innerHTML: "<?php echo $this->translator()->_('openid.list.notFound'); ?>"
+								});
+							}
+	
+							handler.remove();
+						});
+						dialog.set("href", "<?php echo $this->url(array(), 'core_openid_delete'); ?>" + "?" + dojoIoQuery.objectToQuery(params));
+						dialog.show();
 					});
-					dialog.set("href", "<?php echo $this->url(array(), 'core_openid_delete'); ?>" + "?" + dojo.objectToQuery(params));
-					dialog.show();
 					</script>
 				</button>
 			</div>
@@ -90,13 +104,12 @@ $this->headTitle()->set($this->translator()->_('openid.list.title'));
 		<!-- /OpenIdUrls -->
 	
 		<!-- AddOpenIdUrlForm -->
-		<form id="coreOpenIdListAddForm" data-dojo-type="dijit.form.Form" data-dojo-props="region: 'center', action: '<?php echo $this->url(array(), 'core_openid_add'); ?>', method: 'POST'">
-			<input id="coreOpenIdListOpenIdTextBox" data-dojo-type="dijit.form.ValidationTextBox"
-				data-dojo-props="type: 'text', name: 'openid_url', style: 'width: 400px', required: true, placeHolder: '<?php echo $this->translator(true)->_('user._share.openIdUrl'); ?>', promptMessage: '<?php echo $this->translator(true)->_('user._share.openIdUrlHelp'); ?>', missingMessage: '<?php echo $this->translator(true)->_('user._share.openIdUrlRequired'); ?>', invalidMessage: '<?php echo $this->translator(true)->_('user._share.openIdUrlValidator'); ?>'" />
-			<button data-dojo-type="dijit.form.Button" data-dojo-props="type: 'submit'">
+		<div id="coreOpenIdListAddForm" data-dojo-type="dijit.form.Form" data-dojo-props="region: 'center', action: '<?php echo $this->url(array(), 'core_openid_add'); ?>', method: 'POST'">
+			<input id="coreOpenIdListOpenIdTextBox" data-dojo-type="dijit.form.ValidationTextBox" data-dojo-props="type: 'text', name: 'openid_url', style: 'width: 400px', required: true, placeHolder: '<?php echo $this->translator(true)->_('user._share.openIdUrl'); ?>', promptMessage: '<?php echo $this->translator(true)->_('user._share.openIdUrlHelp'); ?>', missingMessage: '<?php echo $this->translator(true)->_('user._share.openIdUrlRequired'); ?>', invalidMessage: '<?php echo $this->translator(true)->_('user._share.openIdUrlValidator'); ?>'" />
+			<button id="coreOpenIdListAddButton" data-dojo-type="dijit.form.Button" data-dojo-props="type: 'submit'">
 				<?php echo $this->translator()->_('global._share.addAction'); ?>
 			</button>
-		</form>
+		</div>
 		<!-- /AddOpenIdUrlForm -->
 	</div>
 </div>
@@ -104,12 +117,14 @@ $this->headTitle()->set($this->translator()->_('openid.list.title'));
 <script type="text/javascript">
 document.title = "<?php echo $this->translator()->setLanguageDir('/modules/core/languages')->_('openid.list.title'); ?>";
 
-dojo.require("dijit.form.Button");
-dojo.require("dijit.form.Form");
-dojo.require("dijit.form.TextBox");
-dojo.require("dijit.form.ValidationTextBox");
-dojo.require("dijit.layout.BorderContainer");
-dojo.require("dijit.layout.ContentPane");
-dojo.require("dojo.NodeList-traverse");
-dojo.require("dojox.widget.DialogSimple");
+require([
+	"dojo/parser",
+	"dijit/form/Button",
+	"dijit/form/Form",
+	"dijit/form/TextBox",
+	"dijit/form/ValidationTextBox",
+	"dijit/layout/BorderContainer",
+	"dijit/layout/ContentPane",
+	"dojox/widget/DialogSimple"
+]);
 </script>

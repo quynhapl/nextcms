@@ -9,14 +9,15 @@
  * @package		core
  * @subpackage	js
  * @since		1.0
- * @version		2012-07-24
+ * @version		2012-07-26
  */
 
 define([
 	"dojo/topic",
+	"dojo/_base/lang",
 	"dojo/_base/kernel",
 	"dojo/_base/loader",
-], function(dojoTopic, dojo) {
+], function(dojoTopic, dojoLang, dojo) {
 	dojo.provide("core.js.base.controllers.Subscriber");
 
 	core.js.base.controllers.Subscriber.subscribe = function(/*String*/ group, /*String*/ topic, /*Object*/ context, /*Function*/ callback) {
@@ -24,7 +25,7 @@ define([
 		if (!handlers[group]) {
 			handlers[group] = {};
 		}
-		handlers[group][topic] = dojoTopic.subscribe(topic, context, callback);
+		handlers[group][topic] = dojoTopic.subscribe(topic, dojoLang.hitch(context, callback));
 		return handlers[group][topic];		// Object
 	};
 	
