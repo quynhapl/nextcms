@@ -9,29 +9,32 @@
  * @package		core
  * @subpackage	js
  * @since		1.0
- * @version		2012-04-17
+ * @version		2012-07-26
  */
 
-dojo.provide("core.js.controllers.TaskMediator");
-
-dojo.declare("core.js.controllers.TaskMediator", null, {
-	// _taskGrid: core.js.views.TaskGrid
-	_taskGrid: null,
-	
-	setTaskGrid: function(/*core.js.views.TaskGrid*/ grid) {
-		// summary:
-		//		Sets the task grid
-		this._taskGrid = grid;
+define([
+	"dojo/_base/declare",
+	"dojo/aspect"
+], function(dojoDeclare, dojoAspect) {
+	return dojoDeclare("core.js.controllers.TaskMediator", null, {
+		// _taskGrid: core.js.views.TaskGrid
+		_taskGrid: null,
 		
-		dojo.connect(grid, "onRowContextMenu", this, function(item) {
-			var isInstalled = item.is_installed[0]; 
-			if (isInstalled) {
-				grid.allowToUninstall(true);
-			} else {
-				grid.allowToInstall(true);
-			}
-			grid.allowToConfig(isInstalled && item.is_configuable[0])
-				.allowToSchedule(isInstalled);
-		});
-	}
+		setTaskGrid: function(/*core.js.views.TaskGrid*/ grid) {
+			// summary:
+			//		Sets the task grid
+			this._taskGrid = grid;
+			
+			dojoAspect.after(grid, "onRowContextMenu", function(item) {
+				var isInstalled = item.is_installed[0]; 
+				if (isInstalled) {
+					grid.allowToUninstall(true);
+				} else {
+					grid.allowToInstall(true);
+				}
+				grid.allowToConfig(isInstalled && item.is_configuable[0])
+					.allowToSchedule(isInstalled);
+			}, true);
+		}
+	});
 });
