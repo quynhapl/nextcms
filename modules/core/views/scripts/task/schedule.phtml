@@ -10,7 +10,7 @@
  * @package		core
  * @subpackage	views
  * @since		1.0
- * @version		2012-07-26
+ * @version		2012-07-27
  */
 
 defined('APP_VALID_REQUEST') || die('You cannot access the script directly.');
@@ -23,7 +23,7 @@ $this->headTitle()->set($this->translator()->_('task.schedule.title'));
 <div id="coreTaskScheduleContainer" data-dojo-type="dijit.layout.BorderContainer" data-dojo-props="design: 'sidebar', gutters: false, style: 'height: 100%; padding: 0; width: 100%'">
 	<!-- Toolbar -->
 	<div data-dojo-type="dijit.Toolbar" data-dojo-props="region: 'top', splitter: false">
-		<button data-dojo-type="dijit.form.Button" data-dojo-props="type: 'submit', iconClass: 'appIcon appSaveIcon'">
+		<button id="coreTaskScheduleSaveButton" data-dojo-type="dijit.form.Button" data-dojo-props="type: 'submit', iconClass: 'appIcon appSaveIcon'">
 			<?php echo $this->translator()->_('global._share.saveAction'); ?>
 			<script type="dojo/method" data-dojo-event="onClick" data-dojo-args="e">
 			var self = this;
@@ -47,7 +47,7 @@ $this->headTitle()->set($this->translator()->_('task.schedule.title'));
 			</script>
 		</button>
 		
-		<button data-dojo-type="dijit.form.Button" data-dojo-props="type: 'button', iconClass: 'appIcon appCancelIcon'">
+		<button id="coreTaskScheduleCancelButton" data-dojo-type="dijit.form.Button" data-dojo-props="type: 'button', iconClass: 'appIcon appCancelIcon'">
 			<?php echo $this->translator()->_('global._share.cancelAction'); ?>
 			<script type="dojo/method" data-dojo-event="onClick" data-dojo-args="e">
 			require(["dojo/topic"], function(dojoTopic) {
@@ -65,7 +65,7 @@ $this->headTitle()->set($this->translator()->_('task.schedule.title'));
 			
 			<div class="appFormRow">
 				<label for="minute"><?php echo $this->translator()->_('task.schedule.minute'); ?>:</label>
-				<select data-dojo-type="dijit.form.Select" data-dojo-props="name: 'minute', value: '<?php echo $this->timeMask['minute']; ?>', maxHeight: 200, style: 'width: 200px'">
+				<select id="coreTaskScheduleMinuteSelect" data-dojo-type="dijit.form.Select" data-dojo-props="name: 'minute', value: '<?php echo $this->timeMask['minute']; ?>', maxHeight: 200, style: 'width: 200px'">
 					<option value="*"><?php echo $this->translator()->_('task.schedule.everyMinute'); ?></option>
 					<?php for ($i = 0; $i < 60; $i++) : ?>
 					<option value="<?php echo $i; ?>"><?php echo $i; ?></option>
@@ -75,7 +75,7 @@ $this->headTitle()->set($this->translator()->_('task.schedule.title'));
 			
 			<div class="appFormRow">
 				<label for="hour"><?php echo $this->translator()->_('task.schedule.hour'); ?>:</label>
-				<select data-dojo-type="dijit.form.Select" data-dojo-props="name: 'hour', value: '<?php echo $this->timeMask['hour']; ?>', maxHeight: 200, style: 'width: 200px'">
+				<select id="coreTaskScheduleHourSelect" data-dojo-type="dijit.form.Select" data-dojo-props="name: 'hour', value: '<?php echo $this->timeMask['hour']; ?>', maxHeight: 200, style: 'width: 200px'">
 					<option value="*"><?php echo $this->translator()->_('task.schedule.everyHour'); ?></option>
 					<?php for ($i = 0; $i < 24; $i++) : ?>
 					<option value="<?php echo $i; ?>"><?php echo $i; ?> = <?php echo ($i < 13) ? $i . ' AM' : ($i - 12) . ' PM' ?></option>
@@ -85,7 +85,7 @@ $this->headTitle()->set($this->translator()->_('task.schedule.title'));
 			
 			<div class="appFormRow">
 				<label for="day"><?php echo $this->translator()->_('task.schedule.day'); ?>:</label>
-				<select data-dojo-type="dijit.form.Select" data-dojo-props="name: 'day', value: '<?php echo $this->timeMask['day']; ?>', maxHeight: 200, style: 'width: 200px'">
+				<select id="coreTaskScheduleDaySelect" data-dojo-type="dijit.form.Select" data-dojo-props="name: 'day', value: '<?php echo $this->timeMask['day']; ?>', maxHeight: 200, style: 'width: 200px'">
 					<option value="*"><?php echo $this->translator()->_('task.schedule.everyDay'); ?></option>
 					<?php for ($i = 1; $i < 32; $i++) : ?>
 					<option value="<?php echo $i; ?>"><?php echo $i; ?></option>
@@ -95,7 +95,7 @@ $this->headTitle()->set($this->translator()->_('task.schedule.title'));
 			
 			<div class="appFormRow">
 				<label for="weekday"><?php echo $this->translator()->_('task.schedule.weekday'); ?>:</label>
-				<select data-dojo-type="dijit.form.Select" data-dojo-props="name: 'weekday', value: '<?php echo $this->timeMask['weekday']; ?>', maxHeight: 200, style: 'width: 200px'">
+				<select id="coreTaskScheduleWeekdaySelect" data-dojo-type="dijit.form.Select" data-dojo-props="name: 'weekday', value: '<?php echo $this->timeMask['weekday']; ?>', maxHeight: 200, style: 'width: 200px'">
 					<option value="*"><?php echo $this->translator()->_('task.schedule.everyWeekday'); ?></option>
 					<option value="0"><?php echo $this->translator()->_('task.schedule.sunday'); ?></option>
 					<option value="1"><?php echo $this->translator()->_('task.schedule.monday'); ?></option>
@@ -109,7 +109,7 @@ $this->headTitle()->set($this->translator()->_('task.schedule.title'));
 			
 			<div class="appFormRow">
 				<label for="month"><?php echo $this->translator()->_('task.schedule.month'); ?>:</label>
-				<select data-dojo-type="dijit.form.Select" data-dojo-props="name: 'month', value: '<?php echo $this->timeMask['month']; ?>', maxHeight: 200, style: 'width: 200px'">
+				<select id="coreTaskScheduleMonthSelect" data-dojo-type="dijit.form.Select" data-dojo-props="name: 'month', value: '<?php echo $this->timeMask['month']; ?>', maxHeight: 200, style: 'width: 200px'">
 					<option value="*"><?php echo $this->translator()->_('task.schedule.everyMonth'); ?></option>
 					<option value="1"><?php echo $this->translator()->_('task.schedule.january'); ?></option>
 					<option value="2"><?php echo $this->translator()->_('task.schedule.february'); ?></option>

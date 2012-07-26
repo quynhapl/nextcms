@@ -10,7 +10,7 @@
  * @package		core
  * @subpackage	views
  * @since		1.0
- * @version		2011-12-31
+ * @version		2012-07-27
  */
 
 defined('APP_VALID_REQUEST') || die('You cannot access the script directly.');
@@ -31,7 +31,7 @@ $this->headTitle()->set($this->translator()->_('privilege.list.title'));
 	<?php foreach ($privileges[$type] as $index => $item) : ?>
 	
 	<div class="appLeft" style="width: 25%">
-		<div data-dojo-type="dijit.TitlePane" data-dojo-props="title: '<?php echo $item['resource']->description; ?>', class: 'corePrivilegeListContainer'">
+		<div id="corePrivilegeListModulePane_<?php echo implode('_', array($item['resource']->extension_type, $item['resource']->module_name, $item['resource']->controller_name)); ?>" data-dojo-type="dijit.TitlePane" data-dojo-props="title: '<?php echo $item['resource']->description; ?>', class: 'corePrivilegeListContainer'">
 			<ul class="corePrivilegeList">
 			<?php foreach ($item['privileges'] as $priv) : ?>
 				<li><?php echo stripslashes($priv->description); ?></li>
@@ -53,5 +53,8 @@ $this->headTitle()->set($this->translator()->_('privilege.list.title'));
 <?php endif; ?>
 
 <script type="text/javascript">
-dojo.require("dijit.TitlePane");
+require([
+	"dojo/parser",
+	"dijit/TitlePane"
+]);
 </script>
