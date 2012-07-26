@@ -10,7 +10,7 @@
  * @package		core
  * @subpackage	views
  * @since		1.0
- * @version		2012-06-12
+ * @version		2012-07-26
  */
 
 defined('APP_VALID_REQUEST') || die('You cannot access the script directly.');
@@ -21,8 +21,9 @@ $this->headTitle()->set($this->translator()->_('module.list.title'));
 ?>
 
 <script type="text/javascript">
-dojo.require("core.js.base.Resource");
-core.js.base.Resource.loadCss("<?php echo $this->APP_STATIC_URL; ?>/modules/core/css/admin/default/styles.css");
+require(["core/js/base/Resource"], function() {
+	core.js.base.Resource.loadCss("<?php echo $this->APP_STATIC_URL; ?>/modules/core/css/admin/default/styles.css");	
+});
 </script>
 
 <div id="coreModuleListContainer" data-dojo-type="dijit.layout.BorderContainer" data-dojo-props="design: 'headline', gutters: true, style: 'height: 100%; padding: 0; width: 100%'">
@@ -51,43 +52,51 @@ core.js.base.Resource.loadCss("<?php echo $this->APP_STATIC_URL; ?>/modules/core
 						<button data-dojo-type="dijit.form.Button" data-dojo-props="type: 'button', disabled: <?php if ($module->name == 'core' || (!$this->accessor()->route('core_module_install') && !$module->is_installed) || (!$this->accessor()->route('core_module_uninstall') && $module->is_installed)) : ?>true<?php else : ?>false<?php endif; ?>, appModule: '<?php echo $module->name; ?>', appModuleTitle: '<?php echo addslashes($moduleTitle); ?>', appInstalled: <?php if ($module->is_installed) : ?>true<?php else : ?>false<?php endif; ?>">
 							<?php echo $module->is_installed ? $this->translator()->_('global._share.uninstallAction') : $this->translator()->_('global._share.installAction'); ?>
 							<script type="dojo/method" data-dojo-event="onClick" data-dojo-args="e">
-							var _this = this;
-							var isInstalled = this.get("appInstalled");
-							var module		= this.get("appModule");
-							var moduleTitle = this.get("appModuleTitle");
-							if (isInstalled) {
-								// Show the confirmation dialog
-								dojo.byId("coreModuleListUninstallConfirmation").innerHTML = "<?php echo sprintf($this->translator()->_('module.uninstall.confirm'), $moduleTitle); ?>";
-								dijit.byId("coreModuleListUninstallModuleDialog").set("appModule", module);
-								dijit.byId("coreModuleListUninstallModuleDialog").set("appModuleTitle", moduleTitle);
-								dijit.byId("coreModuleListUninstallModuleDialog").show();
-							} else {
-								// Install the selected module
-								_this.set("disabled", true);
-								dijit.byId("coreModuleListStandby").show();
-								dojo.xhrPost({
-									url: "<?php echo $this->url(array(), 'core_module_install'); ?>",
-									content: {
-										name: module
-									},
-									handleAs: "json",
-									load: function(data) {
-										dijit.byId("coreModuleListStandby").hide();
-										var message = (data.result == "APP_RESULT_OK")
-													? "<?php echo $this->translator()->_('module.install.success'); ?>"
-													: "<?php echo $this->translator()->_('module.install.error'); ?>";
-										dojo.publish("/app/global/notification", [{
-											message: dojox.string.sprintf(message, moduleTitle),
-											type: (data.result == "APP_RESULT_OK") ? "message" : "error"
-										}]);
-										_this.set("disabled", false);
-										if (data.result == "APP_RESULT_OK") {
-											// Reload the current page
-											window.location.reload();
+							var self = this;
+							require([
+								"dojo/_base/xhr",
+								"dojo/dom",
+								"dojo/topic",
+								"dijit/registry",
+								"dojox/string/sprintf"
+							], function(dojoXhr, dojoDom, dojoTopic) {
+								var isInstalled = self.get("appInstalled");
+								var module		= self.get("appModule");
+								var moduleTitle = self.get("appModuleTitle");
+								if (isInstalled) {
+									// Show the confirmation dialog
+									dojoDom.byId("coreModuleListUninstallConfirmation").innerHTML = "<?php echo sprintf($this->translator()->_('module.uninstall.confirm'), $moduleTitle); ?>";
+									dijit.registry.byId("coreModuleListUninstallModuleDialog").set("appModule", module);
+									dijit.registry.byId("coreModuleListUninstallModuleDialog").set("appModuleTitle", moduleTitle);
+									dijit.registry.byId("coreModuleListUninstallModuleDialog").show();
+								} else {
+									// Install the selected module
+									self.set("disabled", true);
+									dijit.registry.byId("coreModuleListStandby").show();
+									dojoXhr.post({
+										url: "<?php echo $this->url(array(), 'core_module_install'); ?>",
+										content: {
+											name: module
+										},
+										handleAs: "json",
+										load: function(data) {
+											dijit.registry.byId("coreModuleListStandby").hide();
+											var message = ("APP_RESULT_OK" == data.result)
+														? "<?php echo $this->translator()->_('module.install.success'); ?>"
+														: "<?php echo $this->translator()->_('module.install.error'); ?>";
+											dojoTopic.publish("/app/global/notification", {
+												message: dojox.string.sprintf(message, moduleTitle),
+												type: ("APP_RESULT_OK" == data.result) ? "message" : "error"
+											});
+											self.set("disabled", false);
+											if ("APP_RESULT_OK" == data.result) {
+												// Reload the current page
+												window.location.reload();
+											}
 										}
-									}
-								});
-							}
+									});
+								}
+							});
 							</script>
 						</button>
 						<!-- /InstallButton -->
@@ -107,33 +116,42 @@ core.js.base.Resource.loadCss("<?php echo $this->APP_STATIC_URL; ?>/modules/core
 					<button data-dojo-type="dijit.form.Button" data-dojo-props="type: 'button'">
 						<?php echo $this->translator()->_('global._share.yesMessage'); ?>
 						<script type="dojo/method" data-dojo-event="onClick" data-dojo-args="e">
-						var module		= dijit.byId("coreModuleListUninstallModuleDialog").get("appModule");
-						var moduleTitle = dijit.byId("coreModuleListUninstallModuleDialog").get("appModuleTitle");
-						if (!module) {
-							return;
-						}
-						dijit.byId("coreModuleListStandby").show();
-						dojo.xhrPost({
-							url: "<?php echo $this->url(array(), 'core_module_uninstall'); ?>",
-							content: {
-								name: module
-							},
-							handleAs: "json",
-							load: function(data) {
-								dijit.byId("coreModuleListStandby").hide();
-								dijit.byId("coreModuleListUninstallModuleDialog").hide();
-								var message = (data.result == "APP_RESULT_OK")
+						var self = this;
+						require([
+							"dojo/_base/xhr",
+							"dojo/dom",
+							"dojo/topic",
+							"dijit/registry",
+							"dojox/string/sprintf"
+						], function(dojoXhr, dojoDom, dojoTopic) {
+							var module		= dijit.registry.byId("coreModuleListUninstallModuleDialog").get("appModule");
+							var moduleTitle = dijit.registry.byId("coreModuleListUninstallModuleDialog").get("appModuleTitle");
+							if (!module) {
+								return;
+							}
+							dijit.registry.byId("coreModuleListStandby").show();
+							dojoXhr.post({
+								url: "<?php echo $this->url(array(), 'core_module_uninstall'); ?>",
+								content: {
+									name: module
+								},
+								handleAs: "json",
+								load: function(data) {
+									dijit.registry.byId("coreModuleListStandby").hide();
+									dijit.registry.byId("coreModuleListUninstallModuleDialog").hide();
+									var message = ("APP_RESULT_OK" == data.result)
 												? "<?php echo $this->translator()->_('module.uninstall.success'); ?>" 
 												: "<?php echo $this->translator()->_('module.uninstall.error'); ?>";
-								dojo.publish("/app/global/notification", [{
-									message: dojox.string.sprintf(message, moduleTitle),
-									type: (data.result == "APP_RESULT_OK") ? "message" : "error"
-								}]);							
-								if (data.result == "APP_RESULT_OK") {
-									// Reload the current page
-									window.location.reload();
+									dojoTopic.publish("/app/global/notification", {
+										message: dojox.string.sprintf(message, moduleTitle),
+										type: ("APP_RESULT_OK" == data.result) ? "message" : "error"
+									});
+									if ("APP_RESULT_OK" == data.result) {
+										// Reload the current page
+										window.location.reload();
+									}
 								}
-							}
+							});
 						});
 						</script>
 					</button>
@@ -143,7 +161,9 @@ core.js.base.Resource.loadCss("<?php echo $this->APP_STATIC_URL; ?>/modules/core
 					<button data-dojo-type="dijit.form.Button" data-dojo-props="type: 'button'">
 						<?php echo $this->translator()->_('global._share.noMessage'); ?>
 						<script type="dojo/method" data-dojo-event="onClick" data-dojo-args="e">
-						dijit.byId("coreModuleListUninstallModuleDialog").hide();
+						require(["dijit/registry"], function() {
+							dijit.registry.byId("coreModuleListUninstallModuleDialog").hide();
+						});
 						</script>
 					</button>
 					<!-- /NoButton -->
@@ -177,47 +197,59 @@ core.js.base.Resource.loadCss("<?php echo $this->APP_STATIC_URL; ?>/modules/core
 <script type="text/javascript">
 document.title = "<?php echo $this->translator()->setLanguageDir('/modules/core/languages')->_('module.list.title'); ?>";
 
-dojo.require("dijit.form.Button");
-dojo.require("dijit.layout.BorderContainer");
-dojo.require("dijit.layout.ContentPane");
-dojo.require("dojox.layout.ContentPane");
-dojo.require("dojox.string.sprintf");
-dojo.require("dojox.widget.DialogSimple");
-dojo.require("dojox.widget.Standby");
-
-dojo.require("core.js.base.views.Helper");
-
-dojo.addOnLoad(function() {
-	// Load extensions when selecting a module
-	dojo.query(".coreExtensionItemName").forEach(function(node, index) {
-		dojo.connect(node, "onclick", function() {
-			dojo.query(".coreExtensionItem").removeClass("coreExtensionSelectedItem");
-			dojo.query(node).closest(".coreExtensionItem").addClass("coreExtensionSelectedItem");
-			
-			var params = {
-				format: "html",
-				mod: dojo.attr(node, "data-app-module")
-			};
-			dijit.byId("coreModuleListExtenionsPane").set("href", "<?php echo $this->url(array(), 'core_module_list'); ?>" + "?" + dojo.objectToQuery(params));
+require([
+	"dojo/_base/lang",
+	"dojo/dom-attr",
+	"dojo/io-query",
+	"dojo/on",
+	"dojo/ready",
+	"dojo/topic",
+	"dojo/NodeList-dom",
+	"dojo/NodeList-traverse",
+	"dojo/parser",
+	"dojo/query",
+	"dijit/form/Button",
+	"dijit/layout/BorderContainer",
+	"dijit/layout/ContentPane",
+	"dijit/registry",
+	"dojox/layout/ContentPane",
+	"dojox/string/sprintf",
+	"dojox/widget/DialogSimple",
+	"dojox/widget/Standby",
+	"core/js/base/views/Helper"
+], function(dojoLang, dojoDomAttr, dojoIoQuery, dojoOn, dojoReady, dojoTopic) {
+	dojoReady(function() {
+		// Load extensions when selecting a module
+		dojo.query(".coreExtensionItemName").forEach(function(node, index) {
+			dojoOn(node, "click", function() {
+				dojo.query(".coreExtensionItem").removeClass("coreExtensionSelectedItem");
+				dojo.query(node).closest(".coreExtensionItem").addClass("coreExtensionSelectedItem");
+				
+				var params = {
+					format: "html",
+					mod: dojoDomAttr.get(node, "data-app-module")
+				};
+				dijit.registry.byId("coreModuleListExtenionsPane").set("href", "<?php echo $this->url(array(), 'core_module_list'); ?>" + "?" + dojoIoQuery.objectToQuery(params));
+			});
 		});
-	});
 
-	// Create new helper instance
-	var helper = new core.js.base.views.Helper("coreModuleListContainer");
-	helper.setModule("core");
-	
-	// Configure plugin handler
-	dojo.subscribe("/app/core/plugin/config/onLoadForm", function(data) {
-		var url = "<?php echo $this->url(array(), 'core_plugin_config'); ?>" + "?" + dojo.objectToQuery(data);
-		helper.showPane(url);
-	});
-	dojo.subscribe("/app/core/plugin/config/onCancel", helper, "removePane");
+		// Create new helper instance
+		var helper = new core.js.base.views.Helper("coreModuleListContainer");
+		helper.setModule("core");
+		
+		// Configure plugin handler
+		dojoTopic.subscribe("/app/core/plugin/config/onLoadForm", function(data) {
+			var url = "<?php echo $this->url(array(), 'core_plugin_config'); ?>" + "?" + dojoIoQuery.objectToQuery(data);
+			helper.showPane(url);
+		});
+		dojoTopic.subscribe("/app/core/plugin/config/onCancel", dojoLang.hitch(helper, "removePane"));
 
-	// Configure hook handler
-	dojo.subscribe("/app/core/hook/config/onLoadForm", function(data) {
-		var url = "<?php echo $this->url(array(), 'core_hook_config'); ?>" + "?" + dojo.objectToQuery(data);
-		helper.showPane(url);
-	});
-	dojo.subscribe("/app/core/hook/config/onCancel", helper, "removePane");
+		// Configure hook handler
+		dojoTopic.subscribe("/app/core/hook/config/onLoadForm", function(data) {
+			var url = "<?php echo $this->url(array(), 'core_hook_config'); ?>" + "?" + dojoIoQuery.objectToQuery(data);
+			helper.showPane(url);
+		});
+		dojoTopic.subscribe("/app/core/hook/config/onCancel", dojoLang.hitch(helper, "removePane"));
+	});		
 });
 </script>
