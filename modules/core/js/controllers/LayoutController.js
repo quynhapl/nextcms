@@ -9,7 +9,7 @@
  * @package		core
  * @subpackage	js
  * @since		1.0
- * @version		2012-07-24
+ * @version		2012-07-26
  */
 
 define([
@@ -112,21 +112,11 @@ define([
 			// summary:
 			//		Handles the context menu's events
 			var self = this;
-			dojoAspect.after(this._layoutContextMenu, "onAddBorderContainer", function(container, region) {
-				self.addBorderContainer(container, region);
-			});
-			dojoAspect.after(this._layoutContextMenu, "onAddGridContainer", function(container) {
-				self.addGridContainer(container);
-			});
-			dojoAspect.after(this._layoutContextMenu, "onDeleteBorderContainer", function(container) {
-				self.deleteBorderContainer(container);
-			});
-			dojoAspect.after(this._layoutContextMenu, "onDeleteGridContainer", function(container) {
-				self.deleteGridContainer(container);
-			});
-			dojoAspect.after(this._layoutContextMenu, "onSetGridColumns", function(container, numColumns) {
-				self.setGridColumns(container, numColumns);
-			});
+			dojoAspect.after(this._layoutContextMenu, "onAddBorderContainer", dojoLang.hitch(this, "addBorderContainer"), true);
+			dojoAspect.after(this._layoutContextMenu, "onAddGridContainer", dojoLang.hitch(this, "addGridContainer"), true);
+			dojoAspect.after(this._layoutContextMenu, "onDeleteBorderContainer", dojoLang.hitch(this, "deleteBorderContainer"), true);
+			dojoAspect.after(this._layoutContextMenu, "onDeleteGridContainer", dojoLang.hitch(this, "deleteGridContainer"), true);
+			dojoAspect.after(this._layoutContextMenu, "onSetGridColumns", dojoLang.hitch(this, "setGridColumns"), true);
 		},
 		
 		addBorderContainer: function(/*dijit.layout.BorderContainer*/ container, /*String*/ region) {
@@ -236,9 +226,7 @@ define([
 			
 			// Set filter handler
 			var self = this;
-			dojoAspect.after(layoutTreeView, "onSetFilters", function(item) {
-				self.setFilters(item);
-			});
+			dojoAspect.after(layoutTreeView, "onSetFilters", dojoLang.hitch(this, "setFilters"), true);
 			core.js.base.controllers.Subscriber.subscribe(this.TOPIC_GROUP, "/app/core/page/filter/onCancel", this, function() {
 				this._helper.closeDialog();
 			});
@@ -256,9 +244,7 @@ define([
 			});
 			
 			// Set properties handler
-			dojoAspect.after(layoutTreeView, "onSetProperties", function(item) {
-				self.setProperties(item);
-			});
+			dojoAspect.after(layoutTreeView, "onSetProperties", dojoLang.hitch(this, "setProperties"), true);
 			core.js.base.controllers.Subscriber.subscribe(this.TOPIC_GROUP, "/app/core/page/property/onCancel", this, function() {
 				this._helper.closeDialog();
 			});

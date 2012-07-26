@@ -9,11 +9,12 @@
  * @package		core
  * @subpackage	js
  * @since		1.0
- * @version		2012-07-24
+ * @version		2012-07-26
  */
 
 define([
 	"dojo/_base/declare",
+	"dojo/_base/lang",
 	"dojo/aspect",
 	"dojo/parser",
 	"dijit/layout/BorderContainer",
@@ -21,7 +22,7 @@ define([
 	"dijit/registry",
 	"dojox/layout/GridContainer",
 	"core/js/views/LayoutPortlet"
-], function(dojoDeclare, dojoAspect) {
+], function(dojoDeclare, dojoLang, dojoAspect) {
 	return dojoDeclare("core.js.controllers.LayoutMediator", null, {
 		// _layoutContextMenu: core.js.views.LayoutContextMenu
 		_layoutContextMenu: null,
@@ -40,10 +41,7 @@ define([
 			//		Sets the context menu of layout container
 			this._layoutContextMenu = layoutContextMenu;
 			
-			var self = this;
-			dojoAspect.after(layoutContextMenu, "onContextMenu", function(widget) {
-				self.onLayoutContextMenu(widget);
-			});
+			dojoAspect.after(layoutContextMenu, "onContextMenu", dojoLang.hitch(this, "onLayoutContextMenu"), true);
 		},
 		
 		setLayoutContainer: function(/*core.js.views.LayoutContainer*/ layoutContainer) {
@@ -63,10 +61,7 @@ define([
 			//		Sets the layout tree view
 			this._layoutTreeView = layoutTreeView;
 			
-			var self = this;
-			dojoAspect.after(layoutTreeView, "onNodeContextMenu", function(item) {
-				self.onLayoutTreeContextMenu(item);
-			});
+			dojoAspect.after(layoutTreeView, "onNodeContextMenu", dojoLang.hitch(this, "onLayoutTreeContextMenu"), true);
 		},
 		
 		onLayoutContextMenu: function(/*dijit.layout.BorderContainer|dojox.layout.GridContainer*/ widget) {
