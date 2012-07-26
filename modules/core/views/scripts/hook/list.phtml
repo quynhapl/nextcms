@@ -10,7 +10,7 @@
  * @package		core
  * @subpackage	views
  * @since		1.0
- * @version		2012-06-12
+ * @version		2012-07-26
  */
 
 defined('APP_VALID_REQUEST') || die('You cannot access the script directly.');
@@ -21,8 +21,9 @@ $this->headTitle()->set($this->translator()->_('hook.list.title'));
 ?>
 
 <script type="text/javascript">
-dojo.require("core.js.base.Resource");
-core.js.base.Resource.loadCss("<?php echo $this->APP_STATIC_URL; ?>/modules/core/css/admin/default/styles.css");
+require(["core/js/base/Resource"], function() {
+	core.js.base.Resource.loadCss("<?php echo $this->APP_STATIC_URL; ?>/modules/core/css/admin/default/styles.css");	
+});
 </script>
 
 <div id="coreHookListContainer" class="coreExtensionItemsContainer appContentPane">
@@ -41,62 +42,76 @@ core.js.base.Resource.loadCss("<?php echo $this->APP_STATIC_URL; ?>/modules/core
 			<div style="padding-bottom: 8px"><?php echo $this->extensionTranslator()->translateDescription($hook); ?></div>
 			
 			<!-- InstallButton -->
-			<button data-dojo-type="dijit.form.Button" data-dojo-props="type: 'button', disabled: <?php if ((!$this->accessor()->route('core_hook_install') && !$hook->is_installed) || (!$this->accessor()->route('core_hook_uninstall') && $hook->is_installed)) : ?>true<?php else : ?>false<?php endif; ?>, _module: '<?php echo $hook->module; ?>', _name: '<?php echo $hook->name; ?>', _isInstalled: <?php if ($hook->is_installed) : ?>true<?php else : ?>false<?php endif; ?>">
+			<button id="coreHookListInstallButton_<?php echo $hook->module; ?>_<?php echo $hook->name; ?>" data-dojo-type="dijit.form.Button" data-dojo-props="type: 'button', disabled: <?php if ((!$this->accessor()->route('core_hook_install') && !$hook->is_installed) || (!$this->accessor()->route('core_hook_uninstall') && $hook->is_installed)) : ?>true<?php else : ?>false<?php endif; ?>, appHookModule: '<?php echo $hook->module; ?>', appHookName: '<?php echo $hook->name; ?>', appIsHookInstalled: <?php if ($hook->is_installed) : ?>true<?php else : ?>false<?php endif; ?>">
 				<?php echo $hook->is_installed ? $this->translator()->_('global._share.uninstallAction') : $this->translator()->_('global._share.installAction'); ?>
 				<script type="dojo/method" data-dojo-event="onClick" data-dojo-args="e">
-				var _this = this;
-				_this.set("disabled", true);
-				var isInstalled = this.get("_isInstalled");
-				var module		= this.get("_module");
-				var name		= this.get("_name");
-				dojo.xhrPost({
-					url: isInstalled ? "<?php echo $this->url(array(), 'core_hook_uninstall'); ?>" : "<?php echo $this->url(array(), 'core_hook_install'); ?>",
-					content: {
-						mod: module,
-						name: name
-					},
-					handleAs: "json",
-					load: function(data) {
-						var message = (data.result == "APP_RESULT_OK")
-									? (isInstalled ? "<?php echo $this->translator()->_('hook.uninstall.success'); ?>" : "<?php echo $this->translator()->_('hook.install.success'); ?>") 
-									: (isInstalled ? "<?php echo $this->translator()->_('hook.uninstall.error'); ?>" : "<?php echo $this->translator()->_('hook.install.error'); ?>");
-						dojo.publish("/app/global/notification", [{
-							message: dojox.string.sprintf(message, name),
-							type: (data.result == "APP_RESULT_OK") ? "message" : "error"
-						}]);
-						_this.set("disabled", false);
-						if (data.result == "APP_RESULT_OK") {
-							_this.set("_isInstalled", !isInstalled);
-							_this.set("label", isInstalled ? "<?php echo $this->translator()->_('global._share.installAction'); ?>" : "<?php echo $this->translator()->_('global._share.uninstallAction'); ?>");
-							dojo.publish("/app/core/hook/" + (isInstalled ? "uninstall" : "install") + "/" + module + "_" + name, [{ module: module, name: name }]);
-
-							// Reload the current page
-							window.location.reload();
+				var self = this;
+				require([
+					"dojo/_base/xhr",
+					"dojo/topic",
+					"dojox/string/sprintf"
+				], function(dojoXhr, dojoTopic) {
+					self.set("disabled", true);
+					var isInstalled = self.get("appIsHookInstalled");
+					var module		= self.get("appHookModule");
+					var name		= self.get("appHookName");
+					dojoXhr.post({
+						url: isInstalled ? "<?php echo $this->url(array(), 'core_hook_uninstall'); ?>" : "<?php echo $this->url(array(), 'core_hook_install'); ?>",
+						content: {
+							mod: module,
+							name: name
+						},
+						handleAs: "json",
+						load: function(data) {
+							var message = ("APP_RESULT_OK" == data.result)
+										? (isInstalled ? "<?php echo $this->translator()->_('hook.uninstall.success'); ?>" : "<?php echo $this->translator()->_('hook.install.success'); ?>") 
+										: (isInstalled ? "<?php echo $this->translator()->_('hook.uninstall.error'); ?>" : "<?php echo $this->translator()->_('hook.install.error'); ?>");
+							dojoTopic.publish("/app/global/notification", {
+								message: dojox.string.sprintf(message, name),
+								type: ("APP_RESULT_OK" == data.result) ? "message" : "error"
+							});
+							self.set("disabled", false);
+							if ("APP_RESULT_OK" == data.result) {
+								self.set("appIsHookInstalled", !isInstalled);
+								self.set("label", isInstalled ? "<?php echo $this->translator()->_('global._share.installAction'); ?>" : "<?php echo $this->translator()->_('global._share.uninstallAction'); ?>");
+								dojoTopic.publish("/app/core/hook/" + (isInstalled ? "uninstall" : "install") + "/" + module + "_" + name, {
+									module: module,
+									name: name
+								});
+	
+								// Reload the current page
+								window.location.reload();
+							}
 						}
-					}
-				}); 
+					});
+				});
 				</script>
 			</button>
 			<!-- /InstallButton -->
 			
 			<!-- ConfigButton -->
 			<?php if ($hook->options !== null) : ?>
-			<button data-dojo-type="dijit.form.Button" data-dojo-props="type: 'button', disabled: <?php if (!$hook->is_installed || !$this->accessor()->route('core_hook_config')) : ?>true<?php else : ?>false<?php endif; ?>, _isAllowed: <?php if ($this->accessor()->route('core_hook_config')) : ?>true<?php else : ?>false<?php endif; ?>, _module: '<?php echo $hook->module; ?>', _name: '<?php echo $hook->name; ?>'">
+			<button id="coreHookListConfigureButton_<?php echo $hook->module; ?>_<?php echo $hook->name; ?>" data-dojo-type="dijit.form.Button" data-dojo-props="type: 'button', disabled: <?php if (!$hook->is_installed || !$this->accessor()->route('core_hook_config')) : ?>true<?php else : ?>false<?php endif; ?>, appHookConfigAllowed: <?php if ($this->accessor()->route('core_hook_config')) : ?>true<?php else : ?>false<?php endif; ?>, appHookModule: '<?php echo $hook->module; ?>', appHookName: '<?php echo $hook->name; ?>'">
 				<?php echo $this->translator()->_('global._share.configureAction'); ?>
-				<script type="dojo/connect">
-				dojo.subscribe("/app/core/hook/install/" + this.get("_module") + "_" + this.get("_name"), this, function(data) {
-					this.set("disabled", !this.get("_isAllowed"));
-				});
-				dojo.subscribe("/app/core/hook/uninstall/" + this.get("_module") + "_" + this.get("_name"), this, function(data) {
-					this.set("disabled", true);
+				<script type="dojo/on">
+				var self = this;
+				require(["dojo/topic"], function(dojoTopic) {
+					dojoTopic.subscribe("/app/core/hook/install/" + self.get("appHookModule") + "_" + self.get("appHookName"), function(data) {
+						self.set("disabled", !self.get("appHookConfigAllowed"));
+					});
+					dojoTopic.subscribe("/app/core/hook/uninstall/" + self.get("appHookModule") + "_" + self.get("appHookName"), function(data) {
+						self.set("disabled", true);
+					});
 				});
 				</script>
 				<script type="dojo/method" data-dojo-event="onClick" data-dojo-args="e">
-				var params = {
-					mod: this.get("_module"),
-					name: this.get("_name")
-				};
-				dojo.publish("/app/core/hook/config/onLoadForm", [ params ]);
+				var self = this;
+				require(["dojo/topic"], function(dojoTopic) {
+					dojoTopic.publish("/app/core/hook/config/onLoadForm", {
+						mod: self.get("appHookModule"),
+						name: self.get("appHookName")
+					});
+				});
 				</script>
 			</button>
 			<?php endif; ?>
@@ -111,7 +126,9 @@ core.js.base.Resource.loadCss("<?php echo $this->APP_STATIC_URL; ?>/modules/core
 </div>
 
 <script type="text/javascript">
-dojo.require("dijit.form.Button");
-dojo.require("dojox.string.sprintf");
-dojo.require("dojox.widget.DialogSimple");
+require([
+	"dojo/parser",
+	"dijit/form/Button",
+	"dojox/widget/DialogSimple"
+]);
 </script>
