@@ -141,10 +141,10 @@ define([
 			});
 			core.js.base.controllers.Subscriber.subscribe(this.TOPIC_GROUP, "/app/core/task/schedule/onComplete", this, function(data) {
 				this._helper.hideStandby();
-				dojoTopic.publish("/app/global/notification", [{
+				dojoTopic.publish("/app/global/notification", {
 					message: this._i18n.task.schedule[("APP_RESULT_OK" == data.result) ? "success" : "error"],
 					type: ("APP_RESULT_OK" == data.result) ? "message" : "error"
-				}]);
+				});
 			});
 			
 			core.js.base.controllers.Subscriber.subscribe(this.TOPIC_GROUP, "/app/core/task/config/onCancelAction", this, function() {
@@ -153,7 +153,7 @@ define([
 			dojoAspect.after(grid, "onRowContextMenu", function(item) {
 				var menu = grid.getContextMenu();
 				for (var i in self._actionItems) {
-					menu.removeChild(this._actionItems[i]);
+					menu.removeChild(self._actionItems[i]);
 				}
 				self._actionItems = [];
 				
