@@ -10,7 +10,7 @@
  * @package		core
  * @subpackage	views
  * @since		1.0
- * @version		2012-07-24
+ * @version		2012-07-26
  */
 
 defined('APP_VALID_REQUEST') || die('You cannot access the script directly.');
@@ -35,7 +35,7 @@ $this->headTitle()->set($this->translator()->_('auth.login.title'));
 			<div style="padding-bottom: 8px" id="coreAuthLoginDefaultContainer">
 				<input id="coreAuthLoginUsername" data-dojo-type="dijit.form.ValidationTextBox" data-dojo-props="type: 'text', name: 'username', style: 'margin-right: 5px; width: 150px', regExp: '[\\w]+', required: true, placeHolder: '<?php echo $this->translator(true)->_('user._share.username'); ?>', promptMessage: '<?php echo $this->translator(true)->_('user._share.usernameHelp'); ?>', missingMessage: '<?php echo $this->translator(true)->_('user._share.usernameRequired'); ?>', invalidMessage: '<?php echo $this->translator(true)->_('user._share.usernameValidator'); ?>'" />
 				<input id="coreAuthLoginPassword" data-dojo-type="dijit.form.ValidationTextBox" data-dojo-props="type: 'password', name: 'password', style: 'margin-right: 5px; width: 150px', required: true, placeHolder: '<?php echo $this->translator(true)->_('user._share.password'); ?>', promptMessage: '<?php echo $this->translator(true)->_('user._share.passwordHelp'); ?>', missingMessage: '<?php echo $this->translator(true)->_('user._share.passwordRequired'); ?>', invalidMessage: '<?php echo $this->translator(true)->_('user._share.passwordValidator'); ?>'" />
-				<button data-dojo-type="dijit.form.Button" data-dojo-props="type: 'submit'">
+				<button id="coreAuthLoginButton" data-dojo-type="dijit.form.Button" data-dojo-props="type: 'submit'">
 					<?php echo $this->translator()->_('auth.login.loginButton'); ?>
 				</button>
 			</div>
@@ -60,7 +60,7 @@ $this->headTitle()->set($this->translator()->_('auth.login.title'));
 					<div style="padding-bottom: 8px"><?php echo $this->captcha->render($this); ?></div>
 					
 					<?php if ($this->captcha instanceof Zend_Captcha_Image) : ?>
-					<input data-dojo-type="dijit.form.ValidationTextBox" data-dojo-props="type: 'text', name: '<?php echo $this->captcha->getName(); ?>', style: 'width: 200px', required: true, missingMessage: '<?php echo $this->translator(true)->_('global._share.captchaRequired'); ?>'" />
+					<input id="coreAuthLoginCaptcha" data-dojo-type="dijit.form.ValidationTextBox" data-dojo-props="type: 'text', name: '<?php echo $this->captcha->getName(); ?>', style: 'width: 200px', required: true, missingMessage: '<?php echo $this->translator(true)->_('global._share.captchaRequired'); ?>'" />
 					<?php endif; ?>
 				</div>
 				<div class="appClear"></div>
