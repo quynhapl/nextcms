@@ -10,7 +10,7 @@
  * @package		core
  * @subpackage	views
  * @since		1.0
- * @version		2011-10-31
+ * @version		2012-07-27
  */
 
 defined('APP_VALID_REQUEST') || die('You cannot access the script directly.');
@@ -31,29 +31,36 @@ $this->headTitle()->set($this->translator()->_('user.delete.title'));
 	
 	<div class="dijitDialogPaneActionBar">
 		<!-- YesButton -->
-		<button data-dojo-type="dijit.form.Button" data-dojo-props="type: 'button'">
+		<button id="coreUserDeleteYesButton" data-dojo-type="dijit.form.Button" data-dojo-props="type: 'button'">
 			<?php echo $this->translator()->_('global._share.yesMessage'); ?>
 			<script type="dojo/method" data-dojo-event="onClick" data-dojo-args="e">
-			dojo.xhrPost({
-				url: "<?php echo $this->url(array(), 'core_user_delete'); ?>",
-				content: {
-					user_id: "<?php echo $this->user->user_id; ?>",
-					format: "json"
-				},
-				handleAs: "json",
-				load: function(data) {
-					dojo.publish("/app/core/user/delete/onComplete", [ data ]);
-				}
+			require([
+				"dojo/_base/xhr",
+				"dojo/topic"
+			], function(dojoXhr, dojoTopic) {
+				dojoXhr.post({
+					url: "<?php echo $this->url(array(), 'core_user_delete'); ?>",
+					content: {
+						user_id: "<?php echo $this->user->user_id; ?>",
+						format: "json"
+					},
+					handleAs: "json",
+					load: function(data) {
+						dojoTopic.publish("/app/core/user/delete/onComplete", data);
+					}
+				});
 			});
 			</script>
 		</button>
 		<!-- /YesButton -->
 		
 		<!-- NoButton -->
-		<button data-dojo-type="dijit.form.Button" data-dojo-props="type: 'button'">
+		<button id="coreUserDeleteNoButton" data-dojo-type="dijit.form.Button" data-dojo-props="type: 'button'">
 			<?php echo $this->translator()->_('global._share.noMessage'); ?>
 			<script type="dojo/method" data-dojo-event="onClick" data-dojo-args="e">
-			dojo.publish("/app/core/user/delete/onCancel");
+			require(["dojo/topic"], function(dojoTopic) {
+				dojoTopic.publish("/app/core/user/delete/onCancel");
+			});
 			</script>
 		</button>
 		<!-- /NoButton -->
@@ -61,5 +68,8 @@ $this->headTitle()->set($this->translator()->_('user.delete.title'));
 <?php endif; ?>
 
 <script type="text/javascript">
-dojo.require("dijit.form.Button");
+require([
+	"dojo/parser",
+	"dijit/form/Button"
+]);
 </script>

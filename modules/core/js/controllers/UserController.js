@@ -629,6 +629,7 @@ define([
 			};
 			var url = core.js.base.controllers.ActionProvider.get("core_user_delete").url + "?" + dojoIoQuery.objectToQuery(params);
 			this._helper.showDialog(url, {
+				id: "coreUserDeleteConfirmDialog",
 				title: this._i18n.user["delete"].title,
 				style: "width: 250px",
 				refreshOnShow: true
