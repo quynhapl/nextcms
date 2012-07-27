@@ -10,7 +10,7 @@
  * @package		admin
  * @subpackage	layouts
  * @since		1.0
- * @version		2012-07-26
+ * @version		2012-07-27
  */
 
 defined('APP_VALID_REQUEST') || die('You cannot access the script directly.');
@@ -38,7 +38,7 @@ defined('APP_VALID_REQUEST') || die('You cannot access the script directly.');
 	}
 	echo $this->style();
 	?>
-	<script type="text/javascript" src="<?php echo $this->APP_STATIC_URL; ?>/static/js/dojo/<?php echo APP_DOJO_VER; ?>/dojo/dojo.js" data-dojo-config="async: false, parseOnLoad: true, isDebug: false, ioPublish: true"></script>
+	<script type="text/javascript" src="<?php echo $this->APP_STATIC_URL; ?>/static/js/dojo/<?php echo APP_DOJO_VER; ?>/dojo/dojo.js" data-dojo-config="async: false, parseOnLoad: true, isDebug: true, ioPublish: true"></script>
 <!--	<script type="text/javascript" src="<?php echo $this->APP_STATIC_URL; ?>/static/js/dojo/<?php echo APP_DOJO_VER; ?>/dojo/app-dojo.js"></script>-->
 	<script type="text/javascript" src="<?php echo $this->APP_STATIC_URL; ?>/static/js/tiny_mce/tiny_mce.js"></script>
 	<script type="text/javascript">
@@ -177,11 +177,11 @@ defined('APP_VALID_REQUEST') || die('You cannot access the script directly.');
 	<!-- Notifications -->
 	<div data-dojo-type="dojox.widget.Toaster" data-dojo-props="positionDirection: '<?php echo $this->config('core', 'notification_position', 'tr-down'); ?>', messageTopic: '/app/global/notification', separator: '<hr />', duration: <?php echo $this->config('core', 'notification_duration', 2) * 1000; ?>">
 		<script type="dojo/on">
-		var self = this;
+		var that = this;
 		require(["dojo/topic"], function(dojoTopic) {
 			dojoTopic.subscribe("/app/global/updateNotificationSettings", function(data) {
-				self.positionDirection = data.position || "tr-down";
-				self.duration		   = data.duration || 2000;
+				that.positionDirection = data.position || "tr-down";
+				that.duration		   = data.duration || 2000;
 			});
 		});
 		</script>

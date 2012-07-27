@@ -9,7 +9,7 @@
  * @package		core
  * @subpackage	js
  * @since		1.0
- * @version		2012-07-24
+ * @version		2012-07-27
  */
 
 define([
@@ -74,15 +74,15 @@ define([
 			this._wizardContainer = wizardContainer;
 			
 			// Set the title of page based on the title of selected tab
-			var self = this;
+			var that = this;
 			dojoAspect.before(this._wizardContainer, "selectChild", function(child) {
 				document.title = child.get("title");
 
 				// If I am at the last step, change the label of Next Button to "Done"
-				if (dojoArray.indexOf(self._wizardContainer.getChildren(), child) == self._stepPanes.length - 1) {
-					self._nextButton.set("label", self._i18n.install._share.doneButton);
+				if (dojoArray.indexOf(that._wizardContainer.getChildren(), child) == that._stepPanes.length - 1) {
+					that._nextButton.set("label", that._i18n.install._share.doneButton);
 				} else {
-					self._nextButton.set("label", self._i18n.install._share.nextButton);
+					that._nextButton.set("label", that._i18n.install._share.nextButton);
 				}
 			});
 			
@@ -108,11 +108,11 @@ define([
 			this._nextButton = nextButton;
 			
 			// Handle onclick event of Next button
-			var self = this;
+			var that = this;
 			dojoOn(nextButton, "click", function(e) {
 				// Gets selected pane
-				var selectedPane = self._wizardContainer.selectedChildWidget;
-				var children	 = self._wizardContainer.getChildren();
+				var selectedPane = that._wizardContainer.selectedChildWidget;
+				var children	 = that._wizardContainer.getChildren();
 				var index		 = dojoArray.indexOf(children, selectedPane);
 
 				// Get the first form inside the pane
@@ -125,26 +125,26 @@ define([
 						var data	= dijitForm.get("value");
 						data.format = "json";
 
-						self._standBy.show();
-						dojoTopic.publish("/app/global/installNotification", { message: self._stepPanes[index].appNotificationMessage });
+						that._standBy.show();
+						dojoTopic.publish("/app/global/installNotification", { message: that._stepPanes[index].appNotificationMessage });
 						
 						// Submit form
 						dojoXhr.post({
-							url: self._stepPanes[index].get("href"),
+							url: that._stepPanes[index].get("href"),
 							content: data,
 							handleAs: "json",
 							load: function(data) {
-								self._standBy.hide();
+								that._standBy.hide();
 								
 								if ("APP_RESULT_OK" == data.result) {
-									if (index == self._stepPanes.length - 1) {
+									if (index == that._stepPanes.length - 1) {
 										// Disable the Done button to prevent user from clicking on it
-										self._nextButton.set("disabled", true);
+										that._nextButton.set("disabled", true);
 										// If I am already at the last step, then redirect me to the back-end
 										window.location = data.url;
 									} else {
 										// Load the next step pane
-										self._showNextStep(selectedPane);
+										that._showNextStep(selectedPane);
 									}
 								}
 							}
@@ -152,7 +152,7 @@ define([
 					}
 				} else {
 					// If there is no form, just show the next step
-					self._showNextStep(selectedPane);
+					that._showNextStep(selectedPane);
 				}
 			});
 			

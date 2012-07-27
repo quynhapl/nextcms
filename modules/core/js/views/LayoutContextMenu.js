@@ -9,7 +9,7 @@
  * @package		core
  * @subpackage	js
  * @since		1.0
- * @version		2012-07-24
+ * @version		2012-07-27
  */
 
 define([
@@ -80,17 +80,17 @@ define([
 				targetNodeIds: [ contextMenuId ]
 			});
 				
-			var self = this;
+			var that = this;
 			
 			// "Insert border container" menu items
 			this._insertBorderContainerMenu = new dijit.Menu();
 			
 			dojoArray.forEach(["top", "left", "right", "bottom"], function(region) {
-				self._insertBorderContainerMenu.addChild(new dijit.MenuItem({
-					label: self._i18n.page._share[region + "Region"],
+				that._insertBorderContainerMenu.addChild(new dijit.MenuItem({
+					label: that._i18n.page._share[region + "Region"],
 					onClick: function() {
-						if (self._selectedWidget) {
-							self.onAddBorderContainer(self._selectedWidget, region);
+						if (that._selectedWidget) {
+							that.onAddBorderContainer(that._selectedWidget, region);
 						}
 					}
 				}));
@@ -103,11 +103,11 @@ define([
 			
 			// "Delete border container" menu item
 			this._deleteBorderContainerMenuItem = new dijit.MenuItem({
-				label: self._i18n.page._share.deleteBorderContainer,
+				label: that._i18n.page._share.deleteBorderContainer,
 				iconClass: "appIcon appDeleteLayoutIcon",
 				onClick: function() {
-					if (self._selectedWidget) {
-						self.onDeleteBorderContainer(self._selectedWidget);
+					if (that._selectedWidget) {
+						that.onDeleteBorderContainer(that._selectedWidget);
 					}
 				}
 			});
@@ -117,10 +117,10 @@ define([
 			
 			// "Insert grid container" menu item
 			this._insertGridContainerMenuItem = new dijit.MenuItem({
-				label: self._i18n.page._share.insertGridContainer,
+				label: that._i18n.page._share.insertGridContainer,
 				onClick: function() {
-					if (self._selectedWidget) {
-						self.onAddGridContainer(self._selectedWidget);
+					if (that._selectedWidget) {
+						that.onAddGridContainer(that._selectedWidget);
 					}
 				}
 			});
@@ -134,8 +134,8 @@ define([
 					label: i,
 					value: i,
 					onClick: function() {
-						if (self._selectedWidget) {
-							self.onSetGridColumns(self._selectedWidget, this.value);
+						if (that._selectedWidget) {
+							that.onSetGridColumns(that._selectedWidget, this.value);
 						}
 					}
 				}));
@@ -147,11 +147,11 @@ define([
 			
 			// "Delete grid container" menu item
 			this._deleteGridContainerMenuItem = new dijit.MenuItem({
-				label: self._i18n.page._share.deleteGridContainer,
+				label: that._i18n.page._share.deleteGridContainer,
 				iconClass: "appIcon appDeleteLayoutIcon",
 				onClick: function() {
-					if (self._selectedWidget) {
-						self.onDeleteGridContainer(self._selectedWidget);
+					if (that._selectedWidget) {
+						that.onDeleteGridContainer(that._selectedWidget);
 					}
 				}
 			});
@@ -162,8 +162,8 @@ define([
 			dojoOn(this._contextMenu, "_openMyself", function(e) {
 				var widget = dijit.registry.getEnclosingWidget(e.target);
 				if (widget) {
-					self._selectedWidget = widget;
-					self.onContextMenu(widget);
+					that._selectedWidget = widget;
+					that.onContextMenu(widget);
 				}
 			});
 		},

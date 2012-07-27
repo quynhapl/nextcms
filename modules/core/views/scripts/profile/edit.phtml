@@ -10,7 +10,7 @@
  * @package		core
  * @subpackage	views
  * @since		1.0
- * @version		2012-07-25
+ * @version		2012-07-27
  */
 
 defined('APP_VALID_REQUEST') || die('You cannot access the script directly.');
@@ -26,7 +26,7 @@ $this->headTitle()->set($this->translator()->_('profile.edit.title'));
 		<button data-dojo-type="dijit.form.Button" data-dojo-props="type: 'submit', iconClass: 'appIcon appSaveIcon'">
 			<?php echo $this->translator()->_('global._share.saveAction'); ?>
 			<script type="dojo/method" data-dojo-event="onClick" data-dojo-args="e">
-			var self = this;
+			var that = this;
 			require(["dojo/_base/xhr", "dojo/dom-form", "dojo/topic", "dijit/registry"], function(dojoXhr, dojoDomForm, dojoTopic) {
 				var form			= dijit.registry.byId("coreProfileEditForm");
 				var isValidUsername = dijit.registry.byId("coreProfileEditUsernameTextbox").get("isValidUsername");
@@ -35,14 +35,14 @@ $this->headTitle()->set($this->translator()->_('profile.edit.title'));
 					dijit.registry.byId("coreProfileEditStandby").show();
 				
 					// Disable button
-					self.set("disabled", true);
+					that.set("disabled", true);
 	
 					dojoXhr.post({
 						url: "<?php echo $this->url(array(), 'core_profile_edit'); ?>",
 						content: dojoDomForm.toObject("coreProfileEditForm"),
 						handleAs: "json",
 						load: function(data) {
-							self.set("disabled", false);
+							that.set("disabled", false);
 							dijit.registry.byId("coreProfileEditStandby").hide();
 							dojoTopic.publish("/app/global/notification", {
 								message: ("APP_RESULT_OK" == data.result) ? "<?php echo $this->translator()->_('profile.edit.success'); ?>" : "<?php echo $this->translator()->_('profile.edit.error'); ?>",
@@ -70,7 +70,7 @@ $this->headTitle()->set($this->translator()->_('profile.edit.title'));
 						<div id="coreProfileEditUsernameTextbox" data-dojo-type="dijit.form.ValidationTextBox"
 							data-dojo-props="isValidUsername: true, type: 'text', name: 'user_name', value: '<?php echo $this->user->user_name; ?>', readOnly: <?php if ($this->user->isRootUser()) : ?>true<?php else : ?>false<?php endif; ?>, style: 'width: 200px', required: true, promptMessage: '<?php echo $this->translator(true)->_('user._share.usernameRequired'); ?>', invalidMessage: '<?php echo $this->translator(true)->_('user._share.usernameValidator'); ?>'">
 							<script type="dojo/on" data-dojo-event="change" data-dojo-args="value">
-							var self = this;
+							var that = this;
 							require(["dojo/_base/xhr"], function(dojoXhr) {
 								dojoXhr.post({
 									url: "<?php echo $this->url(array(), 'core_user_checkusername'); ?>",
@@ -80,14 +80,14 @@ $this->headTitle()->set($this->translator()->_('profile.edit.title'));
 									},
 									load: function(data) {
 										var isValid = data.result == true || data.result == "<?php echo $this->user->user_id; ?>";
-										self.set("isValidUsername", isValid);
+										that.set("isValidUsername", isValid);
 										if (!isValid) {
 											// FIXME: How to show the error message and set the status as "error".
 											// The following hack (because state is readonly property) does not 
 											// always prevent user to submit form:
-											// 		self.state = "Error";
+											// 		that.state = "Error";
 											// 		dijit.regitry.byId("coreProfileEditForm").state = "Error";
-											self.displayMessage(self.invalidMessage);
+											that.displayMessage(that.invalidMessage);
 										}
 									}
 								});
@@ -119,7 +119,7 @@ $this->headTitle()->set($this->translator()->_('profile.edit.title'));
 						<div id="coreProfileEditEmailTextbox" data-dojo-type="dijit.form.ValidationTextBox" 
 							data-dojo-props="isValidEmail: true, type: 'text', name: 'email', style: 'width: 200px', value: '<?php echo $this->user->email; ?>', required: true, promptMessage: '<?php echo $this->translator(true)->_('user._share.emailRequired'); ?>', invalidMessage: '<?php echo $this->translator(true)->_('user._share.emailValidator'); ?>'">
 							<script type="dojo/on" data-dojo-event="change" data-dojo-args="value">
-							var self = this;
+							var that = this;
 							require(["dojo/_base/xhr"], function(dojoXhr) {
 								dojoXhr.post({
 									url: "<?php echo $this->url(array(), 'core_user_checkemail'); ?>",
@@ -129,9 +129,9 @@ $this->headTitle()->set($this->translator()->_('profile.edit.title'));
 									},
 									load: function(data) {
 										var isValid = data.result == true || data.result == "<?php echo $this->user->user_id; ?>";
-										self.set("isValidEmail", isValid);
+										that.set("isValidEmail", isValid);
 										if (!isValid) {
-											self.displayMessage(self.invalidMessage);
+											that.displayMessage(that.invalidMessage);
 										}
 									}
 								});

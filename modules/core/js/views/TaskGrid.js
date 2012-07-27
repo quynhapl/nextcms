@@ -9,7 +9,7 @@
  * @package		core
  * @subpackage	js
  * @since		1.0
- * @version		2012-07-26
+ * @version		2012-07-27
  */
 
 define([
@@ -65,7 +65,7 @@ define([
 		_createGrid: function() {
 			// summary:
 			//		Creates the grid
-			var self = this;
+			var that = this;
 			
 			// Columns
 			var layout = [{
@@ -110,10 +110,10 @@ define([
 				label: this._i18n.global._share.installAction,
 				disabled: !core.js.base.controllers.ActionProvider.get("core_task_install").isAllowed,
 				onClick: function(e) {
-					var rowIndex = self._taskGrid.selection.selectedIndex;
-					var item = self._taskGrid.getItem(rowIndex);
+					var rowIndex = that._taskGrid.selection.selectedIndex;
+					var item = that._taskGrid.getItem(rowIndex);
 					if (item) {
-						self.onInstallTask(item);
+						that.onInstallTask(item);
 					}
 				}
 			});
@@ -125,10 +125,10 @@ define([
 				iconClass: "appIcon appConfigIcon",
 				disabled: !core.js.base.controllers.ActionProvider.get("core_task_config").isAllowed,
 				onClick: function(e) {
-					var rowIndex = self._taskGrid.selection.selectedIndex;
-					var item = self._taskGrid.getItem(rowIndex);
+					var rowIndex = that._taskGrid.selection.selectedIndex;
+					var item = that._taskGrid.getItem(rowIndex);
 					if (item) {
-						self.onConfigTask(item);
+						that.onConfigTask(item);
 					}
 				}
 			});
@@ -140,10 +140,10 @@ define([
 				iconClass: "appIcon coreTaskScheduleIcon",
 				disabled: !core.js.base.controllers.ActionProvider.get("core_task_schedule").isAllowed,
 				onClick: function(e) {
-					var rowIndex = self._taskGrid.selection.selectedIndex;
-					var item = self._taskGrid.getItem(rowIndex);
+					var rowIndex = that._taskGrid.selection.selectedIndex;
+					var item = that._taskGrid.getItem(rowIndex);
 					if (item) {
-						self.onScheduleTask(item);
+						that.onScheduleTask(item);
 					}
 				}
 			});
@@ -155,10 +155,10 @@ define([
 				iconClass: "appIcon appRunIcon",
 				disabled: !core.js.base.controllers.ActionProvider.get("core_task_run").isAllowed,
 				onClick: function(e) {
-					var rowIndex = self._taskGrid.selection.selectedIndex;
-					var item = self._taskGrid.getItem(rowIndex);
+					var rowIndex = that._taskGrid.selection.selectedIndex;
+					var item = that._taskGrid.getItem(rowIndex);
 					if (item) {
-						self.onRunTask(item);
+						that.onRunTask(item);
 					}
 				}
 			});
@@ -183,9 +183,9 @@ define([
 			dojoDom.byId(this._id).appendChild(this._taskGrid.domNode);
 			
 			dojoAspect.after(this._taskGrid, "onRowContextMenu", function(e) {
-				var item = self._taskGrid.getItem(e.rowIndex);
+				var item = that._taskGrid.getItem(e.rowIndex);
 				if (item) {
-					self.onRowContextMenu(item);
+					that.onRowContextMenu(item);
 				}
 			}, true);
 		},
@@ -221,15 +221,15 @@ define([
 		allowToInstall: function(/*Boolean*/ isAllowed) {
 			// summary:
 			//		Allows/disallows to install a task
-			var self = this;
+			var that = this;
 			isAllowed = isAllowed && core.js.base.controllers.ActionProvider.get("core_task_install").isAllowed;
 			this._installMenuItem.set("label", this._i18n.global._share.installAction);
 			this._installMenuItem.set("disabled", !isAllowed);
 			this._installMenuItem.onClick = function(e) {
-				var rowIndex = self._taskGrid.selection.selectedIndex;
-				var item = self._taskGrid.getItem(rowIndex);
+				var rowIndex = that._taskGrid.selection.selectedIndex;
+				var item = that._taskGrid.getItem(rowIndex);
 				if (item) {
-					self.onInstallTask(item);
+					that.onInstallTask(item);
 				}
 			};
 			return this;	// core.js.views.TaskGrid
@@ -254,15 +254,15 @@ define([
 		allowToUninstall: function(/*Boolean*/ isAllowed) {
 			// summary:
 			//		Allows/disallows to uninstall a task
-			var self = this;
+			var that = this;
 			isAllowed = isAllowed && core.js.base.controllers.ActionProvider.get("core_task_uninstall").isAllowed;
 			this._installMenuItem.set("label", this._i18n.global._share.uninstallAction);
 			this._installMenuItem.set("disabled", !isAllowed);
 			this._installMenuItem.onClick = function(e) {
-				var rowIndex = self._taskGrid.selection.selectedIndex;
-				var item = self._taskGrid.getItem(rowIndex);
+				var rowIndex = that._taskGrid.selection.selectedIndex;
+				var item = that._taskGrid.getItem(rowIndex);
 				if (item) {
-					self.onUninstallTask(item);
+					that.onUninstallTask(item);
 				}
 			};
 			return this;	// core.js.views.TaskGrid

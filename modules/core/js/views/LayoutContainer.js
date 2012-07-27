@@ -9,7 +9,7 @@
  * @package		core
  * @subpackage	js
  * @since		1.0
- * @version		2012-07-25
+ * @version		2012-07-27
  */
 
 define([
@@ -164,7 +164,7 @@ define([
 			
 			var children = {};
 			
-			var self = this;
+			var that = this;
 			for (var region in regions) {
 				var regionStyle = regions[region] || this._defaultRegions[region];
 				var childContainer = new dijit.layout.BorderContainer({
@@ -188,7 +188,7 @@ define([
 					accept: this._acceptLayoutContainerClasses,
 					onDropExternal: function(source, nodes, copy) {
 						var regions = core.js.base.Encoder.decode(dojoDomAttr.get(source.node, "data-app-entity-props"));
-						self.addBorderContainers(dijit.registry.byNode(this.node), regions);
+						that.addBorderContainers(dijit.registry.byNode(this.node), regions);
 					}
 				});
 				this._dndSources[childContainer.id] = dndSource;
@@ -528,7 +528,7 @@ define([
 			}).placeAt(portletSettings.domNode);
 			portletSettings.addChild(pane);
 			
-			var self = this;
+			var that = this;
 			dojoOn(portletSettings, "toggle", function() {
 				var display = dojoDomStyle.get(portletSettings.domNode, "display");
 				if ("block" == display) {
@@ -548,16 +548,16 @@ define([
 					// at least one parameter that is too long.
 					// It makes the request URI too long
 					//		pane.set("href", url + "?" + dojoIoQuery.objectToQuery(dojoLang.mixin(params, widget.params)));
-					//		var self = this;
+					//		var that = this;
 					//		dojoOn(pane, "downloadEnd", function() {
 					//			dojoTopic.publish("/app/global/onLoadComplete", [ url ]);
 					// 			// Fix the issue: If there are tab containers side the pane
 					//			// the portlet does not show the content of selected tab
 					// 			// until I click on a tab title
-					//			self._activateTabInsidePortlet(pane);
+					//			that._activateTabInsidePortlet(pane);
 					//
 					//			// Init the config fields if their values are defined
-					//			self._loadWidgetParams(pane, widget);
+					//			that._loadWidgetParams(pane, widget);
 					//		});
 					dojoXhr.post({
 						url: url,
@@ -565,8 +565,8 @@ define([
 						load: function(data) {
 							pane.set("content", data);
 							dojoTopic.publish("/app/global/onLoadComplete", url);
-							self._activateTabInsidePortlet(pane);
-							self._loadWidgetParams(pane, widget);
+							that._activateTabInsidePortlet(pane);
+							that._loadWidgetParams(pane, widget);
 						}
 					});
 					
@@ -592,7 +592,7 @@ define([
 		 		dojoOn(portlet, "downloadend", function() {
 					if (showSettings) {
 		 				// Add the portlet settings
-						self.addChild(portletSettings);
+						that.addChild(portletSettings);
 						portletSettings.toggle();
 					}
 				});
@@ -619,7 +619,7 @@ define([
 			
 			// Remove the portlet if user click on the Close (x) icon
 			dojoOn(portlet, "close", function() {
-				dojoTopic.publish("/app/core/views/LayoutContainer/closePortlet_" + self._id, {
+				dojoTopic.publish("/app/core/views/LayoutContainer/closePortlet_" + that._id, {
 					container: container,
 					portlet: portlet,
 					widget: widget,
@@ -677,19 +677,19 @@ define([
 			//		The container, which can be a border/grid container, a grid zone, or a portlet
 			// collapsed:
 			//		If true, collapses all portlets. If false, expands all portlets.
-			var self = this;
+			var that = this;
 			switch (true) {
 				case (container instanceof dijit.layout.BorderContainer):
 				case (container instanceof dojox.layout.GridContainer):
 				case (container instanceof dijit.layout.TabContainer):
 					dojoArray.forEach(container.getChildren(), function(child) {
-						self.collapsePortlets(child, collapsed);
+						that.collapsePortlets(child, collapsed);
 					});
 					break;
 				case (container instanceof HTMLElement):
 					dojo.query(".dojoxPortlet", container).forEach(function(portletNode) {
 						var portlet = dijit.registry.byNode(portletNode);
-						self.collapsePortlets(portlet, collapsed);
+						that.collapsePortlets(portlet, collapsed);
 					});
 					break;
 				case (container instanceof core.js.views.LayoutPortlet):
@@ -716,11 +716,11 @@ define([
 			portlet.set("indices", target);
 			
 			// Reinit the TinyMCE editors if they exist
-			var self = this;
+			var that = this;
 			dojo.query("textarea." + core.js.LayoutConstant.WIDGET_INPUT_TINYMCE_CLASS, portlet.domNode).forEach(function(textarea) {
 				var textareaId = dojoDomAttr.get(textarea, "id");
-				self._removeTinyMCE(textareaId);
-				self._addTinyMCE(textareaId);
+				that._removeTinyMCE(textareaId);
+				that._addTinyMCE(textareaId);
 			});
 		},
 		
@@ -909,7 +909,7 @@ define([
 			// summary:
 			//		Enables drag-and-drop. Allows user to drag the layout container
 			//		and drop to the root container
-			var self = this;
+			var that = this;
 			var dndSource = new dojo.dnd.Source(dojoDom.byId(this._id), {
 				isSource: false,
 				accept: this._acceptLayoutContainerClasses,
@@ -919,7 +919,7 @@ define([
 					switch (type) {
 						case "layout":
 							var data = core.js.base.Encoder.decode(dojoDomAttr.get(source.node, "data-app-entity-props"));
-							self.addBorderContainers(dijit.registry.byId(self._id), data);
+							that.addBorderContainers(dijit.registry.byId(that._id), data);
 							break;
 						case "widget":
 							break;
@@ -956,7 +956,7 @@ define([
 			core.js.base.controllers.Subscriber.subscribe(this.TOPIC_GROUP, "/dojox/mdnd/adapter/dndToDojo/drop", this, function(node, target, type) {
 			});
 			
-			var self = this;
+			var that = this;
 			core.js.base.controllers.Subscriber.subscribe(this.TOPIC_GROUP, "/dojox/mdnd/drag/start", this, function(node, sourceArea, sourceDropIndex) {
 				// This method will be called when dragging portlets in a grid container
 				var portlet = dijit.registry.byNode(node);
@@ -971,7 +971,7 @@ define([
 				}
 				dojo.query("textarea." + core.js.LayoutConstant.WIDGET_INPUT_TINYMCE_CLASS, node).forEach(function(textarea) {
 					var textareaId = dojoDomAttr.get(textarea, "id");
-					self._removeTinyMCE(textareaId);
+					that._removeTinyMCE(textareaId);
 				});
 			});
 			
@@ -989,7 +989,7 @@ define([
 				}
 				dojo.query("textarea." + core.js.LayoutConstant.WIDGET_INPUT_TINYMCE_CLASS, node).forEach(function(textarea) {
 					var textareaId = dojoDomAttr.get(textarea, "id");
-					self._addTinyMCE(textareaId);
+					that._addTinyMCE(textareaId);
 				});
 				
 				// Get the current of zone index
@@ -1197,7 +1197,7 @@ define([
 		},
 		
 		_getHtmlData: function(/*dijit.layout.BorderContainer|dojox.layout.GridContainer|core.js.views.LayoutPortlet*/ container) {
-			var self = this;
+			var that = this;
 			var html = "";
 			
 			switch (true) {
@@ -1236,7 +1236,7 @@ define([
 					|| (child instanceof dojox.layout.GridContainer) || (child instanceof core.js.views.LayoutPortlet)
 					|| (child instanceof dijit.layout.ContentPane)) 
 				{
-					var childContent = self._getHtmlData(child);
+					var childContent = that._getHtmlData(child);
 					if (childContent != "") {
 						html += childContent + "\n";
 					}
@@ -1266,7 +1266,7 @@ define([
 			//		Gets container's data
 			// container:
 			//		The container, which can be a border/grid container, a grid zone, or a portlet
-			var self = this;
+			var that = this;
 			var data = {
 				containers: [],
 				properties: this.getProperties(container)
@@ -1285,7 +1285,7 @@ define([
 					}
 					
 					dojoArray.forEach(container.getChildren(), function(child) {
-						data.containers.push(self._getContainerData(child));
+						data.containers.push(that._getContainerData(child));
 					});
 					break;
 				
@@ -1295,7 +1295,7 @@ define([
 					
 					// Get the list of zones (columns)
 					dojo.query("> .gridContainerZone", container.gridNode).forEach(function(zone, index) {
-						data.containers.push(self._getContainerData(zone));
+						data.containers.push(that._getContainerData(zone));
 					});
 					break;
 				
@@ -1317,7 +1317,7 @@ define([
 					}
 					
 					dojoArray.forEach(container.getChildren(), function(child) {
-						data.containers.push(self._getContainerData(child));
+						data.containers.push(that._getContainerData(child));
 					});
 					break;
 				
@@ -1333,7 +1333,7 @@ define([
 					// Get the list of portlets or tab containers
 					dojo.query("> ." + core.js.LayoutConstant.PORTLET_CONTAINER_CLASS, container).forEach(function(portletNode, index) {
 						var portlet = dijit.registry.byNode(portletNode);
-						data.containers.push(self._getContainerData(portlet));
+						data.containers.push(that._getContainerData(portlet));
 					});
 					break;
 				
@@ -1388,7 +1388,7 @@ define([
 			// portlet:
 			//		The portlet
 			var params = {};
-			var self = this;
+			var that = this;
 			
 			dojo.query("." + core.js.LayoutConstant.WIDGET_INPUT_CLASS, portlet.domNode).forEach(function(inputNode) {
 				var widget = dijit.registry.byNode(inputNode), name = null, value;
@@ -1446,7 +1446,7 @@ define([
 			var portlet   = pane.get("appPortlet");
 			var portletId = portlet.id;
 			
-			var self = this, name;
+			var that = this, name;
 			dojo.query("." + core.js.LayoutConstant.WIDGET_INPUT_CLASS, pane.domNode).forEach(function(node) {
 				var dijitWidget = dijit.registry.byNode(node);
 				

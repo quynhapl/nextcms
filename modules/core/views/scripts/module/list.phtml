@@ -10,7 +10,7 @@
  * @package		core
  * @subpackage	views
  * @since		1.0
- * @version		2012-07-26
+ * @version		2012-07-27
  */
 
 defined('APP_VALID_REQUEST') || die('You cannot access the script directly.');
@@ -52,7 +52,7 @@ require(["core/js/base/Resource"], function() {
 						<button data-dojo-type="dijit.form.Button" data-dojo-props="type: 'button', disabled: <?php if ($module->name == 'core' || (!$this->accessor()->route('core_module_install') && !$module->is_installed) || (!$this->accessor()->route('core_module_uninstall') && $module->is_installed)) : ?>true<?php else : ?>false<?php endif; ?>, appModule: '<?php echo $module->name; ?>', appModuleTitle: '<?php echo addslashes($moduleTitle); ?>', appInstalled: <?php if ($module->is_installed) : ?>true<?php else : ?>false<?php endif; ?>">
 							<?php echo $module->is_installed ? $this->translator()->_('global._share.uninstallAction') : $this->translator()->_('global._share.installAction'); ?>
 							<script type="dojo/method" data-dojo-event="onClick" data-dojo-args="e">
-							var self = this;
+							var that = this;
 							require([
 								"dojo/_base/xhr",
 								"dojo/dom",
@@ -60,9 +60,9 @@ require(["core/js/base/Resource"], function() {
 								"dijit/registry",
 								"dojox/string/sprintf"
 							], function(dojoXhr, dojoDom, dojoTopic) {
-								var isInstalled = self.get("appInstalled");
-								var module		= self.get("appModule");
-								var moduleTitle = self.get("appModuleTitle");
+								var isInstalled = that.get("appInstalled");
+								var module		= that.get("appModule");
+								var moduleTitle = that.get("appModuleTitle");
 								if (isInstalled) {
 									// Show the confirmation dialog
 									dojoDom.byId("coreModuleListUninstallConfirmation").innerHTML = "<?php echo sprintf($this->translator()->_('module.uninstall.confirm'), $moduleTitle); ?>";
@@ -71,7 +71,7 @@ require(["core/js/base/Resource"], function() {
 									dijit.registry.byId("coreModuleListUninstallModuleDialog").show();
 								} else {
 									// Install the selected module
-									self.set("disabled", true);
+									that.set("disabled", true);
 									dijit.registry.byId("coreModuleListStandby").show();
 									dojoXhr.post({
 										url: "<?php echo $this->url(array(), 'core_module_install'); ?>",
@@ -88,7 +88,7 @@ require(["core/js/base/Resource"], function() {
 												message: dojox.string.sprintf(message, moduleTitle),
 												type: ("APP_RESULT_OK" == data.result) ? "message" : "error"
 											});
-											self.set("disabled", false);
+											that.set("disabled", false);
 											if ("APP_RESULT_OK" == data.result) {
 												// Reload the current page
 												window.location.reload();
@@ -116,7 +116,7 @@ require(["core/js/base/Resource"], function() {
 					<button data-dojo-type="dijit.form.Button" data-dojo-props="type: 'button'">
 						<?php echo $this->translator()->_('global._share.yesMessage'); ?>
 						<script type="dojo/method" data-dojo-event="onClick" data-dojo-args="e">
-						var self = this;
+						var that = this;
 						require([
 							"dojo/_base/xhr",
 							"dojo/dom",

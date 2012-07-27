@@ -10,7 +10,7 @@
  * @package		core
  * @subpackage	views
  * @since		1.0
- * @version		2012-07-26
+ * @version		2012-07-27
  */
 
 defined('APP_VALID_REQUEST') || die('You cannot access the script directly.');
@@ -45,16 +45,16 @@ require(["core/js/base/Resource"], function() {
 			<button id="coreWidgetListInstallButton_<?php echo $widget->module; ?>_<?php echo $widget->name; ?>" data-dojo-type="dijit.form.Button" data-dojo-props="type: 'button', disabled: <?php if ((!$this->accessor()->route('core_widget_install') && !$widget->is_installed) || (!$this->accessor()->route('core_widget_uninstall') && $widget->is_installed)) : ?>true<?php else : ?>false<?php endif; ?>, appWidgetModule: '<?php echo $widget->module; ?>', appWidgetName: '<?php echo $widget->name; ?>', appIsWidgetInstalled: <?php if ($widget->is_installed) : ?>true<?php else : ?>false<?php endif; ?>">
 				<?php echo $widget->is_installed ? $this->translator()->_('global._share.uninstallAction') : $this->translator()->_('global._share.installAction'); ?>
 				<script type="dojo/method" data-dojo-event="onClick" data-dojo-args="e">
-				var self = this;
+				var that = this;
 				require([
 					"dojo/_base/xhr",
 					"dojo/topic",
 					"dojox/string/sprintf"
 				], function(dojoXhr, dojoTopic) {
-					self.set("disabled", true);
-					var isInstalled = self.get("appIsWidgetInstalled");
-					var module		= self.get("appWidgetModule");
-					var name		= self.get("appWidgetName");
+					that.set("disabled", true);
+					var isInstalled = that.get("appIsWidgetInstalled");
+					var module		= that.get("appWidgetModule");
+					var name		= that.get("appWidgetName");
 					dojoXhr.post({
 						url: isInstalled ? "<?php echo $this->url(array(), 'core_widget_uninstall'); ?>" : "<?php echo $this->url(array(), 'core_widget_install'); ?>",
 						content: {
@@ -70,11 +70,11 @@ require(["core/js/base/Resource"], function() {
 								message: dojox.string.sprintf(message, name),
 								type: ("APP_RESULT_OK" == data.result) ? "message" : "error"
 							});
-							self.set("disabled", false);
+							that.set("disabled", false);
 	
 							if ("APP_RESULT_OK" == data.result) {
-								self.set("appIsWidgetInstalled", !isInstalled);
-								self.set("label", isInstalled ? "<?php echo $this->translator()->_('global._share.installAction'); ?>" : "<?php echo $this->translator()->_('global._share.uninstallAction'); ?>");
+								that.set("appIsWidgetInstalled", !isInstalled);
+								that.set("label", isInstalled ? "<?php echo $this->translator()->_('global._share.installAction'); ?>" : "<?php echo $this->translator()->_('global._share.uninstallAction'); ?>");
 								dojoTopic.publish("/app/core/widget/" + (isInstalled ? "uninstall" : "install"), {
 									module: module,
 									name: name

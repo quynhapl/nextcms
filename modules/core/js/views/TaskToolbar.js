@@ -9,7 +9,7 @@
  * @package		core
  * @subpackage	js
  * @since		1.0
- * @version		2012-07-26
+ * @version		2012-07-27
  */
 
 define([
@@ -55,7 +55,7 @@ define([
 		show: function() {
 			// summary:
 			//		Shows the toolbar
-			var self = this;
+			var that = this;
 			var toolbar = new dijit.Toolbar({}, this._id);
 			
 			// "Refresh" button
@@ -65,7 +65,7 @@ define([
 				iconClass: "appIcon appRefreshIcon",
 				disabled: !core.js.base.controllers.ActionProvider.get("core_task_list").isAllowed,
 				onClick: function(e) {
-					self.onRefresh();
+					that.onRefresh();
 				}
 			});
 			toolbar.addChild(this._refreshButton);
@@ -76,8 +76,8 @@ define([
 				modulesMenu.addChild(new dijit.MenuItem({
 					label: this._i18n.task.list.allModules,
 					onClick: function(e) {
-						self._moduleDropDownButton.set("label", this.label);
-						self.onSelectModule(null);
+						that._moduleDropDownButton.set("label", this.label);
+						that.onSelectModule(null);
 					}
 				}));
 				modulesMenu.addChild(new dijit.MenuSeparator());
@@ -87,10 +87,8 @@ define([
 						appModule: this._modules[i].name,
 						label: this._modules[i].title,
 						onClick: function(e) {
-							self._moduleDropDownButton.set("label", this.get("label"));
-							var module = this.get("appModule");
-							console.log(module);
-							self.onSelectModule(module);
+							that._moduleDropDownButton.set("label", this.get("label"));
+							that.onSelectModule(this.get("appModule"));
 						}
 					}));
 				}

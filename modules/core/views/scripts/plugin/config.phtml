@@ -10,7 +10,7 @@
  * @package		core
  * @subpackage	views
  * @since		1.0
- * @version		2012-07-26
+ * @version		2012-07-27
  */
 
 defined('APP_VALID_REQUEST') || die('You cannot access the script directly.');
@@ -26,21 +26,21 @@ $this->headTitle()->set($this->translator()->_('plugin.config.title'));
 		<button id="corePluginConfigSaveButton" data-dojo-type="dijit.form.Button" data-dojo-props="type: 'submit', iconClass: 'appIcon appSaveIcon'">
 			<?php echo $this->translator()->_('global._share.saveAction'); ?>
 			<script type="dojo/method" data-dojo-event="onClick" data-dojo-args="e">
-			var self = this;
+			var that = this;
 			require([
 				"dojo/_base/xhr",
 				"dojo/dom-form",
 				"dojo/topic",
 				"dojox/string/sprintf"
 			], function(dojoXhr, dojoDomForm, dojoTopic) {
-				self.set("disabled", true);
+				that.set("disabled", true);
 				dojoTopic.publish("/app/core/plugin/config/onStart");
 				dojoXhr.post({
 					url: "<?php echo $this->url(array(), 'core_plugin_config'); ?>",
 					content: dojoDomForm.toObject("corePluginConfigForm"),
 					handleAs: "json",
 					load: function(data) {
-						self.set("disabled", false);
+						that.set("disabled", false);
 						var message = ("APP_RESULT_OK" == data.result) 
 									? dojox.string.sprintf("<?php echo $this->translator()->_('plugin.config.success'); ?>", "<?php echo $this->name; ?>") 
 									: dojox.string.sprintf("<?php echo $this->translator()->_('plugin.config.error'); ?>", "<?php echo $this->name; ?>");

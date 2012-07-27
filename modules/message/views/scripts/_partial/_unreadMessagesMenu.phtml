@@ -10,7 +10,7 @@
  * @package		message
  * @subpackage	views
  * @since		1.0
- * @version		2012-07-26
+ * @version		2012-07-27
  */
 
 defined('APP_VALID_REQUEST') || die('You cannot access the script directly.');
@@ -20,7 +20,7 @@ defined('APP_VALID_REQUEST') || die('You cannot access the script directly.');
 <div id="messageUnreadMessagesMenuItem" data-dojo-type="dijit.MenuItem" data-dojo-props="iconClass: 'appIcon appMessageIcon'">
 	<a href="<?php echo $this->url(array(), 'message_message_list'); ?>" class="appTopMenuItem" data-app-ajax="true"><?php echo $this->translator()->setLanguageDir('/modules/message/languages')->_('global.layout.message'); ?></a> (<span id="messageUnreadMessagesCounter"><?php echo $this->message()->countUnreadMessages(null); ?></span>)
 	<script type="dojo/method">
-	var self = this;
+	var that = this;
 	require([
 		"dojo/dom-attr",
 		"dojo/topic"
@@ -30,16 +30,16 @@ defined('APP_VALID_REQUEST') || die('You cannot access the script directly.');
 		dojoTopic.subscribe("/app/message/message/mark/onSuccess", function(data) {
 			// Don't update the counter if message is deleted
 			if ("0" == data.deleted) {
-				self._increaseUnreadMessages(("1" == data.unread) ? 1 : -1);
+				that._increaseUnreadMessages(("1" == data.unread) ? 1 : -1);
 			}
 		});
 		// - after deleting unread message
 		dojoTopic.subscribe("/app/message/message/delete/onSuccess", function(data) {
 			if ("0" == data.deleted && "1" == data.unread) {
-				self._increaseUnreadMessages(-1);
+				that._increaseUnreadMessages(-1);
 			}
 		});
-		self._increaseUnreadMessages = function(increasingNumber) {
+		that._increaseUnreadMessages = function(increasingNumber) {
 			var numUnreadMessages = parseInt(dojoDomAttr.get("messageUnreadMessagesCounter", "innerHTML"));
 			numUnreadMessages 	 += increasingNumber;
 			if (numUnreadMessages >= 0) {

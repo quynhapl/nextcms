@@ -9,7 +9,7 @@
  * @package		core
  * @subpackage	js
  * @since		1.0
- * @version		2012-07-26
+ * @version		2012-07-27
  */
 
 define([
@@ -82,7 +82,7 @@ define([
 			// summary:
 			//		Sets the task toolbar
 			this._taskToolbar = toolbar;
-			var self = this;
+			var that = this;
 			
 			// Refresh handler
 			dojoAspect.after(toolbar, "onRefresh", dojoLang.hitch(this, "searchTasks"));
@@ -91,7 +91,7 @@ define([
 			// DOJO LESSON: Pass the last parameter of dojoAspect.after to true,
 			// so the advisory function can get the original parameters
 			dojoAspect.after(toolbar, "onSelectModule", function(module) {
-				self.searchTasks({
+				that.searchTasks({
 					module: module
 				});
 			}, true);
@@ -102,7 +102,7 @@ define([
 		setTaskGrid: function(/*core.js.views.TaskGrid*/ grid) {
 			// summary:
 			//		Sets the task grid
-			var self = this;
+			var that = this;
 			this._taskGrid = grid;
 			this._mediator.setTaskGrid(grid);
 			
@@ -152,17 +152,17 @@ define([
 			});
 			dojoAspect.after(grid, "onRowContextMenu", function(item) {
 				var menu = grid.getContextMenu();
-				for (var i in self._actionItems) {
-					menu.removeChild(self._actionItems[i]);
+				for (var i in that._actionItems) {
+					menu.removeChild(that._actionItems[i]);
 				}
-				self._actionItems = [];
+				that._actionItems = [];
 				
 				if (item.actions[0]) {
 					var actions = dojoJson.parse(item.actions[0]), languagePath, label, translationKeys;
 					
 					// Add a separator menu item
 					var separator = new dijit.MenuSeparator();
-					self._actionItems.push(separator);
+					that._actionItems.push(separator);
 					menu.addChild(separator);
 					
 					var module = item.module[0];
@@ -185,10 +185,10 @@ define([
 							label: label,
 							disabled: !actions[action].allowed,
 							onClick: function(e) {
-								self.performAction(item, action);
+								that.performAction(item, action);
 							}
 						});
-						self._actionItems.push(menuItem);
+						that._actionItems.push(menuItem);
 						menu.addChild(menuItem);
 					}
 				}
@@ -220,7 +220,7 @@ define([
 		installTask: function(/*dojo.data.Item*/ item) {
 			// summary:
 			//		Installs given task item
-			var self = this;
+			var that = this;
 			dojoXhr.post({
 				url: core.js.base.controllers.ActionProvider.get("core_task_install").url,
 				content: {
@@ -230,11 +230,11 @@ define([
 				handleAs: "json",
 				load: function(data) {
 					dojoTopic.publish("/app/global/notification", {
-						message: dojox.string.sprintf(self._i18n.task.install[("APP_RESULT_OK" == data.result) ? "success" : "error"], data.name),
+						message: dojox.string.sprintf(that._i18n.task.install[("APP_RESULT_OK" == data.result) ? "success" : "error"], data.name),
 						type: ("APP_RESULT_OK" == data.result) ? "message" : "error"
 					});
 					if ("APP_RESULT_OK" == data.result) {
-						self.searchTasks();
+						that.searchTasks();
 					}
 				}
 			});
@@ -243,7 +243,7 @@ define([
 		runTask: function(/*dojo.data.Item*/ item) {
 			// summary:
 			//		Runs given task
-			var self = this;
+			var that = this;
 			this._helper.showStandby();
 			dojoXhr.post({
 				url: core.js.base.controllers.ActionProvider.get("core_task_run").url,
@@ -253,13 +253,13 @@ define([
 				},
 				handleAs: "json",
 				load: function(data) {
-					self._helper.hideStandby();
+					that._helper.hideStandby();
 					dojoTopic.publish("/app/global/notification", {
-						message: dojox.string.sprintf(self._i18n.task.run[("APP_RESULT_OK" == data.result) ? "success" : "error"], data.name),
+						message: dojox.string.sprintf(that._i18n.task.run[("APP_RESULT_OK" == data.result) ? "success" : "error"], data.name),
 						type: ("APP_RESULT_OK" == data.result) ? "message" : "error"
 					});
 					if ("APP_RESULT_OK" == data.result) {
-						self.searchTasks();
+						that.searchTasks();
 					}
 				}
 			});
@@ -287,7 +287,7 @@ define([
 			var url = core.js.base.controllers.ActionProvider.get("core_task_list").url;
 			dojo.hash("u=" + url + "/?q=" + q);
 			
-			var self = this;
+			var that = this;
 			this._helper.showStandby();
 			dojoXhr.post({
 				url: url,
@@ -297,8 +297,8 @@ define([
 				},
 				handleAs: "json",
 				load: function(data) {
-					self._helper.hideStandby();
-					self._taskGrid.showTasks(data.data);
+					that._helper.hideStandby();
+					that._taskGrid.showTasks(data.data);
 				}
 			});
 			
@@ -308,7 +308,7 @@ define([
 		uninstallTask: function(/*dojo.data.Item*/ item) {
 			// summary:
 			//		Uninstalls given task item
-			var self = this;
+			var that = this;
 			dojoXhr.post({
 				url: core.js.base.controllers.ActionProvider.get("core_task_uninstall").url,
 				content: {
@@ -318,11 +318,11 @@ define([
 				handleAs: "json",
 				load: function(data) {
 					dojoTopic.publish("/app/global/notification", {
-						message: dojox.string.sprintf(self._i18n.task.uninstall[("APP_RESULT_OK" == data.result) ? "success" : "error"], data.name),
+						message: dojox.string.sprintf(that._i18n.task.uninstall[("APP_RESULT_OK" == data.result) ? "success" : "error"], data.name),
 						type: ("APP_RESULT_OK" == data.result) ? "message" : "error"
 					});
 					if ("APP_RESULT_OK" == data.result) {
-						self.searchTasks();
+						that.searchTasks();
 					}
 				}
 			});

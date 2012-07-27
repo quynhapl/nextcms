@@ -9,7 +9,7 @@
  * @package		core
  * @subpackage	js
  * @since		1.0
- * @version		2012-07-26
+ * @version		2012-07-27
  */
 
 define([
@@ -95,15 +95,15 @@ define([
 			this._layoutToolbar = layoutToolbar;
 			this._mediator.setLayoutToolbar(layoutToolbar);
 			
-			var self = this;
+			var that = this;
 			dojoAspect.after(layoutToolbar, "onCancel", function() {
-				self.switchToMode("preview");
+				that.switchToMode("preview");
 			});
 			dojoAspect.after(layoutToolbar, "onEditLayout", function() {
-				self.switchToMode("edit");
+				that.switchToMode("edit");
 			});
 			dojoAspect.after(layoutToolbar, "onSaveLayout", function() {
-				self.onSaveLayout(self.getLayoutData());
+				that.onSaveLayout(that.getLayoutData());
 			});
 			return this;	// core.js.controllers.LayoutController
 		},
@@ -111,7 +111,7 @@ define([
 		_initContextMenu: function() {
 			// summary:
 			//		Handles the context menu's events
-			var self = this;
+			var that = this;
 			dojoAspect.after(this._layoutContextMenu, "onAddBorderContainer", dojoLang.hitch(this, "addBorderContainer"), true);
 			dojoAspect.after(this._layoutContextMenu, "onAddGridContainer", dojoLang.hitch(this, "addGridContainer"), true);
 			dojoAspect.after(this._layoutContextMenu, "onDeleteBorderContainer", dojoLang.hitch(this, "deleteBorderContainer"), true);
@@ -225,7 +225,7 @@ define([
 			this._mediator.setLayoutTreeView(layoutTreeView);
 			
 			// Set filter handler
-			var self = this;
+			var that = this;
 			dojoAspect.after(layoutTreeView, "onSetFilters", dojoLang.hitch(this, "setFilters"), true);
 			core.js.base.controllers.Subscriber.subscribe(this.TOPIC_GROUP, "/app/core/page/filter/onCancel", this, function() {
 				this._helper.closeDialog();

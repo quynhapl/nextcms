@@ -9,7 +9,7 @@
  * @package		core
  * @subpackage	js
  * @since		1.0
- * @version		2012-07-24
+ * @version		2012-07-27
  */
 
 define([
@@ -104,9 +104,9 @@ define([
 			}
 			this._pane.set("href", url);
 			
-			var self = this;
+			var that = this;
 			dojoOn(this._pane, "downloadend", function() {
-				dojoTopic.publish("/app/global/onLoadComplete", self._pane.get("href"));
+				dojoTopic.publish("/app/global/onLoadComplete", that._pane.get("href"));
 			});
 			
 			return this._pane;	// dojox.layout.ContentPane
