@@ -10,7 +10,7 @@
  * @package		core
  * @subpackage	views
  * @since		1.0
- * @version		2012-06-12
+ * @version		2012-07-27
  */
 
 defined('APP_VALID_REQUEST') || die('You cannot access the script directly.');
@@ -21,8 +21,9 @@ $this->headTitle()->set($this->translator()->_('user.list.title'));
 ?>
 
 <script type="text/javascript">
-dojo.require("core.js.base.Resource");
-core.js.base.Resource.loadCss("<?php echo $this->APP_STATIC_URL; ?>/modules/core/css/admin/default/styles.css");
+require(["core/js/base/Resource"], function() {
+	core.js.base.Resource.loadCss("<?php echo $this->APP_STATIC_URL; ?>/modules/core/css/admin/default/styles.css");	
+});
 </script>
 
 <div id="coreUserListRootContainer" data-dojo-type="dijit.layout.BorderContainer" data-dojo-props="design: 'headline', gutters: true, style: 'height: 100%; padding: 0; width: 100%'">
@@ -101,45 +102,48 @@ core.js.base.Resource.loadCss("<?php echo $this->APP_STATIC_URL; ?>/modules/core
 <script type="text/javascript">
 document.title = "<?php echo $this->translator()->setLanguageDir('/modules/core/languages')->_('user.list.title'); ?>";
 
-dojo.require("dijit.layout.BorderContainer");
-dojo.require("dijit.layout.ContentPane");
-dojo.require("dojox.layout.ContentPane");
+require([
+	"dojo/ready",
+	"dojo/parser",
+	"dijit/layout/BorderContainer",
+	"dijit/layout/ContentPane",
+	"dojox/layout/ContentPane",
+	"core/js/base/controllers/ActionProvider",
+	"core/js/controllers/UserController",
+	"core/js/views/UserContextMenu",
+	"core/js/views/UserListView",
+	"core/js/views/UserStatusListView",
+	"core/js/views/UserToolbar",
+	"core/js/views/RoleContextMenu",
+	"core/js/views/RoleListView",
+	"core/js/views/RoleToolbar"	
+], function(dojoReady) {
+	dojoReady(function() {
+		// Provide the actions
+		<?php foreach (array(
+						'core_role_add', 'core_role_delete', 'core_role_list', 'core_role_lock', 'core_role_rename',
+						'core_rule_role', 'core_rule_user',
+						'core_user_activate', 'core_user_add', 'core_user_avatar', 'core_user_delete', 'core_user_edit',
+						'core_user_list', 'core_user_move',
+					) as $name) : ?>
+		core.js.base.controllers.ActionProvider.set("<?php echo $name; ?>", {
+			url: "<?php echo $this->url(array(), $name); ?>",
+			isAllowed: <?php if ($this->accessor()->route($name)) : ?>true<?php else : ?>false<?php endif; ?>
+		});	
+		<?php endforeach; ?>
+		
+		// Create controller
+		var userController = new core.js.controllers.UserController("coreUserListRootContainer");
 
-dojo.require("core.js.base.controllers.ActionProvider");
-dojo.require("core.js.controllers.UserController");
-dojo.require("core.js.views.UserContextMenu");
-dojo.require("core.js.views.UserListView");
-dojo.require("core.js.views.UserStatusListView");
-dojo.require("core.js.views.UserToolbar");
-dojo.require("core.js.views.RoleContextMenu");
-dojo.require("core.js.views.RoleListView");
-dojo.require("core.js.views.RoleToolbar");
-
-dojo.addOnLoad(function() {
-	// Provide the actions
-	<?php foreach (array(
-					'core_role_add', 'core_role_delete', 'core_role_list', 'core_role_lock', 'core_role_rename',
-					'core_rule_role', 'core_rule_user',
-					'core_user_activate', 'core_user_add', 'core_user_avatar', 'core_user_delete', 'core_user_edit',
-					'core_user_list', 'core_user_move',
-				) as $name) : ?>
-	core.js.base.controllers.ActionProvider.set("<?php echo $name; ?>", {
-		url: "<?php echo $this->url(array(), $name); ?>",
-		isAllowed: <?php if ($this->accessor()->route($name)) : ?>true<?php else : ?>false<?php endif; ?>
-	});	
-	<?php endforeach; ?>
-	
-	// Create controller
-	var userController = new core.js.controllers.UserController("coreUserListRootContainer");
-
-	// Set UI components for controller
-	userController.setRoleContextMenu(new core.js.views.RoleContextMenu())
-				  .setRoleListView(new core.js.views.RoleListView("coreUserListRolesContainer"))
-				  .setRoleToolbar(new core.js.views.RoleToolbar("coreUserListRoleToolbar"))
-				  .setUserContextMenu(new core.js.views.UserContextMenu())
-				  .setUserListView(new core.js.views.UserListView("coreUserListUsersContainer"))
-				  .setUserToolbar(new core.js.views.UserToolbar("coreUserListUserToolbar"))
-				  .setStatusListView(new core.js.views.UserStatusListView("coreUserListStatusContainer"))
-				  .initSearchCriteria(<?php echo Zend_Json::encode($this->criteria); ?>);
+		// Set UI components for controller
+		userController.setRoleContextMenu(new core.js.views.RoleContextMenu())
+					  .setRoleListView(new core.js.views.RoleListView("coreUserListRolesContainer"))
+					  .setRoleToolbar(new core.js.views.RoleToolbar("coreUserListRoleToolbar"))
+					  .setUserContextMenu(new core.js.views.UserContextMenu())
+					  .setUserListView(new core.js.views.UserListView("coreUserListUsersContainer"))
+					  .setUserToolbar(new core.js.views.UserToolbar("coreUserListUserToolbar"))
+					  .setStatusListView(new core.js.views.UserStatusListView("coreUserListStatusContainer"))
+					  .initSearchCriteria(<?php echo Zend_Json::encode($this->criteria); ?>);
+	});
 });
 </script>

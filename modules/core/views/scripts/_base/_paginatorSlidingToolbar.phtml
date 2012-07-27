@@ -10,7 +10,7 @@
  * @package		core
  * @subpackage	views
  * @since		1.0
- * @version		2012-04-06
+ * @version		2012-07-27
  */
 
 defined('APP_VALID_REQUEST') || die('You cannot access the script directly.');
@@ -66,6 +66,9 @@ defined('APP_VALID_REQUEST') || die('You cannot access the script directly.');
 </div>
 
 <script type="text/javascript">
-dojo.require("dijit.form.Button");
-dojo.require("dijit.Toolbar");
+require([
+	"dojo/parser",
+	"dijit/form/Button",
+	"dijit/Toolbar"
+]);
 </script>

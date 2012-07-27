@@ -9,178 +9,180 @@
  * @package		core
  * @subpackage	js
  * @since		1.0
- * @version		2012-03-28
+ * @version		2012-07-27
  */
 
-dojo.provide("core.js.views.RoleContextMenu");
+define([
+	"dojo/_base/declare",
+	"dojo/dom-attr",
+	"dojo/parser",
+	"dijit/Menu",
+	"dijit/MenuItem",
+	"dijit/MenuSeparator",
+	"core/js/base/controllers/ActionProvider",
+	"core/js/base/I18N"
+], function(dojoDeclare, dojoDomAttr) {
+	return dojoDeclare("core.js.views.RoleContextMenu", null, {
+		// _contextMenu: dijit.Menu
+		//		The context menu for each role item
+		_contextMenu: null,
+		
+		// _i18n: Object
+		_i18n: null,
+		
+		// _deleteMenuItem: dijit.MenuItem
+		_deleteMenuItem: null,
+		
+		// _renameMenuItem: dijit.MenuItem
+		_renameMenuItem: null,
+		
+		// _lockMenuItem: dijit.MenuItem
+		_lockMenuItem: null,
+		
+		// _setPermissionMenuItem: dijit.MenuItem
+		_setPermissionMenuItem: null,
+		
+		constructor: function() {
+			core.js.base.I18N.requireLocalization("core/languages");
+			this._i18n = core.js.base.I18N.getLocalization("core/languages");
+		},
 
-dojo.require("dijit.Menu");
-dojo.require("dijit.MenuItem");
-dojo.require("dijit.MenuSeparator");
-
-dojo.require("core.js.base.controllers.ActionProvider");
-dojo.require("core.js.base.I18N");
-
-dojo.declare("core.js.views.RoleContextMenu", null, {
-	// _contextMenu: dijit.Menu
-	//		The context menu for each role item
-	_contextMenu: null,
-	
-	// _i18n: Object
-	_i18n: null,
-	
-	// _deleteMenuItem: dijit.MenuItem
-	_deleteMenuItem: null,
-	
-	// _renameMenuItem: dijit.MenuItem
-	_renameMenuItem: null,
-	
-	// _lockMenuItem: dijit.MenuItem
-	_lockMenuItem: null,
-	
-	// _setPermissionMenuItem: dijit.MenuItem
-	_setPermissionMenuItem: null,
-	
-	constructor: function() {
-		core.js.base.I18N.requireLocalization("core/languages");
-		this._i18n = core.js.base.I18N.getLocalization("core/languages");
-	},
-
-	show: function(/*core.js.views.RoleItemView*/ roleItemView) {
-		// summary:
-		//		Show menu context for selected role item
-		var _this = this;
+		show: function(/*core.js.views.RoleItemView*/ roleItemView) {
+			// summary:
+			//		Show menu context for selected role item
+			var that = this;
+			
+			// Get the role object that the role item handles
+			var role = roleItemView.getRole();
+			
+			// Create menu
+			this._contextMenu = new dijit.Menu({
+				targetNodeIds: [ dojoDomAttr.get(roleItemView.getDomNode(), "id") ]
+			});
+			
+			// "Delete" menu item
+			this._deleteMenuItem = new dijit.MenuItem({
+				label: this._i18n.global._share.deleteAction,
+				iconClass: "appIcon appDeleteIcon",
+				disabled: !core.js.base.controllers.ActionProvider.get("core_role_delete").isAllowed,
+				onClick: function() {
+					that.onDeleteRole(roleItemView);
+				}
+			});
+			this._contextMenu.addChild(this._deleteMenuItem);
+			
+			// "Rename" item
+			this._renameMenuItem = new dijit.MenuItem({
+				label: this._i18n.global._share.renameAction,
+				iconClass: "appIcon appRenameIcon",
+				disabled: !core.js.base.controllers.ActionProvider.get("core_role_rename").isAllowed,
+				onClick: function() {
+					that.onRenameRole(roleItemView);
+				}
+			});
+			this._contextMenu.addChild(this._renameMenuItem);
+			
+			// "Lock" item
+			var locked = role.locked;
+			this._lockMenuItem = new dijit.MenuItem({
+				label: locked ? this._i18n.global._share.unlockAction : this._i18n.global._share.lockAction,
+				iconClass: "appIcon appUnlockIcon",
+				disabled: !core.js.base.controllers.ActionProvider.get("core_role_lock").isAllowed,
+				onClick: function() {
+					that.onLockRole(roleItemView);
+				}
+			});
+			this._contextMenu.addChild(this._lockMenuItem);
+			
+			this._contextMenu.addChild(new dijit.MenuSeparator());
+			
+			// Permission item
+			this._setPermissionMenuItem = new dijit.MenuItem({
+				label: this._i18n.rule._share.permissionAction,
+				disabled: !core.js.base.controllers.ActionProvider.get("core_rule_role").isAllowed,
+				onClick: function() {
+					that.onSetRolePermissions(roleItemView);
+				}
+			});
+			this._contextMenu.addChild(this._setPermissionMenuItem);
+			
+			this._contextMenu.startup();
+			
+			// Extension point
+			this.onContextMenu(roleItemView);
+		},
 		
-		// Get the role object that the role item handles
-		var role = roleItemView.getRole();
+		////////// CONTROL STATE OF MENU ITEMS //////////
 		
-		// Create menu
-		this._contextMenu = new dijit.Menu({
-			targetNodeIds: [ dojo.attr(roleItemView.getDomNode(), "id") ]
-		});
+		allowToDelete: function(/*Boolean*/ isAllowed) {
+			// summary:
+			//		Allows/disallows to delete the role
+			isAllowed = isAllowed && core.js.base.controllers.ActionProvider.get("core_role_delete").isAllowed;
+			this._deleteMenuItem.set("disabled", !isAllowed);
+			return this;	// core.js.views.RoleContextMenu
+		},
 		
-		// "Delete" menu item
-		this._deleteMenuItem = new dijit.MenuItem({
-			label: this._i18n.global._share.deleteAction,
-			iconClass: "appIcon appDeleteIcon",
-			disabled: !core.js.base.controllers.ActionProvider.get("core_role_delete").isAllowed,
-			onClick: function() {
-				_this.onDeleteRole(roleItemView);
-			}
-		});
-		this._contextMenu.addChild(this._deleteMenuItem);
+		allowToLock: function(/*Boolean*/ isAllowed) {
+			// summary:
+			//		Allows/disallows to lock the role
+			isAllowed = isAllowed && core.js.base.controllers.ActionProvider.get("core_role_lock").isAllowed;
+			this._lockMenuItem.set("disabled", !isAllowed);
+			return this;	// core.js.views.RoleContextMenu
+		},
 		
-		// "Rename" item
-		this._renameMenuItem = new dijit.MenuItem({
-			label: this._i18n.global._share.renameAction,
-			iconClass: "appIcon appRenameIcon",
-			disabled: !core.js.base.controllers.ActionProvider.get("core_role_rename").isAllowed,
-			onClick: function() {
-				_this.onRenameRole(roleItemView);
-			}
-		});
-		this._contextMenu.addChild(this._renameMenuItem);
+		allowToSetPermission: function(/*Boolean*/ isAllowed) {
+			// summary:
+			//		Allows/disallows to set permissions to role
+			isAllowed = isAllowed && core.js.base.controllers.ActionProvider.get("core_rule_role").isAllowed;
+			this._setPermissionMenuItem.set("disabled", !isAllowed);
+			return this;	// core.js.views.RoleContextMenu
+		},
 		
-		// "Lock" item
-		var locked = role.locked;
-		this._lockMenuItem = new dijit.MenuItem({
-			label: locked ? this._i18n.global._share.unlockAction : this._i18n.global._share.lockAction,
-			iconClass: "appIcon appUnlockIcon",
-			disabled: !core.js.base.controllers.ActionProvider.get("core_role_lock").isAllowed,
-			onClick: function() {
-				_this.onLockRole(roleItemView);
-			}
-		});
-		this._contextMenu.addChild(this._lockMenuItem);
+		////////// CALLBACKS //////////
 		
-		this._contextMenu.addChild(new dijit.MenuSeparator());
+		onContextMenu: function(/*core.js.views.RoleItemView*/ roleItemView) {
+			// summary:
+			//		Called when user right-click a role item
+			// roleItemView:
+			//		The selected role item
+			// tags:
+			//		callback
+		},
 		
-		// Permission item
-		this._setPermissionMenuItem = new dijit.MenuItem({
-			label: this._i18n.rule._share.permissionAction,
-			disabled: !core.js.base.controllers.ActionProvider.get("core_rule_role").isAllowed,
-			onClick: function() {
-				_this.onSetRolePermissions(roleItemView);
-			}
-		});
-		this._contextMenu.addChild(this._setPermissionMenuItem);
+		onDeleteRole: function(/*core.js.views.RoleItemView*/ roleItemView) {
+			// summary:
+			//		This method is called when the "Delete" menu item is selected
+			// roleItemView:
+			//		The selected role item
+			// tags:
+			//		callback
+		},
 		
-		this._contextMenu.startup();
+		onLockRole: function(/*core.js.views.RoleItemView*/ roleItemView) {
+			// summary:
+			//		This method is called when the "Lock" menu item is selected
+			// roleItemView:
+			//		The selected role item
+			// tags:
+			//		callback
+		},
 		
-		// Extension point
-		this.onContextMenu(roleItemView);
-	},
-	
-	////////// CONTROL STATE OF MENU ITEMS //////////
-	
-	allowToDelete: function(/*Boolean*/ isAllowed) {
-		// summary:
-		//		Allows/disallows to delete the role
-		isAllowed = isAllowed && core.js.base.controllers.ActionProvider.get("core_role_delete").isAllowed;
-		this._deleteMenuItem.set("disabled", !isAllowed);
-		return this;	// core.js.views.RoleContextMenu
-	},
-	
-	allowToLock: function(/*Boolean*/ isAllowed) {
-		// summary:
-		//		Allows/disallows to lock the role
-		isAllowed = isAllowed && core.js.base.controllers.ActionProvider.get("core_role_lock").isAllowed;
-		this._lockMenuItem.set("disabled", !isAllowed);
-		return this;	// core.js.views.RoleContextMenu
-	},
-	
-	allowToSetPermission: function(/*Boolean*/ isAllowed) {
-		// summary:
-		//		Allows/disallows to set permissions to role
-		isAllowed = isAllowed && core.js.base.controllers.ActionProvider.get("core_rule_role").isAllowed;
-		this._setPermissionMenuItem.set("disabled", !isAllowed);
-		return this;	// core.js.views.RoleContextMenu
-	},
-	
-	////////// CALLBACKS //////////
-	
-	onContextMenu: function(/*core.js.views.RoleItemView*/ roleItemView) {
-		// summary:
-		//		Called when user right-click a role item
-		// roleItemView:
-		//		The selected role item
-		// tags:
-		//		callback
-	},
-	
-	onDeleteRole: function(/*core.js.views.RoleItemView*/ roleItemView) {
-		// summary:
-		//		This method is called when the "Delete" menu item is selected
-		// roleItemView:
-		//		The selected role item
-		// tags:
-		//		callback
-	},
-	
-	onLockRole: function(/*core.js.views.RoleItemView*/ roleItemView) {
-		// summary:
-		//		This method is called when the "Lock" menu item is selected
-		// roleItemView:
-		//		The selected role item
-		// tags:
-		//		callback
-	},
-	
-	onRenameRoleClick: function(/*core.js.views.RoleItemView*/ roleItemView) {
-		// summary:
-		//		This method is called when the "Rename" menu item is selected
-		// roleItemView:
-		//		The selected role item
-		// tags:
-		//		callback
-	},
-	
-	onSetRolePermissions: function(/*core.js.views.RoleItemView*/ roleItemView) {
-		// summary:
-		//		This method is called when the "Set permissions" menu item is selected
-		// roleItemView:
-		//		The selected role item
-		// tags:
-		//		callback
-	}
+		onRenameRoleClick: function(/*core.js.views.RoleItemView*/ roleItemView) {
+			// summary:
+			//		This method is called when the "Rename" menu item is selected
+			// roleItemView:
+			//		The selected role item
+			// tags:
+			//		callback
+		},
+		
+		onSetRolePermissions: function(/*core.js.views.RoleItemView*/ roleItemView) {
+			// summary:
+			//		This method is called when the "Set permissions" menu item is selected
+			// roleItemView:
+			//		The selected role item
+			// tags:
+			//		callback
+		}
+	});
 });

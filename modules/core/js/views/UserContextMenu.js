@@ -9,170 +9,172 @@
  * @package		core
  * @subpackage	js
  * @since		1.0
- * @version		2012-03-28
+ * @version		2012-07-27
  */
 
-dojo.provide("core.js.views.UserContextMenu");
+define([
+	"dojo/_base/declare",
+	"dojo/dom-attr",
+	"dojo/parser",
+	"dijit/Menu",
+	"dijit/MenuItem",
+	"dijit/MenuSeparator",
+	"core/js/base/controllers/ActionProvider",
+	"core/js/base/I18N"
+], function(dojoDeclare, dojoDomAttr) {
+	return dojoDeclare("core.js.views.UserContextMenu", null, {
+		// _contextMenu: dijit.Menu
+		_contextMenu: null,
+		
+		// _i18n: Object
+		_i18n: null,
+		
+		// _activateMenuItem: dijit.MenuItem
+		_activateMenuItem: null,
+		
+		// _deleteMenuItem: dijit.MenuItem
+		_deleteMenuItem: null,
+		
+		// _setPermissionMenuItem: dijit.MenuItem
+		_setPermissionMenuItem: null,
+		
+		constructor: function() {
+			core.js.base.I18N.requireLocalization("core/languages");
+			this._i18n = core.js.base.I18N.getLocalization("core/languages");
+		},
 
-dojo.require("dijit.Menu");
-dojo.require("dijit.MenuItem");
-dojo.require("dijit.MenuSeparator");
-
-dojo.require("core.js.base.controllers.ActionProvider");
-dojo.require("core.js.base.I18N");
-
-dojo.declare("core.js.views.UserContextMenu", null, {
-	// _contextMenu: dijit.Menu
-	_contextMenu: null,
-	
-	// _i18n: Object
-	_i18n: null,
-	
-	// _activateMenuItem: dijit.MenuItem
-	_activateMenuItem: null,
-	
-	// _deleteMenuItem: dijit.MenuItem
-	_deleteMenuItem: null,
-	
-	// _setPermissionMenuItem: dijit.MenuItem
-	_setPermissionMenuItem: null,
-	
-	constructor: function() {
-		core.js.base.I18N.requireLocalization("core/languages");
-		this._i18n = core.js.base.I18N.getLocalization("core/languages");
-	},
-
-	show: function(/*core.js.views.UserItemView*/ userItemView) {
-		var _this = this;
+		show: function(/*core.js.views.UserItemView*/ userItemView) {
+			var that = this;
+			
+			// Get user object
+			var user  = userItemView.getUser();
+			
+			// Create menu
+			this._contextMenu = new dijit.Menu({
+				targetNodeIds: [ dojoDomAttr.get(userItemView.getDomNode(), "id") ]
+			});
+			
+			// Activate/deactivate item
+			this._activateMenuItem = new dijit.MenuItem({
+				label: ("activated" == user.status) ? this._i18n.global._share.deactivateAction : this._i18n.global._share.activateAction,
+				iconClass: "appIcon " + ("activated" == user.status ? "appDeactivateIcon" : "appActivateIcon"),
+				disabled: !core.js.base.controllers.ActionProvider.get("core_user_activate").isAllowed,
+				onClick: function() {
+					that.onActivateUser(userItemView);
+				}
+			});
+			this._contextMenu.addChild(this._activateMenuItem);
+			
+			// "Edit" menu item
+			this._contextMenu.addChild(new dijit.MenuItem({
+				label: this._i18n.global._share.editAction,
+				iconClass: "appIcon coreEditUserIcon",
+				disabled: !core.js.base.controllers.ActionProvider.get("core_user_edit").isAllowed,
+				onClick: function() {
+					that.onEditUser(userItemView);
+				}
+			}));
+			
+			// Delete user
+			this._deleteMenuItem = new dijit.MenuItem({
+				label: this._i18n.global._share.deleteAction,
+				iconClass: "appIcon appDeleteIcon",
+				disabled: !core.js.base.controllers.ActionProvider.get("core_user_delete").isAllowed,
+				onClick: function() {
+					that.onDeleteUser(userItemView);
+				}
+			});
+			this._contextMenu.addChild(this._deleteMenuItem);
+			
+			this._contextMenu.addChild(new dijit.MenuSeparator());
+			
+			// Permission item
+			this._setPermissionMenuItem = new dijit.MenuItem({
+				label: this._i18n.rule._share.permissionAction,
+				disabled: !core.js.base.controllers.ActionProvider.get("core_rule_user").isAllowed,
+				onClick: function() {
+					that.onSetUserPermissions(userItemView);
+				}
+			});
+			this._contextMenu.addChild(this._setPermissionMenuItem);
+			
+			this._contextMenu.startup();
+			
+			// Extension point
+			this.onContextMenu(userItemView);
+		},
 		
-		// Get user object
-		var user  = userItemView.getUser();
+		////////// CONTROL STATE OF MENU ITEMS //////////
 		
-		// Create menu
-		this._contextMenu = new dijit.Menu({
-			targetNodeIds: [ dojo.attr(userItemView.getDomNode(), "id") ]
-		});
+		allowToActivate: function(/*Boolean*/ isAllowed) {
+			// summary:
+			//		Allows/disallows to activate/deactivate the user
+			isAllowed = isAllowed && core.js.base.controllers.ActionProvider.get("core_user_activate").isAllowed;
+			this._activateMenuItem.set("disabled", !isAllowed);
+			return this;	// core.js.views.UserContextMenu
+		},
 		
-		// Activate/deactivate item
-		this._activateMenuItem = new dijit.MenuItem({
-			label: (user.status == "activated") ? this._i18n.global._share.deactivateAction : this._i18n.global._share.activateAction,
-			iconClass: "appIcon " + (user.status == "activated" ? "appDeactivateIcon" : "appActivateIcon"),
-			disabled: !core.js.base.controllers.ActionProvider.get("core_user_activate").isAllowed,
-			onClick: function() {
-				_this.onActivateUser(userItemView);
-			}
-		});
-		this._contextMenu.addChild(this._activateMenuItem);
+		allowToDelete: function(/*Boolean*/ isAllowed) {
+			// summary:
+			//		Allows/disallows to delete the user
+			isAllowed = isAllowed && core.js.base.controllers.ActionProvider.get("core_user_delete").isAllowed;
+			this._deleteMenuItem.set("disabled", !isAllowed);
+			return this;	// core.js.views.UserContextMenu
+		},
 		
-		// "Edit" menu item
-		this._contextMenu.addChild(new dijit.MenuItem({
-			label: this._i18n.global._share.editAction,
-			iconClass: "appIcon coreEditUserIcon",
-			disabled: !core.js.base.controllers.ActionProvider.get("core_user_edit").isAllowed,
-			onClick: function() {
-				_this.onEditUser(userItemView);
-			}
-		}));
+		allowToSetPermission: function(/*Boolean*/ isAllowed) {
+			// summary:
+			//		Allows/disallows to set permissions to the user
+			isAllowed = isAllowed && core.js.base.controllers.ActionProvider.get("core_rule_user").isAllowed;
+			this._setPermissionMenuItem.set("disabled", !isAllowed);
+			return this;	// core.js.views.UserContextMenu
+		},
 		
-		// Delete user
-		this._deleteMenuItem = new dijit.MenuItem({
-			label: this._i18n.global._share.deleteAction,
-			iconClass: "appIcon appDeleteIcon",
-			disabled: !core.js.base.controllers.ActionProvider.get("core_user_delete").isAllowed,
-			onClick: function() {
-				_this.onDeleteUser(userItemView);
-			}
-		});
-		this._contextMenu.addChild(this._deleteMenuItem);
+		////////// CALLBACKS //////////
 		
-		this._contextMenu.addChild(new dijit.MenuSeparator());
+		onActivateUser: function(/*core.js.views.UserItemView*/ userItemView) {
+			// summary: 
+			//		This method is called when the "Activate" menu item is selected
+			// userItemView:
+			//		The selected user item
+			// tags:
+			//		callback
+		},
 		
-		// Permission item
-		this._setPermissionMenuItem = new dijit.MenuItem({
-			label: this._i18n.rule._share.permissionAction,
-			disabled: !core.js.base.controllers.ActionProvider.get("core_rule_user").isAllowed,
-			onClick: function() {
-				_this.onSetUserPermissions(userItemView);
-			}
-		});
-		this._contextMenu.addChild(this._setPermissionMenuItem);
+		onContextMenu: function(/*core.js.views.UserItemView*/ userItemView) {
+			// summary:
+			//		Called when user right-click an user item
+			// userItemView:
+			//		The selected user item
+			// tags:
+			//		callback
+		},
 		
-		this._contextMenu.startup();
+		onDeleteUser: function(/*core.js.views.UserItemView*/ userItemView) {
+			// summary:
+			//		This method is called when the "Delete" menu item is selected
+			// userItemView:
+			//		The selected user item
+			// tags:
+			//		callback
+		},
 		
-		// Extension point
-		this.onContextMenu(userItemView);
-	},
-	
-	////////// CONTROL STATE OF MENU ITEMS //////////
-	
-	allowToActivate: function(/*Boolean*/ isAllowed) {
-		// summary:
-		//		Allows/disallows to activate/deactivate the user
-		isAllowed = isAllowed && core.js.base.controllers.ActionProvider.get("core_user_activate").isAllowed;
-		this._activateMenuItem.set("disabled", !isAllowed);
-		return this;	// core.js.views.UserContextMenu
-	},
-	
-	allowToDelete: function(/*Boolean*/ isAllowed) {
-		// summary:
-		//		Allows/disallows to delete the user
-		isAllowed = isAllowed && core.js.base.controllers.ActionProvider.get("core_user_delete").isAllowed;
-		this._deleteMenuItem.set("disabled", !isAllowed);
-		return this;	// core.js.views.UserContextMenu
-	},
-	
-	allowToSetPermission: function(/*Boolean*/ isAllowed) {
-		// summary:
-		//		Allows/disallows to set permissions to the user
-		isAllowed = isAllowed && core.js.base.controllers.ActionProvider.get("core_rule_user").isAllowed;
-		this._setPermissionMenuItem.set("disabled", !isAllowed);
-		return this;	// core.js.views.UserContextMenu
-	},
-	
-	////////// CALLBACKS //////////
-	
-	onActivateUser: function(/*core.js.views.UserItemView*/ userItemView) {
-		// summary: 
-		//		This method is called when the "Activate" menu item is selected
-		// userItemView:
-		//		The selected user item
-		// tags:
-		//		callback
-	},
-	
-	onContextMenu: function(/*core.js.views.UserItemView*/ userItemView) {
-		// summary:
-		//		Called when user right-click an user item
-		// userItemView:
-		//		The selected user item
-		// tags:
-		//		callback
-	},
-	
-	onDeleteUser: function(/*core.js.views.UserItemView*/ userItemView) {
-		// summary:
-		//		This method is called when the "Delete" menu item is selected
-		// userItemView:
-		//		The selected user item
-		// tags:
-		//		callback
-	},
-	
-	onEditUser: function(/*core.js.views.UserItemView*/ userItemView) {
-		// summary:
-		//		This method is called when the "Edit" menu item is selected
-		// userItemView:
-		//		The selected user item
-		// tags:
-		//		callback
-	},
-	
-	onSetUserPermissions: function(/*core.js.views.UserItemView*/ userItemView) {
-		// summary:
-		//		This method is called when the "Set permissions" menu item is selected
-		// roleItemView:
-		//		The selected user item
-		// tags:
-		//		callback
-	}
+		onEditUser: function(/*core.js.views.UserItemView*/ userItemView) {
+			// summary:
+			//		This method is called when the "Edit" menu item is selected
+			// userItemView:
+			//		The selected user item
+			// tags:
+			//		callback
+		},
+		
+		onSetUserPermissions: function(/*core.js.views.UserItemView*/ userItemView) {
+			// summary:
+			//		This method is called when the "Set permissions" menu item is selected
+			// roleItemView:
+			//		The selected user item
+			// tags:
+			//		callback
+		}
+	});
 });
