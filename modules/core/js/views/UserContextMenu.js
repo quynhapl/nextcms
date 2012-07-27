@@ -14,14 +14,13 @@
 
 define([
 	"dojo/_base/declare",
-	"dojo/dom-attr",
 	"dojo/parser",
 	"dijit/Menu",
 	"dijit/MenuItem",
 	"dijit/MenuSeparator",
 	"core/js/base/controllers/ActionProvider",
 	"core/js/base/I18N"
-], function(dojoDeclare, dojoDomAttr) {
+], function(dojoDeclare) {
 	return dojoDeclare("core.js.views.UserContextMenu", null, {
 		// _contextMenu: dijit.Menu
 		_contextMenu: null,
@@ -38,29 +37,48 @@ define([
 		// _setPermissionMenuItem: dijit.MenuItem
 		_setPermissionMenuItem: null,
 		
+		// _userItemView: core.js.views.UserItemView
+		//		Current selected user item view
+		_userItemView: null,
+		
 		constructor: function() {
 			core.js.base.I18N.requireLocalization("core/languages");
 			this._i18n = core.js.base.I18N.getLocalization("core/languages");
+			
+			this._createMenu();
 		},
 
 		show: function(/*core.js.views.UserItemView*/ userItemView) {
 			var that = this;
+			this._userItemView = userItemView;
 			
 			// Get user object
 			var user  = userItemView.getUser();
+			this._activateMenuItem.set("label", ("activated" == user.status) ? this._i18n.global._share.deactivateAction : this._i18n.global._share.activateAction)
+								  .set("iconClass", "appIcon " + ("activated" == user.status ? "appDeactivateIcon" : "appActivateIcon"));
+		
+			this._contextMenu.bindDomNode(userItemView.getDomNode());
 			
-			// Create menu
+			// Extension point
+			this.onContextMenu(userItemView);
+		},
+		
+		_createMenu: function() {
+			// summary:
+			//		Creates the menu
+			var that = this;
+			
 			this._contextMenu = new dijit.Menu({
-				targetNodeIds: [ dojoDomAttr.get(userItemView.getDomNode(), "id") ]
+				id: "core.js.views.UserContextMenu"
 			});
 			
 			// Activate/deactivate item
 			this._activateMenuItem = new dijit.MenuItem({
-				label: ("activated" == user.status) ? this._i18n.global._share.deactivateAction : this._i18n.global._share.activateAction,
-				iconClass: "appIcon " + ("activated" == user.status ? "appDeactivateIcon" : "appActivateIcon"),
+				label: this._i18n.global._share.activateAction,
+				iconClass: "appIcon appActivateIcon",
 				disabled: !core.js.base.controllers.ActionProvider.get("core_user_activate").isAllowed,
 				onClick: function() {
-					that.onActivateUser(userItemView);
+					that.onActivateUser(that._userItemView);
 				}
 			});
 			this._contextMenu.addChild(this._activateMenuItem);
@@ -71,7 +89,7 @@ define([
 				iconClass: "appIcon coreEditUserIcon",
 				disabled: !core.js.base.controllers.ActionProvider.get("core_user_edit").isAllowed,
 				onClick: function() {
-					that.onEditUser(userItemView);
+					that.onEditUser(that._userItemView);
 				}
 			}));
 			
@@ -81,7 +99,7 @@ define([
 				iconClass: "appIcon appDeleteIcon",
 				disabled: !core.js.base.controllers.ActionProvider.get("core_user_delete").isAllowed,
 				onClick: function() {
-					that.onDeleteUser(userItemView);
+					that.onDeleteUser(that._userItemView);
 				}
 			});
 			this._contextMenu.addChild(this._deleteMenuItem);
@@ -93,15 +111,10 @@ define([
 				label: this._i18n.rule._share.permissionAction,
 				disabled: !core.js.base.controllers.ActionProvider.get("core_rule_user").isAllowed,
 				onClick: function() {
-					that.onSetUserPermissions(userItemView);
+					that.onSetUserPermissions(that._userItemView);
 				}
 			});
 			this._contextMenu.addChild(this._setPermissionMenuItem);
-			
-			this._contextMenu.startup();
-			
-			// Extension point
-			this.onContextMenu(userItemView);
 		},
 		
 		////////// CONTROL STATE OF MENU ITEMS //////////

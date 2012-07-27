@@ -24,7 +24,7 @@ $this->headTitle()->set($this->translator()->_('role.list.title'));
 	<div data-dojo-type="dijit.layout.ContentPane" data-dojo-props="region: 'center', splitter: false">
 		<ul class="coreRoleItemsContainer">
 			<li class="<?php if (!$this->criteria['active_role_id']) : ?>coreRoleItemSelected<?php endif; ?>" style="padding-bottom: 8px">
-				<a class="coreRoleLabel" id="coreRoleListFilterAll" href="javascript: void(0);" onclick="javascript: require(['dojo/topic'], function(dojoTopic) { dojoTopic.publish('/app/core/role/list/onViewAll', this.parentNode); });">
+				<a class="coreRoleLabel" id="coreRoleListFilterAll" href="javascript: void(0);" onclick="javascript: var node = this.parentNode; require(['dojo/topic'], function(dojoTopic) { dojoTopic.publish('/app/core/role/list/onViewAll', node); });">
 					<?php echo $this->translator()->_('role.list.viewAll'); ?>
 				</a>
 			</li>

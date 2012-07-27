@@ -14,14 +14,13 @@
 
 define([
 	"dojo/_base/declare",
-	"dojo/dom-attr",
 	"dojo/parser",
 	"dijit/Menu",
 	"dijit/MenuItem",
 	"dijit/MenuSeparator",
 	"core/js/base/controllers/ActionProvider",
 	"core/js/base/I18N"
-], function(dojoDeclare, dojoDomAttr) {
+], function(dojoDeclare) {
 	return dojoDeclare("core.js.views.RoleContextMenu", null, {
 		// _contextMenu: dijit.Menu
 		//		The context menu for each role item
@@ -42,22 +41,23 @@ define([
 		// _setPermissionMenuItem: dijit.MenuItem
 		_setPermissionMenuItem: null,
 		
+		// _roleItemView: core.js.views.RoleItemView
+		_roleItemView: null,
+		
 		constructor: function() {
 			core.js.base.I18N.requireLocalization("core/languages");
 			this._i18n = core.js.base.I18N.getLocalization("core/languages");
+			
+			this._createMenu();
 		},
-
-		show: function(/*core.js.views.RoleItemView*/ roleItemView) {
+		
+		_createMenu: function() {
 			// summary:
-			//		Show menu context for selected role item
+			//		Creates the menu
 			var that = this;
 			
-			// Get the role object that the role item handles
-			var role = roleItemView.getRole();
-			
-			// Create menu
 			this._contextMenu = new dijit.Menu({
-				targetNodeIds: [ dojoDomAttr.get(roleItemView.getDomNode(), "id") ]
+				id: "core.js.views.RoleItemView"
 			});
 			
 			// "Delete" menu item
@@ -66,7 +66,7 @@ define([
 				iconClass: "appIcon appDeleteIcon",
 				disabled: !core.js.base.controllers.ActionProvider.get("core_role_delete").isAllowed,
 				onClick: function() {
-					that.onDeleteRole(roleItemView);
+					that.onDeleteRole(that._roleItemView);
 				}
 			});
 			this._contextMenu.addChild(this._deleteMenuItem);
@@ -77,19 +77,18 @@ define([
 				iconClass: "appIcon appRenameIcon",
 				disabled: !core.js.base.controllers.ActionProvider.get("core_role_rename").isAllowed,
 				onClick: function() {
-					that.onRenameRole(roleItemView);
+					that.onRenameRole(that._roleItemView);
 				}
 			});
 			this._contextMenu.addChild(this._renameMenuItem);
 			
 			// "Lock" item
-			var locked = role.locked;
 			this._lockMenuItem = new dijit.MenuItem({
-				label: locked ? this._i18n.global._share.unlockAction : this._i18n.global._share.lockAction,
+				label: this._i18n.global._share.lockAction,
 				iconClass: "appIcon appUnlockIcon",
 				disabled: !core.js.base.controllers.ActionProvider.get("core_role_lock").isAllowed,
 				onClick: function() {
-					that.onLockRole(roleItemView);
+					that.onLockRole(that._roleItemView);
 				}
 			});
 			this._contextMenu.addChild(this._lockMenuItem);
@@ -101,12 +100,23 @@ define([
 				label: this._i18n.rule._share.permissionAction,
 				disabled: !core.js.base.controllers.ActionProvider.get("core_rule_role").isAllowed,
 				onClick: function() {
-					that.onSetRolePermissions(roleItemView);
+					that.onSetRolePermissions(that._roleItemView);
 				}
 			});
 			this._contextMenu.addChild(this._setPermissionMenuItem);
+		},
+
+		show: function(/*core.js.views.RoleItemView*/ roleItemView) {
+			// summary:
+			//		Show menu context for selected role item
+			var that = this;
+			this._roleItemView = roleItemView;
 			
-			this._contextMenu.startup();
+			// Get the role object that the role item handles
+			var role = roleItemView.getRole();
+			this._lockMenuItem.set("label", role.locked ? this._i18n.global._share.unlockAction : this._i18n.global._share.lockAction);
+			
+			this._contextMenu.bindDomNode(roleItemView.getDomNode());
 			
 			// Extension point
 			this.onContextMenu(roleItemView);

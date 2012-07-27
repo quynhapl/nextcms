@@ -134,7 +134,7 @@ define([
 			// Click role item handler
 			dojoAspect.after(roleListView, "onClickRole", function(roleItemView) {
 				// Add CSS class to identify the selected item in the role list view
-				dojo.query(".coreRoleItemSelected", this._roleListView.getDomNode()).removeClass("coreRoleItemSelected");
+				dojo.query(".coreRoleItemSelected", roleListView.getDomNode()).removeClass("coreRoleItemSelected");
 				dojo.query(roleItemView.getDomNode()).addClass("coreRoleItemSelected");
 				
 				var roleId = roleItemView.getRole().role_id;
@@ -142,7 +142,7 @@ define([
 					role_id: roleId,
 					page: 1,
 					keyword: null
-				})
+				});
 			}, true);
 			
 			// Paging handler
@@ -254,9 +254,10 @@ define([
 			};
 			var url = core.js.base.controllers.ActionProvider.get("core_role_delete").url + "?" + dojoIoQuery.objectToQuery(params);
 			this._helper.showDialog(url, {
-				title: this._i18n.role["delete"].title,
+				id: "coreRoleDeleteConfirmDialog",
+				refreshOnShow: true,
 				style: "width: 250px",
-				refreshOnShow: true
+				title: this._i18n.role["delete"].title
 			});
 		},
 		

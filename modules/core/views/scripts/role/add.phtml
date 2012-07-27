@@ -10,7 +10,7 @@
  * @package		core
  * @subpackage	views
  * @since		1.0
- * @version		2012-04-06
+ * @version		2012-07-27
  */
 
 defined('APP_VALID_REQUEST') || die('You cannot access the script directly.');
@@ -20,49 +20,59 @@ defined('APP_VALID_REQUEST') || die('You cannot access the script directly.');
 $this->headTitle()->set($this->translator()->_('role.add.title'));
 ?>
 
-<form id="coreRoleAddForm" data-dojo-type="dijit.form.Form" data-dojo-props="action: '', method: 'POST', class: 'appForm'">
+<div id="coreRoleAddForm" data-dojo-type="dijit.form.Form" data-dojo-props="action: '', method: 'POST', class: 'appForm'">
 	<script type="dojo/method" data-dojo-event="onSubmit" data-dojo-args="e">
 	e.preventDefault();
-	var _this = this;
-	if (_this.validate()) {
-		dojo.xhrPost({
-			url: "<?php echo $this->url(array(), 'core_role_add'); ?>",
-			content: dojo.formToObject("coreRoleAddForm"),
-			handleAs: "json",
-			load: function(data) {
-				// Reset form
-				_this.reset();
-
-				// Publish the channel
-				dojo.publish("/app/core/role/add/onComplete", [ data ]);
-			}
-		});
-	}
+	var that = this;
+	require([
+		"dojo/_base/xhr",
+		"dojo/dom-form",
+		"dojo/topic"
+	], function(dojoXhr, dojoDomForm, dojoTopic) {
+		if (that.validate()) {
+			dojoXhr.post({
+				url: "<?php echo $this->url(array(), 'core_role_add'); ?>",
+				content: dojoDomForm.toObject("coreRoleAddForm"),
+				handleAs: "json",
+				load: function(data) {
+					// Reset form
+					that.reset();
+	
+					// Publish the channel
+					dojoTopic.publish("/app/core/role/add/onComplete", data);
+				}
+			});
+		}
+	});
 	</script>
 	
 	<div class="appFormRow">
-		<input data-dojo-type="dijit.form.ValidationTextBox"
-			data-dojo-props="type: 'text', name: 'name', style: 'width: 200px', required: true, missingMessage: '<?php echo $this->translator(true)->_('role._share.nameRequired'); ?>', placeHolder: '<?php echo $this->translator(true)->_('role._share.nameHelp'); ?>'" />
+		<input id="coreRoleAddNameTextBox" data-dojo-type="dijit.form.ValidationTextBox" data-dojo-props="type: 'text', name: 'name', style: 'width: 200px', required: true, missingMessage: '<?php echo $this->translator(true)->_('role._share.nameRequired'); ?>', placeHolder: '<?php echo $this->translator(true)->_('role._share.nameHelp'); ?>'" />
 	</div>
 	
 	<div class="dijitDialogPaneActionBar">
-		<button data-dojo-type="dijit.form.Button" data-dojo-props="type: 'submit'">
+		<button id="coreRoleAddSaveButton" data-dojo-type="dijit.form.Button" data-dojo-props="type: 'submit'">
 			<?php echo $this->translator()->_('global._share.addAction'); ?>
 		</button>
 		
-		<button data-dojo-type="dijit.form.Button" data-dojo-props="type: 'button'">
+		<button id="coreRoleAddCancelButton" data-dojo-type="dijit.form.Button" data-dojo-props="type: 'button'">
 			<?php echo $this->translator()->_('global._share.cancelAction'); ?>
 			<script type="dojo/method" data-dojo-event="onClick" data-dojo-args="e">
-			dojo.publish("/app/core/role/add/onCancel");
+			require(["dojo/topic"], function(dojoTopic) {
+				dojoTopic.publish("/app/core/role/add/onCancel");
+			});
 			</script>
 		</button>
 	</div>
 	
 	<input type="hidden" name="format" value="json" />
-</form>
+</div>
 
 <script type="text/javascript">
-dojo.require("dijit.form.Button");
-dojo.require("dijit.form.Form");
-dojo.require("dijit.form.ValidationTextBox");
+require([
+	"dojo/parser",
+	"dijit/form/Button",
+	"dijit/form/Form",
+	"dijit/form/ValidationTextBox"
+]);
 </script>
