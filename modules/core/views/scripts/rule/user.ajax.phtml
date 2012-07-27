@@ -10,7 +10,7 @@
  * @package		core
  * @subpackage	views
  * @since		1.0
- * @version		2012-04-06
+ * @version		2012-07-27
  */
 
 defined('APP_VALID_REQUEST') || die('You cannot access the script directly.');
@@ -39,7 +39,7 @@ $this->headTitle()->set($this->translator()->_('rule.user.title'));
 	
 		<?php foreach ($privileges as $priv) : ?>
 		<div style="padding-bottom: 5px">
-			<input data-dojo-type="dijit.form.CheckBox" data-dojo-props="name: 'privileges[]', value: '<?php echo $priv->action_name; ?>_<?php echo $resource->controller_name; ?>_<?php echo $resource->module_name; ?>_<?php echo $resource->extension_type; ?>', checked: <?php if ($priv->allow == null || $priv->allow == 0) : ?>false<?php else : ?>true<?php endif; ?>" /> <?php echo stripslashes($this->ruleTranslator()->translatePrivilege($priv)); ?>
+			<input id="coreRuleUserPrivilege_<?php echo $priv->action_name; ?>_<?php echo $resource->controller_name; ?>_<?php echo $resource->module_name; ?>_<?php echo $resource->extension_type; ?>" data-dojo-type="dijit.form.CheckBox" data-dojo-props="name: 'privileges[]', value: '<?php echo $priv->action_name; ?>_<?php echo $resource->controller_name; ?>_<?php echo $resource->module_name; ?>_<?php echo $resource->extension_type; ?>', checked: <?php if ($priv->allow == null || $priv->allow == 0) : ?>false<?php else : ?>true<?php endif; ?>" /> <?php echo stripslashes($this->ruleTranslator()->translatePrivilege($priv)); ?>
 		</div>
 		<?php endforeach; ?>
 		
@@ -53,18 +53,27 @@ $this->headTitle()->set($this->translator()->_('rule.user.title'));
 <?php endif; ?>
 
 <script type="text/javascript">
-dojo.require("dijit.form.CheckBox");
-dojo.require("dijit.TitlePane");
-dojo.require("dojo.NodeList-traverse");
+require([
+	"dojo/parser",
+	"dojo/query",
+	"dojo/NodeList-traverse",
+	"dijit/form/CheckBox",
+	"dijit/TitlePane"
+]);
 
 function coreRuleUserSelectAll(/*DomNode*/ titlePaneNode, /*Boolean*/ select) {
 	// summary:
 	//		Selects or unselects all checkboxes that belong to the same title pane
 	var checkbox;
-	dojo.query(".dijitCheckBox", titlePaneNode).forEach(function(node) {
-		if (checkbox = dijit.byNode(node)) {
-			checkbox.set("checked", select);
-		}
-	}); 
+	require([
+		"dojo/query",
+		"dijit/registry"
+	], function() {
+		dojo.query(".dijitCheckBox", titlePaneNode).forEach(function(node) {
+			if (checkbox = dijit.registry.byNode(node)) {
+				checkbox.set("checked", select);
+			}
+		});
+	});
 };
 </script>
