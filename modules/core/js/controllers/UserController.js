@@ -238,9 +238,10 @@ define([
 			//		Shows a dialog for adding new role
 			var url = core.js.base.controllers.ActionProvider.get("core_role_add").url;
 			this._helper.showDialog(url, {
-				title: this._i18n.role.add.title,
+				id: "coreRoleAddDialog",
+				refreshOnShow: true,
 				style: "width: 250px",
-				refreshOnShow: true
+				title: this._i18n.role.add.title	
 			});
 		},
 		
