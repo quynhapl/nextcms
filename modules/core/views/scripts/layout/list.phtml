@@ -10,7 +10,7 @@
  * @package		core
  * @subpackage	views
  * @since		1.0
- * @version		2012-06-12
+ * @version		2012-07-28
  */
 
 defined('APP_VALID_REQUEST') || die('You cannot access the script directly.');
@@ -21,8 +21,9 @@ $this->headTitle()->set($this->translator()->_('layout.list.title'));
 ?>
 
 <script type="text/javascript">
-dojo.require("core.js.base.Resource");
-core.js.base.Resource.loadCss("<?php echo $this->APP_STATIC_URL; ?>/static/js/dojo/<?php echo APP_DOJO_VER; ?>/dojox/grid/enhanced/resources/<?php echo $this->dojoConfig()->getTheme(); ?>/EnhancedGrid.css");
+require(["core/js/base/Resource"], function() {
+	core.js.base.Resource.loadCss("<?php echo $this->APP_STATIC_URL; ?>/static/js/dojo/<?php echo APP_DOJO_VER; ?>/dojox/grid/enhanced/resources/<?php echo $this->dojoConfig()->getTheme(); ?>/EnhancedGrid.css");
+});	
 </script>
 
 <style type="text/css">
@@ -50,17 +51,22 @@ core.js.base.Resource.loadCss("<?php echo $this->APP_STATIC_URL; ?>/static/js/do
 		<div data-dojo-type="dijit.Menu" id="coreLayoutListGridCellMenu_<?php echo $this->uniqueId; ?>" style="display: none">
 			<!-- EditMenuItem -->
         	<div data-dojo-type="dijit.MenuItem" data-dojo-props="label: '<?php echo $this->translator(true)->_('global._share.editAction'); ?>', disabled: <?php if ($this->accessor()->route('core_layout_edit')) : ?>false<?php else : ?>true<?php endif; ?>">
-        		<script type="dojo/connect" data-dojo-event="onClick">
-				var layoutGrid = dijit.byId("coreLayoutListGrid");
-				var rowIndex   = layoutGrid.selection.selectedIndex;
-				var item	   = layoutGrid.getItem(rowIndex);
-				if (item) {
-					var params = {
-						template: item.template[0],
-						layout: item.name[0]
-					};
-					dojo.publish("/app/core/layout/edit/onLoadForm", [ params ]);
-				}
+        		<script type="dojo/on" data-dojo-event="click">
+				require([
+					"dojo/topic",
+					"dijit/registry"
+				], function(dojoTopic) {
+					var layoutGrid = dijit.registry.byId("coreLayoutListGrid");
+					var rowIndex   = layoutGrid.selection.selectedIndex;
+					var item	   = layoutGrid.getItem(rowIndex);
+					if (item) {
+						var params = {
+							template: item.template[0],
+							layout: item.name[0]
+						};
+						dojoTopic.publish("/app/core/layout/edit/onLoadForm", params);
+					}
+				});
 				</script>
         	</div>
         	<!-- /EditMenuItem -->
@@ -70,26 +76,32 @@ core.js.base.Resource.loadCss("<?php echo $this->APP_STATIC_URL; ?>/static/js/do
 </div>
 
 <script type="text/javascript">
-dojo.require("dijit.layout.BorderContainer");
-dojo.require("dijit.layout.ContentPane");
-dojo.require("dijit.Menu");
-dojo.require("dijit.MenuItem");
-dojo.require("dojo.data.ItemFileReadStore");
-dojo.require("dojox.grid.EnhancedGrid");
-dojo.require("dojox.grid.enhanced.plugins.Menu");
-
-dojo.addOnLoad(function() {
-	// I cannot set the data store for the grid declaratively as follow:
-	//		<div data-dojo-type="dijit.layout.ContentPane" data-dojo-props="region: 'center'">
-	//			<span jsId="coreLayoutListStore" data-dojo-type="dojo.data.ItemFileReadStore" data-dojo-props="url: ..."></span>
-	//			<table id="coreLayoutListGrid" data-dojo-type="dojox.grid.EnhancedGrid" store="coreLayoutListStore">...</table>
-	//		</div>
-	var handler = dojo.subscribe("/app/global/onLoadComplete/core_layout_list", function() {
-		dijit.byId("coreLayoutListGrid").setStore(new dojo.data.ItemFileReadStore({
-			url: "<?php echo $this->url(array(), 'core_layout_list'); ?>?format=json&template=<?php echo $this->template; ?>"
-		}));
-		
-		dojo.unsubscribe(handler);
+require([
+	"dojo/ready",
+	"dojo/topic",
+	"dojo/data/ItemFileReadStore",
+	"dojo/parser",
+	"dijit/layout/BorderContainer",
+	"dijit/layout/ContentPane",
+	"dijit/Menu",
+	"dijit/MenuItem",
+	"dijit/registry",
+	"dojox/grid/EnhancedGrid",
+	"dojox/grid/enhanced/plugins/Menu"	
+], function(dojoReady, dojoTopic) {
+	dojoReady(function() {
+		// I cannot set the data store for the grid declaratively as follow:
+		//		<div data-dojo-type="dijit.layout.ContentPane" data-dojo-props="region: 'center'">
+		//			<span jsId="coreLayoutListStore" data-dojo-type="dojo.data.ItemFileReadStore" data-dojo-props="url: ..."></span>
+		//			<table id="coreLayoutListGrid" data-dojo-type="dojox.grid.EnhancedGrid" store="coreLayoutListStore">...</table>
+		//		</div>
+		var handler = dojoTopic.subscribe("/app/global/onLoadComplete/core_layout_list", function() {
+			dijit.registry.byId("coreLayoutListGrid").setStore(new dojo.data.ItemFileReadStore({
+				url: "<?php echo $this->url(array(), 'core_layout_list'); ?>?format=json&template=<?php echo $this->template; ?>"
+			}));
+			
+			handler.remove();
+		});
 	});
 });
 </script>
