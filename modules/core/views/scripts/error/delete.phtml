@@ -10,7 +10,7 @@
  * @package		core
  * @subpackage	views
  * @since		1.0
- * @version		2011-10-18
+ * @version		2012-07-28
  */
 
 defined('APP_VALID_REQUEST') || die('You cannot access the script directly.');
@@ -29,29 +29,36 @@ $this->headTitle()->set($this->translator()->_('error.delete.title'));
 	
 	<div class="dijitDialogPaneActionBar">
 		<!-- YesButton -->
-		<button data-dojo-type="dijit.form.Button" data-dojo-props="type: 'button'">
+		<button id="coreErrorDeleteYesButton" data-dojo-type="dijit.form.Button" data-dojo-props="type: 'button'">
 			<?php echo $this->translator()->_('global._share.yesMessage'); ?>
 			<script type="dojo/method" data-dojo-event="onClick" data-dojo-args="e">
-			dojo.xhrPost({
-				url: "<?php echo $this->url(array(), 'core_error_delete'); ?>",
-				content: {
-					error_id: "<?php echo $this->error->error_id; ?>",
-					format: "json"
-				},
-				handleAs: "json",
-				load: function(data) {
-					dojo.publish("/app/core/error/delete/onComplete", [ data ]);
-				}
+			require([
+				"dojo/_base/xhr",
+				"dojo/topic"
+			], function(dojoXhr, dojoTopic) {
+				dojoXhr.post({
+					url: "<?php echo $this->url(array(), 'core_error_delete'); ?>",
+					content: {
+						error_id: "<?php echo $this->error->error_id; ?>",
+						format: "json"
+					},
+					handleAs: "json",
+					load: function(data) {
+						dojoTopic.publish("/app/core/error/delete/onComplete", data);
+					}
+				});
 			});
 			</script>
 		</button>
 		<!-- /YesButton -->
 		
 		<!-- NoButton -->
-		<button data-dojo-type="dijit.form.Button" data-dojo-props="type: 'button'">
+		<button id="coreErrorDeleteNoButton" data-dojo-type="dijit.form.Button" data-dojo-props="type: 'button'">
 			<?php echo $this->translator()->_('global._share.noMessage'); ?>
 			<script type="dojo/method" data-dojo-event="onClick" data-dojo-args="e">
-			dojo.publish("/app/core/error/delete/onCancel");
+			require(["dojo/topic"], function(dojoTopic) {
+				dojoTopic.publish("/app/core/error/delete/onCancel");
+			});
 			</script>
 		</button>
 		<!-- /NoButton -->
@@ -59,5 +66,8 @@ $this->headTitle()->set($this->translator()->_('error.delete.title'));
 <?php endif; ?>
 
 <script type="text/javascript">
-dojo.require("dijit.form.Button");
+require([
+	"dojo/parser",
+	"dijit/form/Button"
+]);
 </script>
