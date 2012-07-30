@@ -10,7 +10,7 @@
  * @package		core
  * @subpackage	views
  * @since		1.0
- * @version		2011-10-18
+ * @version		2012-07-30
  */
 
 defined('APP_VALID_REQUEST') || die('You cannot access the script directly.');
@@ -23,10 +23,12 @@ $this->headTitle()->set($this->translator()->_('accesslog.view.title'));
 <div id="coreErrorViewContainer" data-dojo-type="dijit.layout.BorderContainer" data-dojo-props="design: 'sidebar', gutters: false, style: 'height: 100%; width: 100%'">
 	<!-- Toolbar -->
 	<div data-dojo-type="dijit.Toolbar" data-dojo-props="region: 'top', splitter: false">
-		<button data-dojo-type="dijit.form.Button" data-dojo-props="type: 'button', iconClass: 'appIcon appCancelIcon'">
+		<button id="coreAccesslogViewCancelButton" data-dojo-type="dijit.form.Button" data-dojo-props="type: 'button', iconClass: 'appIcon appCancelIcon'">
 			<?php echo $this->translator()->_('global._share.cancelAction'); ?>
 			<script type="dojo/method" data-dojo-event="onClick" data-dojo-args="e">
-			dojo.publish("/app/core/accesslog/view/onCancel");
+			require(["dojo/topic"], function(dojoTopic) {
+				dojoTopic.publish("/app/core/accesslog/view/onCancel");
+			});
 			</script>
 		</button>
 	</div>
@@ -40,47 +42,50 @@ $this->headTitle()->set($this->translator()->_('accesslog.view.title'));
 		<div data-dojo-type="dijit.layout.ContentPane" data-dojo-props="region: 'center', class: 'appForm'">
 			<div class="appFormRow">
 				<label><?php echo $this->translator()->_('accesslog._share.id'); ?>:</label>
-				<input data-dojo-type="dijit.form.TextBox" data-dojo-props="readOnly: true, style: 'width: 100px', value: '<?php echo $this->log->log_id; ?>'" />
+				<input id="coreAccesslogViewIdTextBox" data-dojo-type="dijit.form.TextBox" data-dojo-props="readOnly: true, style: 'width: 100px', value: '<?php echo $this->log->log_id; ?>'" />
 			</div>
 		
 			<div class="appFormRow">
 				<label><?php echo $this->translator()->_('accesslog._share.url'); ?>:</label>
-				<input data-dojo-type="dijit.form.TextBox" data-dojo-props="readOnly: true, style: 'width: 400px', value: '<?php echo $this->log->url; ?>'" />
+				<input id="coreAccesslogViewUrlTextBox" data-dojo-type="dijit.form.TextBox" data-dojo-props="readOnly: true, style: 'width: 400px', value: '<?php echo $this->log->url; ?>'" />
 			</div>
 			
 			<div class="appFormRow">
 				<label><?php echo $this->translator()->_('accesslog._share.module'); ?>:</label>
-				<input data-dojo-type="dijit.form.TextBox" data-dojo-props="readOnly: true, style: 'width: 100px', value: '<?php echo $this->log->module; ?>'" />
+				<input id="coreAccesslogViewModuleTextBox" data-dojo-type="dijit.form.TextBox" data-dojo-props="readOnly: true, style: 'width: 100px', value: '<?php echo $this->log->module; ?>'" />
 			</div>
 			
 			<div class="appFormRow">
 				<label><?php echo $this->translator()->_('accesslog._share.title'); ?>:</label>
-				<input data-dojo-type="dijit.form.TextBox" data-dojo-props="readOnly: true, style: 'width: 400px', value: '<?php echo $this->log->title; ?>'" />
+				<input id="coreAccesslogViewTitleTextBox" data-dojo-type="dijit.form.TextBox" data-dojo-props="readOnly: true, style: 'width: 400px', value: '<?php echo $this->log->title; ?>'" />
 			</div>
 			
 			<div class="appFormRow">
 				<label><?php echo $this->translator()->_('accesslog._share.accessedDate'); ?>:</label>
-				<input data-dojo-type="dijit.form.TextBox" data-dojo-props="readOnly: true, style: 'width: 200px', value: '<?php echo $this->log->accessed_date; ?>'" />
+				<input id="coreAccesslogViewDateTextBox" data-dojo-type="dijit.form.TextBox" data-dojo-props="readOnly: true, style: 'width: 200px', value: '<?php echo $this->log->accessed_date; ?>'" />
 			</div>
 			
 			<div class="appFormRow">
 				<label><?php echo $this->translator()->_('accesslog._share.ip'); ?>:</label>
-				<input data-dojo-type="dijit.form.TextBox" data-dojo-props="readOnly: true, style: 'width: 200px', value: '<?php echo $this->log->ip; ?>'" />
+				<input id="coreAccesslogViewIpTextBox" data-dojo-type="dijit.form.TextBox" data-dojo-props="readOnly: true, style: 'width: 200px', value: '<?php echo $this->log->ip; ?>'" />
 			</div>
 			
 			<div class="appFormRow">
 				<label><?php echo $this->translator()->_('accesslog._share.params'); ?>:</label>
-				<textarea data-dojo-type="dijit.form.Textarea" data-dojo-props="readOnly: true, style: 'height: 500px; width: 400px'"><?php if ($this->log->params) : ?><?php echo $this->log->params; ?><?php endif; ?></textarea>
+				<textarea id="coreAccesslogViewParamsTextarea" data-dojo-type="dijit.form.Textarea" data-dojo-props="readOnly: true, style: 'height: 500px; width: 400px'"><?php if ($this->log->params) : ?><?php echo $this->log->params; ?><?php endif; ?></textarea>
 			</div>
 		</div>
 	</div>
 </div>
 
 <script type="text/javascript">
-dojo.require("dijit.form.Button");
-dojo.require("dijit.form.Textarea");
-dojo.require("dijit.form.TextBox");
-dojo.require("dijit.layout.BorderContainer");
-dojo.require("dijit.layout.ContentPane");
-dojo.require("dijit.Toolbar");
+require([
+	"dojo/parser",
+	"dijit/form/Button",
+	"dijit/form/Textarea",
+	"dijit/form/TextBox",
+	"dijit/layout/BorderContainer",
+	"dijit/layout/ContentPane",
+	"dijit/Toolbar"
+]);
 </script>

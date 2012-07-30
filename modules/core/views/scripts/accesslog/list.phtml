@@ -10,7 +10,7 @@
  * @package		core
  * @subpackage	views
  * @since		1.0
- * @version		2012-06-12
+ * @version		2012-07-30
  */
 
 defined('APP_VALID_REQUEST') || die('You cannot access the script directly.');
@@ -21,9 +21,10 @@ $this->headTitle()->set($this->translator()->_('accesslog.list.title'));
 ?>
 
 <script type="text/javascript">
-dojo.require("core.js.base.Resource");
-core.js.base.Resource.loadCss("<?php echo $this->APP_STATIC_URL; ?>/static/js/dojo/<?php echo APP_DOJO_VER; ?>/dojox/grid/enhanced/resources/<?php echo $this->dojoConfig()->getTheme(); ?>/EnhancedGrid.css");
-core.js.base.Resource.loadCss("<?php echo $this->APP_STATIC_URL; ?>/modules/core/css/admin/default/styles.css");
+require(["core/js/base/Resource"], function() {
+	core.js.base.Resource.loadCss("<?php echo $this->APP_STATIC_URL; ?>/static/js/dojo/<?php echo APP_DOJO_VER; ?>/dojox/grid/enhanced/resources/<?php echo $this->dojoConfig()->getTheme(); ?>/EnhancedGrid.css");
+	core.js.base.Resource.loadCss("<?php echo $this->APP_STATIC_URL; ?>/modules/core/css/admin/default/styles.css");	
+});
 </script>
 
 <div id="coreAccessLogListContainer" data-dojo-type="dijit.layout.BorderContainer" data-dojo-props="region: 'center', gutters: true, style: 'padding: 0; height: 100%; width: 100%'">
@@ -49,37 +50,40 @@ core.js.base.Resource.loadCss("<?php echo $this->APP_STATIC_URL; ?>/modules/core
 <script type="text/javascript">
 document.title = "<?php echo $this->translator()->setLanguageDir('/modules/core/languages')->_('accesslog.list.title'); ?>";
 
-dojo.require("dijit.layout.BorderContainer");
-dojo.require("dijit.layout.ContentPane");
-dojo.require("dojox.layout.ContentPane");
+require([
+	"dojo/ready",
+	"dojo/parser",
+	"dijit/layout/BorderContainer",
+	"dijit/layout/ContentPane",
+	"dojox/layout/ContentPane",
+	"core/js/base/controllers/ActionProvider",
+	"core/js/controllers/AccessLogController",
+	"core/js/views/AccessLogGrid",
+	"core/js/views/AccessLogToolbar"	
+], function(dojoReady) {
+	dojoReady(function() {
+		// Provide the actions
+		<?php foreach (array(
+						'core_accesslog_delete', 'core_accesslog_list', 'core_accesslog_view',
+					) as $name) : ?>
+		core.js.base.controllers.ActionProvider.set("<?php echo $name; ?>", {
+			url: "<?php echo $this->url(array(), $name); ?>",
+			isAllowed: <?php if ($this->accessor()->route($name)) : ?>true<?php else : ?>false<?php endif; ?>
+		});	
+		<?php endforeach; ?>
 
-dojo.require("core.js.base.controllers.ActionProvider");
-dojo.require("core.js.controllers.AccessLogController");
-dojo.require("core.js.views.AccessLogGrid");
-dojo.require("core.js.views.AccessLogToolbar");
-
-dojo.addOnLoad(function() {
-	// Provide the actions
-	<?php foreach (array(
-					'core_accesslog_delete', 'core_accesslog_list', 'core_accesslog_view',
-				) as $name) : ?>
-	core.js.base.controllers.ActionProvider.set("<?php echo $name; ?>", {
-		url: "<?php echo $this->url(array(), $name); ?>",
-		isAllowed: <?php if ($this->accessor()->route($name)) : ?>true<?php else : ?>false<?php endif; ?>
-	});	
-	<?php endforeach; ?>
-
-	// Create new toolbar
-	var accessLogToolbar = new core.js.views.AccessLogToolbar("coreAccessLogListToolbar");
-	accessLogToolbar.setModules(<?php echo $this->modules; ?>);
-	accessLogToolbar.show();
-	
-	// Create new controller
-	var accessLogController = new core.js.controllers.AccessLogController("coreAccessLogListContainer");
-	accessLogController.setAccessLogToolbar(accessLogToolbar)
-					   .setAccessLogGrid(new core.js.views.AccessLogGrid("coreAccessLogListGridContainer"))
-					   .setAccessLogPaginator("coreAccessLogListPaginator")
-					   .initSearchCriteria(<?php echo Zend_Json::encode($this->criteria); ?>)
-					   .searchAccessLogs();
+		// Create new toolbar
+		var accessLogToolbar = new core.js.views.AccessLogToolbar("coreAccessLogListToolbar");
+		accessLogToolbar.setModules(<?php echo $this->modules; ?>);
+		accessLogToolbar.show();
+		
+		// Create new controller
+		var accessLogController = new core.js.controllers.AccessLogController("coreAccessLogListContainer");
+		accessLogController.setAccessLogToolbar(accessLogToolbar)
+						   .setAccessLogGrid(new core.js.views.AccessLogGrid("coreAccessLogListGridContainer"))
+						   .setAccessLogPaginator("coreAccessLogListPaginator")
+						   .initSearchCriteria(<?php echo Zend_Json::encode($this->criteria); ?>)
+						   .searchAccessLogs();
+	});
 });
 </script>
