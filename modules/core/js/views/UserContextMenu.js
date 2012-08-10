@@ -9,7 +9,7 @@
  * @package		core
  * @subpackage	js
  * @since		1.0
- * @version		2012-07-27
+ * @version		2012-08-10
  */
 
 define([
@@ -47,20 +47,27 @@ define([
 			
 			this._createMenu();
 		},
-
-		show: function(/*core.js.views.UserItemView*/ userItemView) {
-			var that = this;
+		
+		setUserItemView: function(/*core.js.views.UserItemView*/ userItemView) {
 			this._userItemView = userItemView;
+			return this;	// core.js.views.UserContextMenu
+		},
+
+		show: function() {
+			if (!this._userItemView) {
+				return;
+			}
 			
+			var that = this;
 			// Get user object
-			var user  = userItemView.getUser();
+			var user = this._userItemView.getUser();
 			this._activateMenuItem.set("label", ("activated" == user.status) ? this._i18n.global._share.deactivateAction : this._i18n.global._share.activateAction)
 								  .set("iconClass", "appIcon " + ("activated" == user.status ? "appDeactivateIcon" : "appActivateIcon"));
 		
-			this._contextMenu.bindDomNode(userItemView.getDomNode());
+			this._contextMenu.bindDomNode(this._userItemView.getDomNode());
 			
 			// Extension point
-			this.onContextMenu(userItemView);
+			this.onContextMenu(this._userItemView);
 		},
 		
 		_createMenu: function() {
@@ -83,7 +90,7 @@ define([
 			});
 			this._contextMenu.addChild(this._activateMenuItem);
 			
-			// "Edit" menu item
+			// Edit menu item
 			this._contextMenu.addChild(new dijit.MenuItem({
 				label: this._i18n.global._share.editAction,
 				iconClass: "appIcon coreEditUserIcon",

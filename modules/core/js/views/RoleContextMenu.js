@@ -9,7 +9,7 @@
  * @package		core
  * @subpackage	js
  * @since		1.0
- * @version		2012-07-27
+ * @version		2012-08-10
  */
 
 define([
@@ -105,21 +105,30 @@ define([
 			});
 			this._contextMenu.addChild(this._setPermissionMenuItem);
 		},
+		
+		setRoleItemView: function(/*core.js.views.RoleItemView*/ roleItemView) {
+			// summary:
+			//		Sets the current role item view
+			this._roleItemView = roleItemView;
+			return this;	// core.js.views.RoleContextMenu
+		},
 
-		show: function(/*core.js.views.RoleItemView*/ roleItemView) {
+		show: function() {
 			// summary:
 			//		Show menu context for selected role item
+			if (!this._roleItemView) {
+				return;
+			}
 			var that = this;
-			this._roleItemView = roleItemView;
 			
 			// Get the role object that the role item handles
-			var role = roleItemView.getRole();
+			var role = this._roleItemView.getRole();
 			this._lockMenuItem.set("label", role.locked ? this._i18n.global._share.unlockAction : this._i18n.global._share.lockAction);
 			
-			this._contextMenu.bindDomNode(roleItemView.getDomNode());
+			this._contextMenu.bindDomNode(this._roleItemView.getDomNode());
 			
 			// Extension point
-			this.onContextMenu(roleItemView);
+			this.onContextMenu(this._roleItemView);
 		},
 		
 		////////// CONTROL STATE OF MENU ITEMS //////////

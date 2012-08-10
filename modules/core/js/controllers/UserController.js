@@ -9,7 +9,7 @@
  * @package		core
  * @subpackage	js
  * @since		1.0
- * @version		2012-07-27
+ * @version		2012-08-10
  */
 
 define([
@@ -127,7 +127,8 @@ define([
 			// Show context menu
 			dojoAspect.after(roleListView, "onMouseDown", function(roleItemView) {
 				if (that._roleContextMenu) {
-					that._roleContextMenu.show(roleItemView);
+					that._roleContextMenu.setRoleItemView(roleItemView)
+										 .show();
 				}
 			}, true);
 			
@@ -409,7 +410,8 @@ define([
 			// Show the context menu when right-clicking on each user item
 			dojoAspect.after(userListView, "onMouseDown", function(userItemView) {
 				if (that._userContextMenu) {
-					that._userContextMenu.show(userItemView);
+					that._userContextMenu.setUserItemView(userItemView)
+										 .show();
 				}
 			}, true);
 			
